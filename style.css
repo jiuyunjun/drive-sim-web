@@ -1,0 +1,487 @@
+* {
+  box-sizing: border-box;
+}
+
+html, body {
+  margin: 0;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  font-family: Arial, "Microsoft YaHei", sans-serif;
+  background: #111;
+  color: #fff;
+}
+
+#app {
+  display: block;
+  width: 100vw;
+  height: 100vh;
+}
+
+#ui {
+  position: fixed;
+  top: 16px;
+  left: 16px;
+  z-index: 10;
+  pointer-events: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  align-items: flex-start;
+}
+
+.panel {
+  width: min(560px, calc(100vw - 32px));
+  background: rgba(20, 20, 20, 0.82);
+  backdrop-filter: blur(8px);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 14px;
+  padding: 16px 18px;
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.3);
+  pointer-events: auto;
+}
+
+#uiToggle {
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  background: rgba(16, 20, 26, 0.8);
+  color: #fff;
+  padding: 9px 14px;
+  border-radius: 999px;
+  backdrop-filter: blur(8px);
+  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.24);
+}
+
+#uiToggle:hover {
+  background: rgba(255, 255, 255, 0.14);
+  cursor: pointer;
+}
+
+#ui.collapsed .panel {
+  display: none;
+}
+
+h1 {
+  margin: 0 0 10px;
+  font-size: 22px;
+}
+
+p {
+  margin: 0 0 12px;
+  color: #d5d5d5;
+}
+
+.row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  align-items: center;
+  margin-bottom: 12px;
+}
+
+.row.compact label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: rgba(255, 255, 255, 0.04);
+  border-radius: 10px;
+  padding: 8px 10px;
+}
+
+input[type="number"] {
+  width: 90px;
+}
+
+input[type="range"] {
+  accent-color: #7cc8ff;
+}
+
+button,
+.file-label,
+input,
+select {
+  font: inherit;
+}
+
+.range-card {
+  min-width: 220px;
+  flex: 1 1 220px;
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  align-items: center;
+  gap: 10px;
+  background: rgba(255, 255, 255, 0.04);
+  border-radius: 10px;
+  padding: 8px 12px;
+}
+
+.range-card span:last-child {
+  min-width: 52px;
+  text-align: right;
+  color: #bfe7ff;
+}
+
+button,
+.file-label {
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  background: rgba(255, 255, 255, 0.08);
+  color: #fff;
+  padding: 10px 14px;
+  border-radius: 10px;
+}
+
+button:hover,
+.file-label:hover {
+  background: rgba(255, 255, 255, 0.14);
+  cursor: pointer;
+}
+
+.file-label input {
+  display: none;
+}
+
+.tips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 12px;
+  color: #ddd;
+}
+
+.tips span,
+.status div {
+  padding: 6px 10px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.06);
+}
+
+.status {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+#hud {
+  position: fixed;
+  left: 16px;
+  right: 16px;
+  bottom: 16px;
+  z-index: 10;
+  pointer-events: none;
+}
+
+#hud .status {
+  max-width: min(920px, calc(100vw - 32px));
+}
+
+#hud .status div {
+  backdrop-filter: blur(10px);
+  background: rgba(10, 16, 22, 0.68);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+#wheelHud {
+  position: fixed;
+  left: 50%;
+  bottom: 18px;
+  transform: translateX(-50%);
+  width: 172px;
+  height: 172px;
+  pointer-events: none;
+  z-index: 10;
+}
+
+.wheelHudTopMark {
+  position: absolute;
+  top: 8px;
+  left: 50%;
+  width: 8px;
+  height: 24px;
+  margin-left: -4px;
+  border-radius: 999px;
+  background: linear-gradient(180deg, #ffd880, #ff9f43);
+  box-shadow: 0 0 12px rgba(255, 180, 92, 0.45);
+}
+
+#wheelHudDial {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  background: radial-gradient(circle at 50% 45%, rgba(255, 255, 255, 0.08), rgba(6, 10, 16, 0.72));
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  box-shadow: 0 20px 36px rgba(0, 0, 0, 0.32);
+  backdrop-filter: blur(10px);
+}
+
+.wheelRingOuter {
+  position: absolute;
+  inset: 20px;
+  border-radius: 50%;
+  border: 12px solid rgba(235, 240, 245, 0.92);
+  box-shadow: inset 0 0 0 2px rgba(15, 20, 24, 0.48);
+}
+
+.wheelHubCenter {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 38px;
+  height: 38px;
+  margin-left: -19px;
+  margin-top: -19px;
+  border-radius: 50%;
+  background: linear-gradient(180deg, #dfe5ea, #98a3ae);
+  box-shadow: 0 6px 10px rgba(0, 0, 0, 0.22);
+}
+
+.wheelHubLogo {
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  color: #182028;
+  text-shadow: 0 1px 0 rgba(255, 255, 255, 0.26);
+}
+
+.wheelSpoke {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 12px;
+  height: 52px;
+  margin-left: -6px;
+  margin-top: -26px;
+  border-radius: 999px;
+  background: linear-gradient(180deg, #ecf2f6, #96a2ad);
+  transform-origin: center center;
+}
+
+.spokeTop {
+  transform: translateY(-44px);
+}
+
+.spokeLeft {
+  transform: rotate(125deg) translateY(-36px);
+}
+
+.spokeRight {
+  transform: rotate(-125deg) translateY(-36px);
+}
+
+#signalStatusBox[data-signal="left"],
+#signalStatusBox[data-signal="right"] {
+  background: rgba(255, 181, 77, 0.18);
+  color: #ffd89b;
+}
+
+#audioStatusBox[data-audio="on"] {
+  background: rgba(136, 235, 188, 0.18);
+  color: #d6ffeb;
+}
+
+#audioStatusBox[data-audio="error"] {
+  background: rgba(255, 110, 110, 0.16);
+  color: #ffd0d0;
+}
+
+#mirrorHud {
+  position: fixed;
+  top: 16px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: none;
+  gap: 12px;
+  align-items: flex-start;
+  pointer-events: none;
+  z-index: 9;
+}
+
+#mirrorHud.cockpit-layout {
+  top: 0;
+  left: 0;
+  right: 0;
+  width: 100%;
+  height: 100%;
+  transform: none;
+  display: block;
+}
+
+#mirrorHud.cockpit-layout .mirrorPane {
+  position: absolute;
+}
+
+#mirrorHud.cockpit-layout #mirrorCenter {
+  top: 18px;
+  left: 50%;
+  transform: translateX(-50%);
+}
+
+#mirrorHud.cockpit-layout #mirrorLeft {
+  top: 128px;
+  left: 14px;
+}
+
+#mirrorHud.cockpit-layout #mirrorRight {
+  top: 128px;
+  right: 14px;
+}
+
+#miniMap {
+  position: fixed;
+  right: 16px;
+  bottom: 18px;
+  width: min(19vw, 210px);
+  aspect-ratio: 1 / 1;
+  border-radius: 20px;
+  border: 3px solid rgba(214, 236, 255, 0.88);
+  background: linear-gradient(180deg, rgba(14, 22, 28, 0.18), rgba(5, 10, 14, 0.26));
+  box-shadow: 0 20px 34px rgba(0, 0, 0, 0.28);
+  overflow: hidden;
+  pointer-events: none;
+  z-index: 9;
+}
+
+#miniMap::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.16);
+}
+
+.miniMapLabel {
+  position: absolute;
+  left: 12px;
+  top: 10px;
+  padding: 4px 10px;
+  border-radius: 999px;
+  background: rgba(8, 14, 20, 0.54);
+  color: #eef8ff;
+  font-size: 12px;
+  letter-spacing: 0.08em;
+}
+
+.mirrorPane {
+  position: relative;
+  width: min(16vw, 168px);
+  aspect-ratio: 1.38 / 1;
+  border-radius: 16px 16px 22px 22px;
+  border: 3px solid rgba(230, 243, 255, 0.88);
+  box-shadow: 0 18px 36px rgba(0, 0, 0, 0.28);
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.08), rgba(0, 0, 0, 0.16));
+  overflow: hidden;
+}
+
+.mirrorCenter {
+  width: min(20vw, 220px);
+  aspect-ratio: 2.25 / 1;
+  border-radius: 14px 14px 24px 24px;
+}
+
+.mirrorPane::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.18);
+}
+
+.mirrorLabel {
+  position: absolute;
+  left: 14px;
+  bottom: 10px;
+  padding: 4px 10px;
+  border-radius: 999px;
+  background: rgba(12, 18, 24, 0.55);
+  color: #eef8ff;
+  font-size: 12px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+@media (max-width: 900px) {
+  #mirrorHud {
+    top: 12px;
+    gap: 8px;
+  }
+
+  .mirrorPane {
+    width: min(21vw, 150px);
+  }
+
+  .mirrorCenter {
+    width: min(27vw, 190px);
+  }
+
+  #mirrorHud.cockpit-layout #mirrorLeft,
+  #mirrorHud.cockpit-layout #mirrorRight {
+    top: 112px;
+  }
+
+  #miniMap {
+    width: min(24vw, 180px);
+  }
+}
+
+@media (max-width: 700px) {
+  .range-card {
+    min-width: 100%;
+  }
+
+  #hud {
+    left: 12px;
+    right: 12px;
+    bottom: 12px;
+  }
+
+  #wheelHud {
+    width: 136px;
+    height: 136px;
+    bottom: 12px;
+  }
+
+  #mirrorHud {
+    top: auto;
+    left: 50%;
+    bottom: 16px;
+    transform: translateX(-50%);
+  }
+
+  #mirrorHud.cockpit-layout {
+    top: 0;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    transform: none;
+  }
+
+  #mirrorHud.cockpit-layout #mirrorCenter {
+    top: 12px;
+  }
+
+  #mirrorHud.cockpit-layout #mirrorLeft {
+    top: 88px;
+    left: 8px;
+  }
+
+  #mirrorHud.cockpit-layout #mirrorRight {
+    top: 88px;
+    right: 8px;
+  }
+
+  #miniMap {
+    right: 12px;
+    bottom: 12px;
+    width: min(30vw, 138px);
+  }
+
+  .mirrorPane {
+    width: min(26vw, 118px);
+  }
+
+  .mirrorCenter {
+    width: min(34vw, 156px);
+  }
+}
