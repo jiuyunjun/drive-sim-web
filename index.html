@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>驾驶考试中心 3D 模拟驾驶</title>
+  <link rel="stylesheet" href="./style.css" />
+  <script type="importmap">
+    {
+      "imports": {
+        "three": "https://unpkg.com/three@0.180.0/build/three.module.js",
+        "three/addons/": "https://unpkg.com/three@0.180.0/examples/jsm/"
+      }
+    }
+  </script>
+</head>
+<body>
+  <div id="ui">
+    <button id="uiToggle" type="button">隐藏菜单</button>
+    <div class="panel">
+      <h1>驾驶考试中心 3D 模拟驾驶</h1>
+      <p>上传一张平面地图图片，把它作为地面贴图，然后直接在网页里开车。</p>
+
+      <div class="row">
+        <label class="file-label">
+          <span>上传地图</span>
+          <input id="mapInput" type="file" accept="image/*" />
+        </label>
+        <button id="resetBtn">重置车辆</button>
+        <button id="setSpawnBtn">设为起点</button>
+        <button id="viewBtn">切换视角</button>
+      </div>
+
+      <div class="row compact">
+        <label>地图宽度（米）
+          <input id="mapWidth" type="number" min="10" max="1000" step="1" value="80" />
+        </label>
+        <div class="range-card">
+          <span>拖拽地图比例</span>
+          <input id="mapScale" type="range" min="10" max="1000" step="1" value="80" />
+          <span id="mapScaleValue">80 m</span>
+        </div>
+        <label>车辆最大速度
+          <input id="maxSpeed" type="range" min="2" max="40" step="1" value="18" />
+        </label>
+        <span id="maxSpeedValue">18 m/s</span>
+        <label>
+          <input id="autoCenterSteering" type="checkbox" />
+          方向盘自动回正
+        </label>
+      </div>
+
+      <div class="tips">
+        <strong>操作：</strong>
+        <span>W / ↑ 前进</span>
+        <span>S / ↓ 倒车</span>
+        <span>A / ← 左转</span>
+        <span>D / → 右转</span>
+        <span>Q 左转向灯</span>
+        <span>E 右转向灯</span>
+        <span>空格 手刹</span>
+        <span>O 重置</span>
+        <span>V 切换三种视角</span>
+      </div>
+    </div>
+  </div>
+
+  <div id="hud">
+    <div class="status">
+      <div>速度：<span id="speed">0.0</span> km/h</div>
+      <div>档位：<span id="gear">N</span></div>
+      <div>视角：<span id="viewMode">跟车视角</span></div>
+      <div>方向盘：<span id="steerAngle">0</span>&deg;</div>
+      <div id="signalStatusBox" data-signal="off">转向灯：<span id="signalStatus">关闭</span></div>
+      <div id="audioStatusBox" data-audio="pending">音效：<span id="audioStatus">待启用</span></div>
+    </div>
+    <div id="wheelHud" aria-hidden="true">
+      <div class="wheelHudTopMark"></div>
+      <div id="wheelHudDial">
+        <div class="wheelRingOuter"></div>
+        <div class="wheelHubCenter">
+          <span class="wheelHubLogo">DS</span>
+        </div>
+        <div class="wheelSpoke spokeTop"></div>
+        <div class="wheelSpoke spokeLeft"></div>
+        <div class="wheelSpoke spokeRight"></div>
+      </div>
+    </div>
+  </div>
+
+  <div id="mirrorHud" aria-hidden="true">
+    <div class="mirrorPane" id="mirrorLeft">
+      <span class="mirrorLabel">左后视镜</span>
+    </div>
+    <div class="mirrorPane mirrorCenter" id="mirrorCenter">
+      <span class="mirrorLabel">中后视镜</span>
+    </div>
+    <div class="mirrorPane" id="mirrorRight">
+      <span class="mirrorLabel">右后视镜</span>
+    </div>
+  </div>
+
+  <div id="miniMap" aria-hidden="true">
+    <span class="miniMapLabel">小地图</span>
+  </div>
+
+  <canvas id="app"></canvas>
+  <script type="module" src="./app.js"></script>
+</body>
+</html>
