@@ -117,18 +117,21 @@
 
   <div id="mobileControls" aria-label="移动端驾驶控制">
     <div class="mobileCluster mobileClusterLeft">
-      <div class="mobileSteerZone" id="mobileSteerZone" aria-label="左右滑动转向" role="slider" aria-valuemin="-100" aria-valuemax="100" aria-valuenow="0">
-        <div class="mobileSteerIndicator" id="mobileSteerIndicator"></div>
-        <span class="mobileSteerHint">← 滑动转向 →</span>
+      <div class="mobileSteerRow">
+        <div class="mobileSteerZone" id="mobileSteerZone" aria-label="左右滑动转向" role="slider" aria-valuemin="-100" aria-valuemax="100" aria-valuenow="0">
+          <div class="mobileSteerIndicator" id="mobileSteerIndicator"></div>
+          <span class="mobileSteerHint">← 滑动转向 →</span>
+        </div>
+        <div class="mobileViewResetStack">
+          <button class="mobileControl" data-tap-action="view" aria-label="切换视角">视角</button>
+          <button class="mobileControl" data-tap-action="reset" aria-label="重置车辆">重置</button>
+        </div>
       </div>
     </div>
 
     <div class="mobileCluster mobileClusterCenter">
       <div class="mobileAuxRow mobileAuxRowCenter mobileBottomRow">
-        <button class="mobileControl" data-tap-action="view" aria-label="切换视角">视角</button>
-        <button class="mobileControl" data-tap-action="reset" aria-label="重置车辆">重置</button>
         <div class="mobileWheelSlot" aria-hidden="true"></div>
-        <button class="mobileControl mobileHandbrake" data-hold-key=" " aria-label="手刹">手刹</button>
       </div>
     </div>
 
@@ -140,6 +143,7 @@
         <span class="signalLeverLabel signalLeverLabelBottom">右灯 ↓</span>
       </div>
       <div class="mobileDriveStack mobileDriveStackRight">
+        <button class="mobileControl mobileHandbrake" data-hold-key=" " aria-label="手刹">手刹</button>
         <button class="mobileControl mobileControlTall mobileReverse" data-hold-key="s" aria-label="后退">后退</button>
         <button class="mobileControl mobileControlTall mobileBrake mobileBrakePrimary" data-hold-key=" " aria-label="刹车">刹车</button>
         <button class="mobileControl mobileControlTall mobileThrottle" data-hold-key="w" aria-label="油门">油门</button>
