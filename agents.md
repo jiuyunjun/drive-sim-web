@@ -53,7 +53,7 @@ http://localhost:8000/
 - `public/index.html`：页面结构、UI 面板、`importmap`
 - `public/assets/app.js`：Three.js 场景、车辆控制、音效、后视镜、小地图、设置持久化
 - `public/assets/style.css`：界面样式
-- `public/assets/maps/`：内置地图资源
+- `public/assets/maps/`：内置地图资源与同名 JSON 配置
 - `start.bat`：本地启动辅助脚本
 
 ## GCP 预备要求
