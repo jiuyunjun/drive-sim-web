@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>驾驶考试中心 3D 模拟驾驶</title>
-  <link rel="stylesheet" href="./style.css" />
+  <link rel="stylesheet" href="./assets/style.css" />
   <script type="importmap">
     {
       "imports": {
@@ -22,6 +22,15 @@
       <p>上传一张平面地图图片，把它作为地面贴图，然后直接在网页里开车。</p>
 
       <div class="row">
+        <label>
+          <span>地图选择</span>
+          <select id="mapPreset">
+            <option value="generated">练习场</option>
+            <option value="map2">城市地图</option>
+            <option value="bike">骑行地图</option>
+            <option value="custom">自定义上传</option>
+          </select>
+        </label>
         <label class="file-label">
           <span>上传地图</span>
           <input id="mapInput" type="file" accept="image/*" />
@@ -138,6 +147,6 @@
   </div>
 
   <canvas id="app"></canvas>
-  <script type="module" src="./app.js"></script>
+  <script type="module" src="./assets/app.js"></script>
 </body>
 </html>

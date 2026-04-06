@@ -3,7 +3,7 @@
 ## 项目概况
 
 - 项目名称：`drive-sim-web`
-- 当前形态：纯前端静态页面，核心文件为 `index.html`、`app.js`、`style.css`
+- 当前形态：纯前端静态页面，站点入口位于 `public/`
 - 运行方式：通过本地静态文件服务器启动，不要直接双击 `index.html`
 - 3D 依赖来源：`index.html` 中通过 `importmap` 从 `unpkg` 加载 `three` 与附加模块
 
@@ -50,10 +50,10 @@ http://localhost:8000/
 
 ## 代码结构
 
-- `index.html`：页面结构、UI 面板、`importmap`
-- `app.js`：Three.js 场景、车辆控制、音效、后视镜、小地图、设置持久化
-- `style.css`：界面样式
-- `map.png`、`map2.webp`：示例地图资源
+- `public/index.html`：页面结构、UI 面板、`importmap`
+- `public/assets/app.js`：Three.js 场景、车辆控制、音效、后视镜、小地图、设置持久化
+- `public/assets/style.css`：界面样式
+- `public/assets/maps/`：内置地图资源
 - `start.bat`：本地启动辅助脚本
 
 ## GCP 预备要求

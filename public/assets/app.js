@@ -59,6 +59,7 @@ const autoCenterSteeringEl = document.getElementById('autoCenterSteering');
 const mapWidthEl = document.getElementById('mapWidth');
 const mapScaleEl = document.getElementById('mapScale');
 const mapScaleValueEl = document.getElementById('mapScaleValue');
+const mapPresetEl = document.getElementById('mapPreset');
 const uiEl = document.getElementById('ui');
 const uiToggleEl = document.getElementById('uiToggle');
 const setSpawnBtnEl = document.getElementById('setSpawnBtn');
@@ -86,6 +87,11 @@ const MAX_STEER = 0.6;
 const STEERING_WHEEL_MAX = Math.PI * 1.35;
 const AudioContextClass = window.AudioContext || window.webkitAudioContext;
 const SETTINGS_STORAGE_KEY = 'driveSimSettingsV2';
+const BUILTIN_MAPS = {
+  generated: { label: '练习场', kind: 'generated' },
+  map2: { label: '城市地图', src: new URL('./maps/map2.webp', import.meta.url).href },
+  bike: { label: '骑行地图', src: new URL('./maps/bike-map.webp', import.meta.url).href },
+};
 const VIEW_LABELS = {
   follow: '跟车视角',
   cockpit: '第一人称',
@@ -146,6 +152,7 @@ function saveSettings() {
     autoCenterSteering: state.autoCenterSteering,
     uiCollapsed: state.uiCollapsed,
     startPose: state.startPose,
+    selectedMapId: state.selectedMapId,
     mapImageDataUrl: state.mapImageDataUrl,
   };
 
@@ -598,6 +605,11 @@ function activateKey(key) {
   keys.add(key);
 }
 
+function syncMapPresetControl(mapId) {
+  if (!mapPresetEl) return;
+  mapPresetEl.value = mapId;
+}
+
 function deactivateKey(key) {
   keys.delete(key);
 }
@@ -719,6 +731,7 @@ const state = {
   throttleInput: 0,
   reverseInput: 0,
   autoCenterSteering: Boolean(persistedSettings?.autoCenterSteering),
+  selectedMapId: persistedSettings?.selectedMapId || 'generated',
   mapImageDataUrl: persistedSettings?.mapImageDataUrl || null,
   startPose: sanitizeStartPose(persistedSettings?.startPose),
   miniMapExpanded: false,
@@ -1214,11 +1227,29 @@ function applyMapSource(src, shouldReset = true) {
   img.src = src;
 }
 
+function loadBuiltInMap(mapId, shouldReset = true) {
+  const mapConfig = BUILTIN_MAPS[mapId] || BUILTIN_MAPS.generated;
+  state.selectedMapId = Object.hasOwn(BUILTIN_MAPS, mapId) ? mapId : 'generated';
+  syncMapPresetControl(state.selectedMapId);
+
+  if (mapConfig.kind === 'generated') {
+    createDefaultGround();
+    if (shouldReset) resetCar();
+    else placeCarAtStart();
+    saveSettings();
+    return;
+  }
+
+  applyMapSource(mapConfig.src, shouldReset);
+}
+
 function handleMapUpload(file) {
   const reader = new FileReader();
   reader.onload = () => {
     if (typeof reader.result !== 'string') return;
+    state.selectedMapId = 'custom';
     state.mapImageDataUrl = reader.result;
+    syncMapPresetControl('custom');
     applyMapSource(reader.result);
   };
   reader.readAsDataURL(file);
@@ -1227,6 +1258,23 @@ function handleMapUpload(file) {
 document.getElementById('mapInput').addEventListener('change', (event) => {
   const file = event.target.files?.[0];
   if (file) handleMapUpload(file);
+});
+
+mapPresetEl?.addEventListener('change', () => {
+  const selected = mapPresetEl.value;
+  if (selected === 'custom') {
+    if (state.mapImageDataUrl) {
+      state.selectedMapId = 'custom';
+      applyMapSource(state.mapImageDataUrl);
+    } else {
+      syncMapPresetControl(state.selectedMapId);
+      document.getElementById('mapInput').click();
+    }
+    return;
+  }
+
+  state.mapImageDataUrl = null;
+  loadBuiltInMap(selected);
 });
 
 bindMobileControls();
@@ -1244,12 +1292,13 @@ window.addEventListener('orientationchange', updateOrientationUi);
 
 setAudioStatus(audioState.supported ? 'pending' : 'error', audioState.supported ? '待启用' : '不可用');
 syncMapControls(persistedSettings?.mapWidth ?? groundSize.width);
+syncMapPresetControl(state.selectedMapId);
 syncMaxSpeedControl(persistedSettings?.maxSpeed ?? state.maxSpeed);
 syncAutoCenterControl(state.autoCenterSteering);
 state.maxSpeed = Number(maxSpeedEl.value);
 
-if (state.mapImageDataUrl) applyMapSource(state.mapImageDataUrl, false);
-else createDefaultGround();
+if (state.selectedMapId === 'custom' && state.mapImageDataUrl) applyMapSource(state.mapImageDataUrl, false);
+else loadBuiltInMap(state.selectedMapId, false);
 
 resetCar();
 setView('follow');
