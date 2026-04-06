@@ -479,6 +479,10 @@ button:hover,
   min-height: 72px;
 }
 
+.mobileThrottleLarge {
+  min-height: 96px;
+}
+
 .mobileThrottle {
   background: linear-gradient(180deg, rgba(40, 138, 93, 0.82), rgba(22, 78, 56, 0.88));
 }
@@ -718,6 +722,10 @@ button:hover,
     max-width: 72px;
   }
 
+  .mobileDriveStackRight {
+    max-width: 78px;
+  }
+
   .mobileSteerPad {
     justify-content: flex-end;
     flex-direction: row;
@@ -790,6 +798,10 @@ button:hover,
   .mobileReverse {
     min-width: 58px;
     min-height: 62px;
+  }
+
+  .mobileThrottleLarge {
+    min-height: 82px;
   }
 
   .mobileSignal {
