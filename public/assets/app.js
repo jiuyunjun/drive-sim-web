@@ -53,6 +53,8 @@ scene.add(sun);
 const speedEl = document.getElementById('speed');
 const gearEl = document.getElementById('gear');
 const viewModeEl = document.getElementById('viewMode');
+const positionEl = document.getElementById('position');
+const headingEl = document.getElementById('heading');
 const maxSpeedEl = document.getElementById('maxSpeed');
 const maxSpeedValueEl = document.getElementById('maxSpeedValue');
 const autoCenterSteeringEl = document.getElementById('autoCenterSteering');
@@ -1197,6 +1199,8 @@ function updateCar(dt) {
 
   speedEl.textContent = (Math.abs(state.speed) * 3.6).toFixed(1);
   gearEl.textContent = state.speed > 0.2 ? 'D' : state.speed < -0.2 ? 'R' : 'N';
+  positionEl.textContent = `${car.position.x.toFixed(1)}, ${car.position.z.toFixed(1)}`;
+  headingEl.textContent = THREE.MathUtils.euclideanModulo(THREE.MathUtils.radToDeg(state.heading), 360).toFixed(1);
 }
 
 function updateEngineAudio() {
