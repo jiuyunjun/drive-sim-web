@@ -116,22 +116,31 @@
       <div class="mobileDriveStack">
         <button class="mobileControl mobileControlTall mobileThrottle" data-hold-key="w" aria-label="油门">油门</button>
         <button class="mobileControl mobileControlTall mobileBrake" data-hold-key="s" aria-label="刹车">刹车</button>
+        <button class="mobileControl mobileControlTall mobileReverse" data-hold-key="s" aria-label="后退">后退</button>
       </div>
-      <div class="mobileAuxRow">
-        <button class="mobileControl mobileSignal" data-tap-action="signal-left" aria-label="左转向灯">左灯</button>
-        <button class="mobileControl mobileSignal" data-tap-action="signal-right" aria-label="右转向灯">右灯</button>
+    </div>
+
+    <div class="mobileCluster mobileClusterCenter">
+      <div class="mobileAuxRow mobileAuxRowCenter">
+        <button class="mobileControl" data-tap-action="view" aria-label="切换视角">视角</button>
+      </div>
+      <div class="mobileWheelSlot" aria-hidden="true"></div>
+      <div class="mobileAuxRow mobileAuxRowCenter">
+        <button class="mobileControl" data-tap-action="reset" aria-label="重置车辆">重置</button>
       </div>
     </div>
 
     <div class="mobileCluster mobileClusterRight">
+      <div class="mobileAuxRow">
+        <button class="mobileControl mobileSignal" data-tap-action="signal-left" aria-label="左转向灯">左灯</button>
+        <button class="mobileControl mobileSignal" data-tap-action="signal-right" aria-label="右转向灯">右灯</button>
+      </div>
       <div class="mobilePad mobileSteerPad">
         <button class="mobileControl mobileSteer" data-hold-key="a" aria-label="左转">左</button>
         <button class="mobileControl mobileSteer" data-hold-key="d" aria-label="右转">右</button>
       </div>
       <div class="mobileAuxRow mobileAuxRowRight">
-        <button class="mobileControl" data-tap-action="view" aria-label="切换视角">视角</button>
         <button class="mobileControl" data-hold-key=" " aria-label="手刹">手刹</button>
-        <button class="mobileControl" data-tap-action="reset" aria-label="重置车辆">重置</button>
       </div>
     </div>
   </div>
