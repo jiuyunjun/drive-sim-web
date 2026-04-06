@@ -110,6 +110,7 @@ const audioState = {
 };
 const persistedSettings = loadSettings();
 let attemptedLandscapeLock = false;
+let attemptedFullscreen = false;
 let availableMaps = [];
 
 function getDefaultStartPose() {
@@ -648,6 +649,7 @@ window.addEventListener('keydown', (event) => {
 window.addEventListener('keyup', (event) => deactivateKey(event.key.toLowerCase()));
 window.addEventListener('pointerdown', () => {
   void ensureAudioRunning();
+  void tryEnterFullscreen();
   void tryLockLandscapeOrientation();
 }, { passive: true });
 
@@ -705,6 +707,27 @@ function bindMobileControls() {
 
 function isMobileLikeDevice() {
   return window.matchMedia('(hover: none), (pointer: coarse), (max-width: 900px)').matches;
+}
+
+async function tryEnterFullscreen() {
+  if (attemptedFullscreen) return;
+  attemptedFullscreen = true;
+
+  if (!isMobileLikeDevice()) return;
+  if (document.fullscreenElement) return;
+
+  const root = document.documentElement;
+  const requestFullscreen = root.requestFullscreen
+    || root.webkitRequestFullscreen
+    || root.msRequestFullscreen;
+
+  if (!requestFullscreen) return;
+
+  try {
+    await requestFullscreen.call(root);
+  } catch (error) {
+    console.debug('Fullscreen request unavailable:', error);
+  }
 }
 
 function updateOrientationUi() {
@@ -1330,7 +1353,7 @@ state.maxSpeed = Number(maxSpeedEl.value);
 
 resetCar();
 setView('follow');
-setUiCollapsed(Boolean(persistedSettings?.uiCollapsed));
+setUiCollapsed(isMobileLikeDevice() ? true : Boolean(persistedSettings?.uiCollapsed));
 
 async function initializeMaps() {
   try {

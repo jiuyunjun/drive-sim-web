@@ -471,6 +471,33 @@ button:hover,
   min-height: 86px;
 }
 
+.mobileThrottle,
+.mobileBrake {
+  min-width: 72px;
+  min-height: 92px;
+}
+
+.mobileThrottle {
+  background: linear-gradient(180deg, rgba(40, 138, 93, 0.82), rgba(22, 78, 56, 0.88));
+}
+
+.mobileBrake {
+  background: linear-gradient(180deg, rgba(164, 58, 58, 0.84), rgba(100, 24, 24, 0.88));
+}
+
+.mobileSignal {
+  min-width: 68px;
+}
+
+.mobileSteerPad {
+  gap: 10px;
+}
+
+.mobileSteer {
+  min-width: 78px;
+  min-height: 78px;
+}
+
 .rotateCard {
   width: min(86vw, 320px);
   padding: 18px 20px;
@@ -653,16 +680,55 @@ button:hover,
     justify-content: flex-end;
   }
 
+  .mobileClusterLeft,
+  .mobileClusterRight {
+    width: min(32vw, 220px);
+  }
+
+  .mobileClusterLeft {
+    align-items: flex-start;
+  }
+
+  .mobileClusterRight {
+    align-items: flex-end;
+  }
+
+  .mobileDriveStack {
+    width: 100%;
+    max-width: 92px;
+  }
+
+  .mobileSteerPad {
+    justify-content: flex-end;
+  }
+
+  #hud .status {
+    max-width: min(56vw, 520px);
+  }
+
   #wheelHud {
-    bottom: 118px;
+    bottom: max(18px, env(safe-area-inset-bottom));
+    width: 156px;
+    height: 156px;
   }
 
   #miniMap {
-    bottom: 154px;
+    right: 14px;
+    bottom: 188px;
   }
 
   #miniMap.expanded {
-    bottom: 148px;
+    bottom: 182px;
+  }
+
+  #ui {
+    top: calc(10px + env(safe-area-inset-top));
+    left: calc(10px + env(safe-area-inset-left));
+  }
+
+  #ui.collapsed {
+    opacity: 0;
+    pointer-events: none;
   }
 }
 
@@ -680,23 +746,32 @@ button:hover,
     font-size: 14px;
   }
 
-  .mobileControlLarge {
-    min-width: 68px;
-  }
-
-  .mobileControlTall {
+  .mobileThrottle,
+  .mobileBrake {
+    min-width: 64px;
     min-height: 78px;
   }
 
+  .mobileSignal {
+    min-width: 58px;
+  }
+
+  .mobileSteer {
+    min-width: 68px;
+    min-height: 68px;
+  }
+
   #wheelHud {
-    bottom: 104px;
+    width: 138px;
+    height: 138px;
+    bottom: max(8px, env(safe-area-inset-bottom));
   }
 
   #miniMap {
-    bottom: 138px;
+    bottom: 168px;
   }
 
   #miniMap.expanded {
-    bottom: 132px;
+    bottom: 162px;
   }
 }
