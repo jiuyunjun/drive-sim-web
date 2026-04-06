@@ -834,13 +834,13 @@ body.minimap-expanded .mobileClusterRight {
   }
 
   .mobileClusterLeft {
-    width: min(26vw, 160px);
+    width: min(40vw, 280px);
     align-items: stretch;
   }
 
   .mobileClusterRight {
     width: auto;
-    align-items: stretch;
+    align-items: flex-end;
   }
 
   .mobileClusterCenter {
@@ -864,6 +864,11 @@ body.minimap-expanded .mobileClusterRight {
     align-items: flex-end;
     justify-content: flex-end;
     gap: 8px;
+  }
+
+  .mobileSignalLever {
+    align-self: flex-end;
+    margin-left: auto;
   }
 
   .mobileViewResetStack {
@@ -1028,7 +1033,11 @@ body.minimap-expanded .mobileClusterRight {
 
   .mobileClusterLeft,
   .mobileClusterRight {
-    width: min(28vw, 132px);
+    width: auto;
+  }
+
+  .mobileClusterLeft {
+    width: min(46vw, 240px);
   }
 
   .mobileClusterCenter {
