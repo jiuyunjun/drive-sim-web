@@ -1,0 +1,54 @@
+# agents.md
+
+## 项目概况
+
+- 项目名称：`drive-sim-web`
+- 当前形态：纯前端静态页面，核心文件为 `index.html`、`app.js`、`style.css`
+- 运行方式：通过本地静态文件服务器启动，不要直接双击 `index.html`
+- 3D 依赖来源：`index.html` 中通过 `importmap` 从 `unpkg` 加载 `three` 与附加模块
+
+## 协作约束
+
+- 所有新增或修改文件统一使用 UTF-8 编码
+- 每次独立修改单独提交，提交信息要能说明改动目的
+- 不要无理由重命名现有入口文件
+- 未经确认，不要把资源改成需要后端服务才能运行的形态
+
+## 本地开发
+
+1. 在仓库根目录启动静态服务器，例如：
+
+```bash
+python -m http.server 8000
+```
+
+2. 浏览器打开：
+
+```text
+http://localhost:8000/
+```
+
+## 代码结构
+
+- `index.html`：页面结构、UI 面板、`importmap`
+- `app.js`：Three.js 场景、车辆控制、音效、后视镜、小地图、设置持久化
+- `style.css`：界面样式
+- `map.png`、`map2.jpg`：示例地图资源
+- `start.bat`：本地启动辅助脚本
+
+## GCP 预备要求
+
+- 当前项目适合优先部署到 GCP 的静态托管路径，例如 Cloud Storage + Cloud CDN，或 Firebase Hosting
+- 如果后续要上 Cloud Run，应先补充明确的静态服务入口，例如 `nginx` 或轻量 Node.js server
+- 若继续依赖 `unpkg`，上线前要确认外网访问策略；更稳妥的做法是后续将前端依赖改为本地锁定版本
+- 部署前应补充：
+  - 生产环境缓存策略
+  - 资源版本管理
+  - 基础可用性检查
+  - 控制台报错检查
+
+## 后续建议
+
+- 优先补一个正式的 `README.md`，解决当前说明文件编码异常的问题
+- 为 GCP 部署增加 `Dockerfile` 或静态托管配置文件
+- 补充最基本的发布说明与回滚步骤
