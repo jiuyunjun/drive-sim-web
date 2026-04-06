@@ -62,6 +62,7 @@ const mapScaleValueEl = document.getElementById('mapScaleValue');
 const mapPresetEl = document.getElementById('mapPreset');
 const uiEl = document.getElementById('ui');
 const uiToggleEl = document.getElementById('uiToggle');
+const quickViewButtons = Array.from(document.querySelectorAll('.quickViewBtn'));
 const setSpawnBtnEl = document.getElementById('setSpawnBtn');
 const mirrorHudEl = document.getElementById('mirrorHud');
 const mirrorLeftEl = document.getElementById('mirrorLeft');
@@ -880,6 +881,12 @@ function setUiCollapsed(collapsed) {
   saveSettings();
 }
 
+function syncQuickViewButtons() {
+  quickViewButtons.forEach((button) => {
+    button.classList.toggle('is-active', button.dataset.viewTarget === state.view);
+  });
+}
+
 function setTurnSignal(nextSignal) {
   const toggledSignal = state.turnSignal === nextSignal ? 'off' : nextSignal;
   state.turnSignal = toggledSignal;
@@ -954,6 +961,7 @@ function setView(nextView) {
 
   controls.enabled = isOrbit;
   viewModeEl.textContent = VIEW_LABELS[nextView];
+  syncQuickViewButtons();
   mirrorHudEl.style.display = isOrbit ? 'none' : (nextView === 'cockpit' ? 'block' : 'flex');
   mirrorHudEl.classList.toggle('cockpit-layout', nextView === 'cockpit');
   arrow.visible = !isOrbit && nextView !== 'cockpit';
@@ -1348,6 +1356,13 @@ setSpawnBtnEl.addEventListener('click', () => {
 });
 uiToggleEl.addEventListener('click', () => {
   setUiCollapsed(!state.uiCollapsed);
+});
+
+quickViewButtons.forEach((button) => {
+  button.addEventListener('click', () => {
+    const targetView = button.dataset.viewTarget;
+    if (targetView) setView(targetView);
+  });
 });
 
 function updateMapWidth(widthMeters) {

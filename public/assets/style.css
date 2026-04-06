@@ -82,6 +82,31 @@ body {
   display: none;
 }
 
+#collapsedQuickActions {
+  display: none;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+#ui.collapsed #collapsedQuickActions {
+  display: flex;
+}
+
+.quickViewBtn {
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  background: rgba(16, 20, 26, 0.78);
+  color: #fff;
+  padding: 8px 12px;
+  border-radius: 999px;
+  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.24);
+  backdrop-filter: blur(8px);
+}
+
+.quickViewBtn.is-active {
+  background: rgba(86, 190, 255, 0.24);
+  border-color: rgba(154, 221, 255, 0.72);
+}
+
 h1 {
   margin: 0 0 10px;
   font-size: 22px;
@@ -929,6 +954,16 @@ body.minimap-expanded .mobileClusterRight {
     display: inline-flex;
     position: relative;
     z-index: 16;
+  }
+
+  #collapsedQuickActions {
+    gap: 6px;
+    max-width: min(260px, calc(100vw - 20px));
+  }
+
+  .quickViewBtn {
+    padding: 7px 10px;
+    font-size: 12px;
   }
 
   .panel {
