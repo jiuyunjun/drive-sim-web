@@ -369,7 +369,7 @@ button:hover,
   border-radius: 24px;
   box-shadow: 0 24px 46px rgba(0, 0, 0, 0.34);
   cursor: crosshair;
-  z-index: 40;
+  z-index: 120;
 }
 
 #miniMap::after {
@@ -421,6 +421,11 @@ body.minimap-expanded #wheelHud,
 body.minimap-expanded #mirrorHud,
 body.minimap-expanded #ui {
   pointer-events: none;
+}
+
+body.minimap-expanded .mobileClusterRight {
+  opacity: 0.18;
+  z-index: 1;
 }
 
 #miniMap.expanded .miniMapLabel::after {
