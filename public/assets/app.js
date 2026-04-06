@@ -122,8 +122,6 @@ const audioState = {
   engineFilter: null,
 };
 const persistedSettings = loadSettings();
-let attemptedLandscapeLock = false;
-let attemptedFullscreen = false;
 let attemptedAddressBarHide = false;
 let availableMaps = [];
 
@@ -847,9 +845,7 @@ window.addEventListener('keydown', (event) => {
 window.addEventListener('keyup', (event) => deactivateKey(event.key.toLowerCase()));
 window.addEventListener('pointerdown', () => {
   void ensureAudioRunning();
-  void tryEnterFullscreen();
-  void tryLockLandscapeOrientation();
-  tryHideAddressBar();
+  void requestMobileImmersiveMode();
 }, { passive: true });
 
 function bindMobileControls() {
@@ -1010,9 +1006,6 @@ function isMobileLikeDevice() {
 }
 
 async function tryEnterFullscreen() {
-  if (attemptedFullscreen) return;
-  attemptedFullscreen = true;
-
   if (!isMobileLikeDevice()) return;
   if (document.fullscreenElement) return;
 
@@ -1039,9 +1032,6 @@ function updateOrientationUi() {
 }
 
 async function tryLockLandscapeOrientation() {
-  if (attemptedLandscapeLock) return;
-  attemptedLandscapeLock = true;
-
   if (!isMobileLikeDevice()) return;
   if (!screen.orientation?.lock) return;
 
@@ -1053,15 +1043,35 @@ async function tryLockLandscapeOrientation() {
 }
 
 function tryHideAddressBar() {
-  if (attemptedAddressBarHide) return;
-  attemptedAddressBarHide = true;
   if (!isMobileLikeDevice()) return;
+  if (attemptedAddressBarHide) {
+    window.scrollTo(0, 1);
+    return;
+  }
+  attemptedAddressBarHide = true;
   // CSS 已通过 html { overflow-y: auto; min-height: calc(100% + 2px) } 让文档可滚动 1px
   // body 用 position:fixed 保证游戏内容不跟着动
   // 这里触发实际滚动，让浏览器隐藏地址栏
   requestAnimationFrame(() => {
     window.scrollTo(0, 1);
+    window.setTimeout(() => window.scrollTo(0, 1), 120);
   });
+}
+
+async function requestMobileImmersiveMode() {
+  if (!isMobileLikeDevice()) return;
+  await tryEnterFullscreen();
+  await tryLockLandscapeOrientation();
+  tryHideAddressBar();
+}
+
+function registerServiceWorker() {
+  if (!('serviceWorker' in navigator)) return;
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('./sw.js').catch((error) => {
+      console.debug('Service worker registration failed:', error);
+    });
+  }, { once: true });
 }
 
 const state = {
@@ -1774,6 +1784,7 @@ mapPresetEl?.addEventListener('change', () => {
 bindMobileControls();
 updateOrientationUi();
 void tryLockLandscapeOrientation();
+registerServiceWorker();
 
 window.addEventListener('resize', () => {
   camera.aspect = window.innerWidth / window.innerHeight;

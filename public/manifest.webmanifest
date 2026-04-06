@@ -1,0 +1,11 @@
+{
+  "name": "Drive Sim Web",
+  "short_name": "DriveSim",
+  "lang": "zh-CN",
+  "start_url": "/",
+  "display": "fullscreen",
+  "orientation": "landscape",
+  "background_color": "#091118",
+  "theme_color": "#091118",
+  "description": "Mobile-friendly driving simulator with landscape-first fullscreen play."
+}
