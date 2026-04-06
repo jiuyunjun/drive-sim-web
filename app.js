@@ -68,6 +68,7 @@ const mirrorCenterEl = document.getElementById('mirrorCenter');
 const mirrorRightEl = document.getElementById('mirrorRight');
 const miniMapEl = document.getElementById('miniMap');
 const mobileControlsEl = document.getElementById('mobileControls');
+const rotateOverlayEl = document.getElementById('rotateOverlay');
 const signalStatusEl = document.getElementById('signalStatus');
 const signalStatusBoxEl = document.getElementById('signalStatusBox');
 const audioStatusEl = document.getElementById('audioStatus');
@@ -106,6 +107,7 @@ const audioState = {
   engineFilter: null,
 };
 const persistedSettings = loadSettings();
+let attemptedLandscapeLock = false;
 
 function getDefaultStartPose() {
   return {
@@ -622,6 +624,7 @@ window.addEventListener('keydown', (event) => {
 window.addEventListener('keyup', (event) => deactivateKey(event.key.toLowerCase()));
 window.addEventListener('pointerdown', () => {
   void ensureAudioRunning();
+  void tryLockLandscapeOrientation();
 }, { passive: true });
 
 function bindMobileControls() {
@@ -674,6 +677,32 @@ function bindMobileControls() {
       activeTouchPointers.delete(pointerId);
     });
   });
+}
+
+function isMobileLikeDevice() {
+  return window.matchMedia('(hover: none), (pointer: coarse), (max-width: 900px)').matches;
+}
+
+function updateOrientationUi() {
+  const isPortrait = window.innerHeight > window.innerWidth;
+  document.body.classList.toggle('mobile-portrait', isMobileLikeDevice() && isPortrait);
+  if (rotateOverlayEl) {
+    rotateOverlayEl.setAttribute('aria-hidden', document.body.classList.contains('mobile-portrait') ? 'false' : 'true');
+  }
+}
+
+async function tryLockLandscapeOrientation() {
+  if (attemptedLandscapeLock) return;
+  attemptedLandscapeLock = true;
+
+  if (!isMobileLikeDevice()) return;
+  if (!screen.orientation?.lock) return;
+
+  try {
+    await screen.orientation.lock('landscape');
+  } catch (error) {
+    console.debug('Landscape orientation lock unavailable:', error);
+  }
 }
 
 const state = {
@@ -1201,12 +1230,17 @@ document.getElementById('mapInput').addEventListener('change', (event) => {
 });
 
 bindMobileControls();
+updateOrientationUi();
+void tryLockLandscapeOrientation();
 
 window.addEventListener('resize', () => {
   camera.aspect = window.innerWidth / window.innerHeight;
   camera.updateProjectionMatrix();
   renderer.setSize(window.innerWidth, window.innerHeight);
+  updateOrientationUi();
 });
+
+window.addEventListener('orientationchange', updateOrientationUi);
 
 setAudioStatus(audioState.supported ? 'pending' : 'error', audioState.supported ? '待启用' : '不可用');
 syncMapControls(persistedSettings?.mapWidth ?? groundSize.width);
