@@ -104,6 +104,32 @@
     <span class="miniMapLabel">小地图</span>
   </div>
 
+  <div id="mobileControls" aria-label="移动端驾驶控制">
+    <div class="mobileCluster mobileClusterLeft">
+      <div class="mobilePad">
+        <button class="mobileControl" data-hold-key="a" aria-label="左转">左</button>
+        <button class="mobileControl mobileControlLarge" data-hold-key="w" aria-label="前进">前</button>
+        <button class="mobileControl" data-hold-key="d" aria-label="右转">右</button>
+      </div>
+      <div class="mobileAuxRow">
+        <button class="mobileControl" data-tap-action="signal-left" aria-label="左转向灯">左灯</button>
+        <button class="mobileControl" data-hold-key=" " aria-label="手刹">刹</button>
+        <button class="mobileControl" data-tap-action="signal-right" aria-label="右转向灯">右灯</button>
+      </div>
+    </div>
+
+    <div class="mobileCluster mobileClusterRight">
+      <div class="mobileDriveStack">
+        <button class="mobileControl mobileControlTall" data-hold-key="w" aria-label="油门">油门</button>
+        <button class="mobileControl" data-hold-key="s" aria-label="倒车">倒车</button>
+      </div>
+      <div class="mobileAuxRow mobileAuxRowRight">
+        <button class="mobileControl" data-tap-action="view" aria-label="切换视角">视角</button>
+        <button class="mobileControl" data-tap-action="reset" aria-label="重置车辆">重置</button>
+      </div>
+    </div>
+  </div>
+
   <canvas id="app"></canvas>
   <script type="module" src="./app.js"></script>
 </body>

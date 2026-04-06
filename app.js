@@ -67,12 +67,14 @@ const mirrorLeftEl = document.getElementById('mirrorLeft');
 const mirrorCenterEl = document.getElementById('mirrorCenter');
 const mirrorRightEl = document.getElementById('mirrorRight');
 const miniMapEl = document.getElementById('miniMap');
+const mobileControlsEl = document.getElementById('mobileControls');
 const signalStatusEl = document.getElementById('signalStatus');
 const signalStatusBoxEl = document.getElementById('signalStatusBox');
 const audioStatusEl = document.getElementById('audioStatus');
 const audioStatusBoxEl = document.getElementById('audioStatusBox');
 const steerAngleEl = document.getElementById('steerAngle');
 const wheelHudDialEl = document.getElementById('wheelHudDial');
+const mobileControlButtons = Array.from(document.querySelectorAll('#mobileControls .mobileControl'));
 
 const MAP_WIDTH_MIN = Number(mapScaleEl.min) || 10;
 const MAP_WIDTH_MAX = Number(mapScaleEl.max) || 1000;
@@ -588,12 +590,28 @@ car.add(arrow);
 
 const browserControlKeys = new Set([' ', 'arrowup', 'arrowdown', 'arrowleft', 'arrowright']);
 const keys = new Set();
+const activeTouchPointers = new Map();
+
+function activateKey(key) {
+  keys.add(key);
+}
+
+function deactivateKey(key) {
+  keys.delete(key);
+}
+
+function handleDiscreteControlAction(action) {
+  if (action === 'reset') resetCar();
+  if (action === 'view') toggleView();
+  if (action === 'signal-left') setTurnSignal('left');
+  if (action === 'signal-right') setTurnSignal('right');
+}
 
 window.addEventListener('keydown', (event) => {
   const key = event.key.toLowerCase();
   if (browserControlKeys.has(key)) event.preventDefault();
   void ensureAudioRunning();
-  keys.add(key);
+  activateKey(key);
   if (event.repeat) return;
   if (key === 'o') resetCar();
   if (key === 'v') toggleView();
@@ -601,10 +619,62 @@ window.addEventListener('keydown', (event) => {
   if (key === 'e') setTurnSignal('right');
 });
 
-window.addEventListener('keyup', (event) => keys.delete(event.key.toLowerCase()));
+window.addEventListener('keyup', (event) => deactivateKey(event.key.toLowerCase()));
 window.addEventListener('pointerdown', () => {
   void ensureAudioRunning();
 }, { passive: true });
+
+function bindMobileControls() {
+  if (!mobileControlsEl) return;
+
+  const releasePointer = (pointerId) => {
+    const binding = activeTouchPointers.get(pointerId);
+    if (!binding) return;
+    if (binding.key) deactivateKey(binding.key);
+    binding.button.classList.remove('active');
+    activeTouchPointers.delete(pointerId);
+  };
+
+  mobileControlButtons.forEach((button) => {
+    const holdKey = button.dataset.holdKey;
+    const tapAction = button.dataset.tapAction;
+
+    button.addEventListener('pointerdown', (event) => {
+      event.preventDefault();
+      void ensureAudioRunning();
+
+      if (holdKey) {
+        activateKey(holdKey);
+        activeTouchPointers.set(event.pointerId, { key: holdKey, button });
+        button.classList.add('active');
+        button.setPointerCapture?.(event.pointerId);
+        return;
+      }
+
+      button.classList.add('active');
+      window.setTimeout(() => button.classList.remove('active'), 140);
+      if (tapAction) handleDiscreteControlAction(tapAction);
+    });
+
+    button.addEventListener('pointerup', (event) => {
+      if (holdKey) releasePointer(event.pointerId);
+    });
+    button.addEventListener('pointercancel', (event) => {
+      if (holdKey) releasePointer(event.pointerId);
+    });
+    button.addEventListener('lostpointercapture', (event) => {
+      if (holdKey) releasePointer(event.pointerId);
+    });
+  });
+
+  window.addEventListener('blur', () => {
+    activeTouchPointers.forEach((binding, pointerId) => {
+      deactivateKey(binding.key);
+      binding.button.classList.remove('active');
+      activeTouchPointers.delete(pointerId);
+    });
+  });
+}
 
 const state = {
   speed: 0,
@@ -1129,6 +1199,8 @@ document.getElementById('mapInput').addEventListener('change', (event) => {
   const file = event.target.files?.[0];
   if (file) handleMapUpload(file);
 });
+
+bindMobileControls();
 
 window.addEventListener('resize', () => {
   camera.aspect = window.innerWidth / window.innerHeight;
