@@ -1,4 +1,4 @@
-const CACHE_NAME = 'drive-sim-shell-v5';
+const CACHE_NAME = 'drive-sim-shell-v7';
 const APP_SHELL = [
   '/',
   '/index.html',
