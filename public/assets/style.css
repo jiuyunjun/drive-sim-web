@@ -469,12 +469,7 @@ body.minimap-expanded .mobileClusterRight {
 .mobileThrottle,
 .mobileBrake,
 .mobileReverse {
-  min-width: 64px;
   min-height: 72px;
-}
-
-.mobileThrottleLarge {
-  min-height: 96px;
 }
 
 .mobileThrottle {
@@ -485,12 +480,85 @@ body.minimap-expanded .mobileClusterRight {
   background: linear-gradient(180deg, rgba(164, 58, 58, 0.84), rgba(100, 24, 24, 0.88));
 }
 
+.mobileBrakePrimary {
+  min-height: 90px;
+}
+
 .mobileReverse {
   background: linear-gradient(180deg, rgba(62, 92, 172, 0.82), rgba(28, 48, 100, 0.88));
 }
 
-.mobileSignal {
-  min-width: 56px;
+/* 转向灯拨杆 */
+.mobileSignalLever {
+  width: 100%;
+  height: 52px;
+  position: relative;
+  touch-action: none;
+  user-select: none;
+  -webkit-user-select: none;
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  border-radius: 14px;
+  background: rgba(9, 17, 24, 0.68);
+  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.22);
+  backdrop-filter: blur(10px);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: space-between;
+  padding: 7px 0;
+  overflow: hidden;
+}
+
+.mobileSignalLever.dragging {
+  border-color: rgba(255, 210, 80, 0.5);
+  background: rgba(255, 190, 50, 0.1);
+}
+
+.mobileSignalLever[data-signal="left"] {
+  border-color: rgba(255, 210, 80, 0.7);
+}
+
+.mobileSignalLever[data-signal="right"] {
+  border-color: rgba(255, 210, 80, 0.7);
+}
+
+.signalLeverKnob {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  background: rgba(200, 215, 228, 0.88);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.35);
+  pointer-events: none;
+  will-change: transform;
+}
+
+.mobileSignalLever.dragging .signalLeverKnob {
+  background: rgba(255, 215, 80, 0.9);
+}
+
+.mobileSignalLever[data-signal="left"] .signalLeverKnob,
+.mobileSignalLever[data-signal="right"] .signalLeverKnob {
+  background: rgba(255, 210, 80, 0.8);
+}
+
+.signalLeverLabel {
+  font-size: 10px;
+  color: rgba(255, 255, 255, 0.32);
+  pointer-events: none;
+  line-height: 1;
+  z-index: 1;
+}
+
+.mobileSignalLever[data-signal="left"] .signalLeverLabelTop {
+  color: rgba(255, 210, 80, 0.95);
+}
+
+.mobileSignalLever[data-signal="right"] .signalLeverLabelBottom {
+  color: rgba(255, 210, 80, 0.95);
 }
 
 .mobileSteerZone {
@@ -750,12 +818,13 @@ body.minimap-expanded .mobileClusterRight {
     justify-content: flex-end;
   }
 
-  .mobileClusterLeft,
-  .mobileClusterRight {
+  .mobileClusterLeft {
     width: min(26vw, 160px);
+    align-items: stretch;
   }
 
-  .mobileClusterLeft {
+  .mobileClusterRight {
+    width: min(34vw, 200px);
     align-items: stretch;
   }
 
@@ -767,17 +836,27 @@ body.minimap-expanded .mobileClusterRight {
     pointer-events: auto;
   }
 
-  .mobileClusterRight {
-    align-items: flex-end;
-  }
-
   .mobileDriveStack {
     width: 100%;
     max-width: 72px;
   }
 
+  /* 右侧：横排 后退|刹车|油门 */
   .mobileDriveStackRight {
-    max-width: 78px;
+    flex-direction: row;
+    max-width: none;
+    align-items: flex-end;
+  }
+
+  .mobileDriveStackRight .mobileThrottle,
+  .mobileDriveStackRight .mobileReverse {
+    flex: 1;
+    min-width: 0;
+  }
+
+  .mobileDriveStackRight .mobileBrakePrimary {
+    flex: 1.4;
+    min-width: 0;
   }
 
   .mobileSteerPad {
@@ -878,16 +957,19 @@ body.minimap-expanded .mobileClusterRight {
   .mobileThrottle,
   .mobileBrake,
   .mobileReverse {
-    min-width: 58px;
-    min-height: 62px;
+    min-height: 58px;
   }
 
-  .mobileThrottleLarge {
-    min-height: 82px;
+  .mobileBrakePrimary {
+    min-height: 80px;
   }
 
-  .mobileSignal {
-    min-width: 52px;
+  .mobileSignalLever {
+    height: 46px;
+  }
+
+  .mobileClusterRight {
+    width: min(36vw, 190px);
   }
 
   .mobileSteerZone {
@@ -936,7 +1018,7 @@ body.minimap-expanded .mobileClusterRight {
     min-height: 76px;
   }
 
-  .mobileThrottleLarge {
+  .mobileBrakePrimary {
     min-height: 72px;
   }
 }

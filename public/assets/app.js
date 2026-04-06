@@ -73,6 +73,8 @@ const mobileControlsEl = document.getElementById('mobileControls');
 const rotateOverlayEl = document.getElementById('rotateOverlay');
 const mobileSteerZoneEl = document.getElementById('mobileSteerZone');
 const mobileSteerIndicatorEl = document.getElementById('mobileSteerIndicator');
+const signalLeverEl = document.getElementById('signalLever');
+const signalLeverKnobEl = document.getElementById('signalLeverKnob');
 const loadingOverlayEl = document.getElementById('loadingOverlay');
 const signalStatusEl = document.getElementById('signalStatus');
 const signalStatusBoxEl = document.getElementById('signalStatusBox');
@@ -717,6 +719,57 @@ function bindMobileControls() {
     mobileSteerZoneEl.addEventListener('lostpointercapture', endSteer);
   }
 
+  // 转向灯拨杆
+  if (signalLeverEl && signalLeverKnobEl) {
+    let leverPointerId = null;
+    let leverStartY = 0;
+    let leverToggled = false;
+    const LEVER_THRESHOLD = 14; // px，超过即触发
+    const LEVER_MAX = 20;       // 旋钮最大偏移 px
+
+    signalLeverEl.addEventListener('pointerdown', (e) => {
+      e.preventDefault();
+      void ensureAudioRunning();
+      leverPointerId = e.pointerId;
+      leverStartY = e.clientY;
+      leverToggled = false;
+      signalLeverEl.setPointerCapture(e.pointerId);
+      signalLeverEl.classList.add('dragging');
+    });
+
+    signalLeverEl.addEventListener('pointermove', (e) => {
+      if (e.pointerId !== leverPointerId) return;
+      const dy = e.clientY - leverStartY;
+      const clamped = Math.max(-LEVER_MAX, Math.min(LEVER_MAX, dy));
+      signalLeverKnobEl.style.transform = `translate(-50%, calc(-50% + ${clamped}px))`;
+
+      if (!leverToggled) {
+        if (dy < -LEVER_THRESHOLD) {
+          leverToggled = true;
+          setTurnSignal('left');
+          navigator.vibrate?.(15);
+        } else if (dy > LEVER_THRESHOLD) {
+          leverToggled = true;
+          setTurnSignal('right');
+          navigator.vibrate?.(15);
+        }
+      }
+    });
+
+    const endLever = (e) => {
+      if (e.pointerId !== leverPointerId) return;
+      leverPointerId = null;
+      signalLeverEl.classList.remove('dragging');
+      // 旋钮弹回中位（加 CSS transition 让它弹性回弹）
+      signalLeverKnobEl.style.transition = 'transform 0.22s cubic-bezier(0.34, 1.56, 0.64, 1)';
+      signalLeverKnobEl.style.transform = 'translate(-50%, -50%)';
+      setTimeout(() => { signalLeverKnobEl.style.transition = ''; }, 250);
+    };
+    signalLeverEl.addEventListener('pointerup', endLever);
+    signalLeverEl.addEventListener('pointercancel', endLever);
+    signalLeverEl.addEventListener('lostpointercapture', endLever);
+  }
+
   window.addEventListener('blur', () => {
     activeTouchPointers.forEach((binding, pointerId) => {
       deactivateKey(binding.key);
@@ -829,6 +882,8 @@ function setTurnSignal(nextSignal) {
   updateSignalStatus();
   updateTurnSignalVisuals();
   playIndicatorClick(toggledSignal !== 'off');
+  // 同步拨杆视觉状态
+  if (signalLeverEl) signalLeverEl.dataset.signal = toggledSignal;
 }
 
 function updateTurnSignal(dt) {

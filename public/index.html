@@ -126,21 +126,23 @@
     <div class="mobileCluster mobileClusterCenter">
       <div class="mobileAuxRow mobileAuxRowCenter mobileBottomRow">
         <button class="mobileControl" data-tap-action="view" aria-label="切换视角">视角</button>
-        <button class="mobileControl mobileHandbrake" data-hold-key=" " aria-label="手刹">手刹</button>
         <div class="mobileWheelSlot" aria-hidden="true"></div>
         <button class="mobileControl" data-tap-action="reset" aria-label="重置车辆">重置</button>
+        <button class="mobileControl mobileHandbrake" data-hold-key=" " aria-label="手刹">手刹</button>
       </div>
     </div>
 
     <div class="mobileCluster mobileClusterRight">
-      <div class="mobileAuxRow">
-        <button class="mobileControl mobileSignal" data-tap-action="signal-left" aria-label="左转向灯">左灯</button>
-        <button class="mobileControl mobileSignal" data-tap-action="signal-right" aria-label="右转向灯">右灯</button>
+      <div id="signalLever" class="mobileSignalLever" role="slider"
+           aria-label="转向灯拨杆：上拨左灯，下拨右灯" aria-valuemin="-1" aria-valuemax="1" aria-valuenow="0">
+        <span class="signalLeverLabel signalLeverLabelTop">↑ 左灯</span>
+        <div class="signalLeverKnob" id="signalLeverKnob"></div>
+        <span class="signalLeverLabel signalLeverLabelBottom">右灯 ↓</span>
       </div>
       <div class="mobileDriveStack mobileDriveStackRight">
-        <button class="mobileControl mobileControlTall mobileThrottle mobileThrottleLarge" data-hold-key="w" aria-label="油门">油门</button>
-        <button class="mobileControl mobileControlTall mobileBrake" data-hold-key=" " aria-label="刹车">刹车</button>
         <button class="mobileControl mobileControlTall mobileReverse" data-hold-key="s" aria-label="后退">后退</button>
+        <button class="mobileControl mobileControlTall mobileBrake mobileBrakePrimary" data-hold-key=" " aria-label="刹车">刹车</button>
+        <button class="mobileControl mobileControlTall mobileThrottle" data-hold-key="w" aria-label="油门">油门</button>
       </div>
     </div>
   </div>
