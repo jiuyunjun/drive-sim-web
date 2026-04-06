@@ -495,7 +495,7 @@ body.minimap-expanded .mobileClusterRight {
 
 /* 转向灯拨杆 */
 .mobileSignalLever {
-  width: 100%;
+  width: 64px;
   height: 52px;
   position: relative;
   touch-action: none;
@@ -629,7 +629,7 @@ body.minimap-expanded .mobileClusterRight {
 }
 
 .mobileViewResetStack {
-  flex-direction: column;
+  flex-direction: row;
   gap: 8px;
 }
 
@@ -868,6 +868,7 @@ body.minimap-expanded .mobileClusterRight {
 
   .mobileViewResetStack {
     justify-content: flex-end;
+    align-items: flex-end;
   }
 
   .mobileSteerPad {
@@ -980,6 +981,7 @@ body.minimap-expanded .mobileClusterRight {
   }
 
   .mobileSignalLever {
+    width: 58px;
     height: 44px;
   }
 
