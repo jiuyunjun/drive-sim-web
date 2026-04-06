@@ -12,6 +12,8 @@ const scene = new THREE.Scene();
 scene.background = new THREE.Color(0x9fd0ff);
 scene.fog = new THREE.Fog(0x9fd0ff, 90, 220);
 
+const DEFAULT_CAMERA_FOV = 60;
+const COCKPIT_CAMERA_FOV = 78;
 const camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.05, 1000);
 camera.position.set(0, 18, 20);
 const miniMapCamera = new THREE.OrthographicCamera(-24, 24, 24, -24, 0.1, 300);
@@ -1132,15 +1134,15 @@ function getViewPose(view) {
   const { forward, right } = getVehicleAxes();
 
   if (view === 'cockpit') {
-    // Driver eye position: seated, slightly left of center, behind windshield
+    // Keep the eye point slightly raised and forward to avoid clipping into the dash.
     const position = car.position.clone()
-      .add(new THREE.Vector3(0, 1.52, 0))
-      .add(forward.clone().multiplyScalar(0.15))
-      .add(right.clone().multiplyScalar(-0.36));
+      .add(new THREE.Vector3(0, 1.6, 0))
+      .add(forward.clone().multiplyScalar(0.28))
+      .add(right.clone().multiplyScalar(-0.3));
     const lookTarget = position.clone()
-      .add(forward.clone().multiplyScalar(22))
-      .add(right.clone().multiplyScalar(-0.06))
-      .add(new THREE.Vector3(0, -0.3, 0));
+      .add(forward.clone().multiplyScalar(28))
+      .add(right.clone().multiplyScalar(-0.04))
+      .add(new THREE.Vector3(0, -0.12, 0));
     return { position, lookTarget };
   }
 
@@ -1176,7 +1178,7 @@ function setCockpitBodyVisibility(isVisible) {
 
   // Interior parts: always visible (seen from cockpit)
   dashboard.visible = true;
-  instrumentCluster.visible = true;
+  instrumentCluster.visible = isVisible;
   centerScreen.visible = true;
   steeringWheel.visible = true;
   windshield.visible = true;
@@ -1193,6 +1195,8 @@ function setCockpitBodyVisibility(isVisible) {
 function setView(nextView) {
   state.view = nextView;
   const isOrbit = nextView === 'orbit';
+  camera.fov = nextView === 'cockpit' ? COCKPIT_CAMERA_FOV : DEFAULT_CAMERA_FOV;
+  camera.updateProjectionMatrix();
 
   controls.enabled = isOrbit;
   viewModeEl.textContent = VIEW_LABELS[nextView];
