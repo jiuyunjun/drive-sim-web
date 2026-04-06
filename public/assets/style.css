@@ -539,13 +539,55 @@ body.minimap-expanded .mobileClusterRight {
   min-width: 56px;
 }
 
-.mobileSteerPad {
-  gap: 8px;
+.mobileSteerZone {
+  width: 100%;
+  min-height: 110px;
+  position: relative;
+  touch-action: none;
+  user-select: none;
+  -webkit-user-select: none;
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  border-radius: 15px;
+  background: rgba(9, 17, 24, 0.68);
+  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.22);
+  backdrop-filter: blur(10px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
 }
 
-.mobileSteer {
-  min-width: 62px;
-  min-height: 62px;
+.mobileSteerZone.active {
+  background: rgba(86, 190, 255, 0.18);
+  border-color: rgba(154, 221, 255, 0.72);
+}
+
+.mobileSteerIndicator {
+  position: absolute;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: rgba(154, 221, 255, 0.85);
+  box-shadow: 0 0 8px rgba(86, 190, 255, 0.6);
+  pointer-events: none;
+  transition: background 0.1s;
+  will-change: transform;
+}
+
+.mobileSteerZone.active .mobileSteerIndicator {
+  background: rgba(86, 190, 255, 1);
+}
+
+.mobileSteerHint {
+  font-size: 11px;
+  color: rgba(255, 255, 255, 0.28);
+  pointer-events: none;
+  letter-spacing: 0.04em;
+}
+
+.mobileHandbrake {
+  background: linear-gradient(180deg, rgba(160, 120, 30, 0.82), rgba(90, 60, 10, 0.88));
+  min-width: 56px;
 }
 
 .mobileWheelSlot {
@@ -744,7 +786,7 @@ body.minimap-expanded .mobileClusterRight {
   }
 
   .mobileClusterLeft {
-    align-items: flex-start;
+    align-items: stretch;
   }
 
   .mobileClusterCenter {
@@ -878,9 +920,8 @@ body.minimap-expanded .mobileClusterRight {
     min-width: 52px;
   }
 
-  .mobileSteer {
-    min-width: 56px;
-    min-height: 56px;
+  .mobileSteerZone {
+    min-height: 90px;
   }
 
   .mobileWheelSlot {
@@ -912,5 +953,20 @@ body.minimap-expanded .mobileClusterRight {
 
   .mobileClusterCenter {
     width: auto;
+  }
+}
+
+@media (max-width: 420px) {
+  /* 极小屏：方向盘 HUD 与控制区重叠，直接隐藏 */
+  #wheelHud {
+    display: none !important;
+  }
+
+  .mobileSteerZone {
+    min-height: 76px;
+  }
+
+  .mobileThrottleLarge {
+    min-height: 72px;
   }
 }
