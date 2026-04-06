@@ -87,11 +87,7 @@ const MAX_STEER = 0.6;
 const STEERING_WHEEL_MAX = Math.PI * 1.35;
 const AudioContextClass = window.AudioContext || window.webkitAudioContext;
 const SETTINGS_STORAGE_KEY = 'driveSimSettingsV2';
-const BUILTIN_MAPS = {
-  generated: { label: '练习场', kind: 'generated' },
-  map2: { label: '城市地图', src: new URL('./maps/map2.webp', import.meta.url).href },
-  bike: { label: '骑行地图', src: new URL('./maps/bike-map.webp', import.meta.url).href },
-};
+const MAPS_BASE_URL = new URL('./maps/', import.meta.url);
 const VIEW_LABELS = {
   follow: '跟车视角',
   cockpit: '第一人称',
@@ -114,6 +110,7 @@ const audioState = {
 };
 const persistedSettings = loadSettings();
 let attemptedLandscapeLock = false;
+let availableMaps = [];
 
 function getDefaultStartPose() {
   return {
@@ -147,11 +144,9 @@ function loadSettings() {
 
 function saveSettings() {
   const settings = {
-    mapWidth: Math.round(groundSize.width),
     maxSpeed: state.maxSpeed,
     autoCenterSteering: state.autoCenterSteering,
     uiCollapsed: state.uiCollapsed,
-    startPose: state.startPose,
     selectedMapId: state.selectedMapId,
     mapImageDataUrl: state.mapImageDataUrl,
   };
@@ -610,6 +605,23 @@ function syncMapPresetControl(mapId) {
   mapPresetEl.value = mapId;
 }
 
+function populateMapPresetOptions() {
+  if (!mapPresetEl) return;
+
+  mapPresetEl.innerHTML = '';
+  availableMaps.forEach((mapName) => {
+    const option = document.createElement('option');
+    option.value = mapName;
+    option.textContent = mapName;
+    mapPresetEl.append(option);
+  });
+
+  const customOption = document.createElement('option');
+  customOption.value = 'custom';
+  customOption.textContent = 'custom';
+  mapPresetEl.append(customOption);
+}
+
 function deactivateKey(key) {
   keys.delete(key);
 }
@@ -731,9 +743,9 @@ const state = {
   throttleInput: 0,
   reverseInput: 0,
   autoCenterSteering: Boolean(persistedSettings?.autoCenterSteering),
-  selectedMapId: persistedSettings?.selectedMapId || 'generated',
+  selectedMapId: persistedSettings?.selectedMapId || '',
   mapImageDataUrl: persistedSettings?.mapImageDataUrl || null,
-  startPose: sanitizeStartPose(persistedSettings?.startPose),
+  startPose: getDefaultStartPose(),
   miniMapExpanded: false,
 };
 
@@ -1227,20 +1239,42 @@ function applyMapSource(src, shouldReset = true) {
   img.src = src;
 }
 
-function loadBuiltInMap(mapId, shouldReset = true) {
-  const mapConfig = BUILTIN_MAPS[mapId] || BUILTIN_MAPS.generated;
-  state.selectedMapId = Object.hasOwn(BUILTIN_MAPS, mapId) ? mapId : 'generated';
-  syncMapPresetControl(state.selectedMapId);
+async function fetchJson(url) {
+  const response = await fetch(url);
+  if (!response.ok) {
+    throw new Error(`Failed to fetch ${url}: ${response.status}`);
+  }
+  return response.json();
+}
 
-  if (mapConfig.kind === 'generated') {
-    createDefaultGround();
-    if (shouldReset) resetCar();
-    else placeCarAtStart();
-    saveSettings();
-    return;
+async function loadMapCatalog() {
+  const catalogUrl = new URL('index.json', MAPS_BASE_URL);
+  const catalog = await fetchJson(catalogUrl);
+  availableMaps = Array.isArray(catalog.maps) ? catalog.maps : [];
+  populateMapPresetOptions();
+
+  if (!availableMaps.length) {
+    throw new Error('No maps declared in maps/index.json');
   }
 
-  applyMapSource(mapConfig.src, shouldReset);
+  if (!availableMaps.includes(state.selectedMapId)) {
+    state.selectedMapId = availableMaps[0];
+  }
+}
+
+async function loadBuiltInMap(mapId, shouldReset = true) {
+  const resolvedMapId = availableMaps.includes(mapId) ? mapId : availableMaps[0];
+  const configUrl = new URL(`${resolvedMapId}.json`, MAPS_BASE_URL);
+  const mapConfig = await fetchJson(configUrl);
+
+  state.selectedMapId = resolvedMapId;
+  state.mapImageDataUrl = null;
+  state.startPose = sanitizeStartPose(mapConfig.startPose);
+  syncMapPresetControl(resolvedMapId);
+  syncMapControls(mapConfig.mapWidth ?? groundSize.width);
+
+  applyMapSource(new URL(mapConfig.image, MAPS_BASE_URL).href, shouldReset);
+  saveSettings();
 }
 
 function handleMapUpload(file) {
@@ -1273,8 +1307,7 @@ mapPresetEl?.addEventListener('change', () => {
     return;
   }
 
-  state.mapImageDataUrl = null;
-  loadBuiltInMap(selected);
+  void loadBuiltInMap(selected);
 });
 
 bindMobileControls();
@@ -1291,18 +1324,29 @@ window.addEventListener('resize', () => {
 window.addEventListener('orientationchange', updateOrientationUi);
 
 setAudioStatus(audioState.supported ? 'pending' : 'error', audioState.supported ? '待启用' : '不可用');
-syncMapControls(persistedSettings?.mapWidth ?? groundSize.width);
-syncMapPresetControl(state.selectedMapId);
 syncMaxSpeedControl(persistedSettings?.maxSpeed ?? state.maxSpeed);
 syncAutoCenterControl(state.autoCenterSteering);
 state.maxSpeed = Number(maxSpeedEl.value);
 
-if (state.selectedMapId === 'custom' && state.mapImageDataUrl) applyMapSource(state.mapImageDataUrl, false);
-else loadBuiltInMap(state.selectedMapId, false);
-
 resetCar();
 setView('follow');
 setUiCollapsed(Boolean(persistedSettings?.uiCollapsed));
+
+async function initializeMaps() {
+  try {
+    await loadMapCatalog();
+    if (state.selectedMapId === 'custom' && state.mapImageDataUrl) {
+      syncMapPresetControl('custom');
+      applyMapSource(state.mapImageDataUrl, false);
+      return;
+    }
+    await loadBuiltInMap(state.selectedMapId, false);
+  } catch (error) {
+    console.error('Map initialization failed:', error);
+    createDefaultGround();
+    syncMapControls(groundSize.width);
+  }
+}
 
 const clock = new THREE.Clock();
 function animate() {
@@ -1320,4 +1364,5 @@ function animate() {
   requestAnimationFrame(animate);
 }
 
+void initializeMaps();
 animate();
