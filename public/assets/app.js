@@ -73,6 +73,7 @@ const mobileControlsEl = document.getElementById('mobileControls');
 const rotateOverlayEl = document.getElementById('rotateOverlay');
 const mobileSteerZoneEl = document.getElementById('mobileSteerZone');
 const mobileSteerIndicatorEl = document.getElementById('mobileSteerIndicator');
+const loadingOverlayEl = document.getElementById('loadingOverlay');
 const signalStatusEl = document.getElementById('signalStatus');
 const signalStatusBoxEl = document.getElementById('signalStatusBox');
 const audioStatusEl = document.getElementById('audioStatus');
@@ -598,6 +599,14 @@ function deactivateKey(key) {
   keys.delete(key);
 }
 
+function showLoading() {
+  loadingOverlayEl?.classList.add('visible');
+}
+
+function hideLoading() {
+  loadingOverlayEl?.classList.remove('visible');
+}
+
 function handleDiscreteControlAction(action) {
   if (action === 'reset') resetCar();
   if (action === 'view') toggleView();
@@ -772,15 +781,12 @@ function tryHideAddressBar() {
   if (attemptedAddressBarHide) return;
   attemptedAddressBarHide = true;
   if (!isMobileLikeDevice()) return;
-  // 浏览器地址栏在有可滚动内容时会自动收起，临时放开 overflow 触发一次滚动
-  const html = document.documentElement;
-  html.style.overflow = 'auto';
-  html.style.height = (window.screen.height + 1) + 'px';
-  window.scrollTo(0, 1);
-  setTimeout(() => {
-    html.style.overflow = '';
-    html.style.height = '';
-  }, 400);
+  // CSS 已通过 html { overflow-y: auto; min-height: calc(100% + 2px) } 让文档可滚动 1px
+  // body 用 position:fixed 保证游戏内容不跟着动
+  // 这里触发实际滚动，让浏览器隐藏地址栏
+  requestAnimationFrame(() => {
+    window.scrollTo(0, 1);
+  });
 }
 
 const state = {
@@ -1321,6 +1327,7 @@ autoCenterSteeringEl.addEventListener('change', () => {
 });
 
 function applyMapSource(src, shouldReset = true) {
+  showLoading();
   const img = new Image();
   img.onload = () => {
     const requestedWidth = Number.isFinite(Number(mapWidthEl.value))
@@ -1332,6 +1339,7 @@ function applyMapSource(src, shouldReset = true) {
       src,
       (texture) => {
         applyGroundTexture(texture, requestedWidth, heightMeters);
+        hideLoading();
         if (shouldReset) {
           resetCar();
         } else {
@@ -1346,6 +1354,7 @@ function applyMapSource(src, shouldReset = true) {
       }
     );
   };
+  img.onerror = () => hideLoading();
   img.src = src;
 }
 
