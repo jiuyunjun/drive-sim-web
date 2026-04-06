@@ -13,6 +13,8 @@
 - 每次独立修改单独提交，提交信息要能说明改动目的
 - 不要无理由重命名现有入口文件
 - 未经确认，不要把资源改成需要后端服务才能运行的形态
+- 站点必须保持中文 / English / 日本語 三语 i18n；用户访问根目录 `/` 或 `/index.html` 时，必须按浏览器语言自动分流到 `/zh/index.html`、`/en/index.html` 或 `/ja/index.html`
+- 以后新增或修改用户可见文案时，三种语言入口与运行时文案都要同步更新，不能只改单一语言页面
 
 ## UTF-8 读写要求
 
@@ -50,8 +52,10 @@ http://localhost:8000/
 
 ## 代码结构
 
-- `public/index.html`：页面结构、UI 面板、`importmap`
+- `public/index.html`：根目录语言分流入口
+- `public/zh/index.html`、`public/en/index.html`、`public/ja/index.html`：三种语言入口页面
 - `public/assets/app.js`：Three.js 场景、车辆控制、音效、后视镜、小地图、设置持久化
+- `public/assets/i18n.js`：三语文案与页面翻译逻辑
 - `public/assets/style.css`：界面样式
 - `public/assets/maps/`：内置地图资源与同名 JSON 配置
 - `start.bat`：本地启动辅助脚本

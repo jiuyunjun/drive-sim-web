@@ -1,13 +1,20 @@
-const CACHE_NAME = 'drive-sim-shell-v7';
+const CACHE_NAME = 'drive-sim-shell-v10';
 const APP_SHELL = [
   '/',
   '/index.html',
+  '/zh/index.html',
+  '/en/index.html',
+  '/ja/index.html',
   '/assets/style.css',
   '/assets/app.js',
+  '/assets/i18n.js',
   '/assets/icons/icon-192.png',
   '/assets/icons/icon-512.png',
   '/assets/icons/apple-touch-icon.png',
   '/manifest.webmanifest',
+  '/zh/manifest.webmanifest',
+  '/en/manifest.webmanifest',
+  '/ja/manifest.webmanifest',
 ];
 
 self.addEventListener('install', (event) => {

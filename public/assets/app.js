@@ -1,5 +1,8 @@
 import * as THREE from 'three';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+import { applyPageTranslations, t } from './i18n.js';
+
+applyPageTranslations(document);
 
 const canvas = document.getElementById('app');
 const renderer = new THREE.WebGLRenderer({ canvas, antialias: true });
@@ -118,9 +121,9 @@ const ACCEL_CURVE_CHART = Object.freeze({
   samples: 32,
 });
 const VIEW_LABELS = {
-  follow: '跟车视角',
-  cockpit: '第一人称',
-  orbit: '自由观察',
+  follow: t('views.follow'),
+  cockpit: t('views.cockpit'),
+  orbit: t('views.orbit'),
 };
 
 let groundMesh;
@@ -277,9 +280,9 @@ function syncVehicleTypeControl(vehicleType) {
 
 function updateSignalStatus() {
   const labels = {
-    off: '关闭',
-    left: '左转',
-    right: '右转',
+    off: t('signal.off'),
+    left: t('signal.left'),
+    right: t('signal.right'),
   };
   signalStatusEl.textContent = labels[state.turnSignal];
   signalStatusBoxEl.dataset.signal = state.turnSignal;
@@ -340,7 +343,7 @@ function setupAudioGraph() {
 
 async function ensureAudioRunning() {
   if (!audioState.supported) {
-    setAudioStatus('error', '不可用');
+    setAudioStatus('error', t('audio.unavailable'));
     return false;
   }
 
@@ -349,11 +352,11 @@ async function ensureAudioRunning() {
     if (context.state !== 'running') {
       await context.resume();
     }
-    setAudioStatus('on', '已开启');
+    setAudioStatus('on', t('audio.enabled'));
     return true;
   } catch (error) {
     console.error('Audio init failed:', error);
-    setAudioStatus('error', '启动失败');
+    setAudioStatus('error', t('audio.startFailed'));
     return false;
   }
 }
@@ -890,7 +893,7 @@ bikeCockpitRoot.add(bikeCockpitBar, bikeCockpitCluster, bikeCockpitScreen);
 
 function createSignalLamp(x, y, z) {
   const mesh = new THREE.Mesh(
-    new THREE.BoxGeometry(0.34, 0.18, 0.16),
+    new THREE.BoxGeometry(0.3, 0.16, 0.18),
     new THREE.MeshStandardMaterial({
       color: 0x3a2a14,
       emissive: 0xffb74d,
@@ -911,12 +914,12 @@ function createSignalLamp(x, y, z) {
 
 const turnSignalLamps = {
   left: [
-    createSignalLamp(0.82, 0.98, 2.12),
-    createSignalLamp(0.82, 0.98, -2.12),
+    createSignalLamp(1.06, 0.98, 2.16),
+    createSignalLamp(1.06, 0.98, -2.16),
   ],
   right: [
-    createSignalLamp(-0.82, 0.98, 2.12),
-    createSignalLamp(-0.82, 0.98, -2.12),
+    createSignalLamp(-1.06, 0.98, 2.16),
+    createSignalLamp(-1.06, 0.98, -2.16),
   ],
 };
 
@@ -1059,9 +1062,27 @@ car.add(arrow);
 const browserControlKeys = new Set([' ', 'arrowup', 'arrowdown', 'arrowleft', 'arrowright']);
 const keys = new Set();
 const activeTouchPointers = new Map();
+const MOBILE_HAPTIC = Object.freeze({
+  tap: 14,
+  tapStrong: [18, 10, 24],
+  holdBrake: [20, 12, 28],
+  holdDrive: [14, 10, 18],
+  holdPulse: 10,
+  holdIntervalMs: 170,
+  steerStart: 12,
+  steerTick: 8,
+  steerStepCount: 8,
+  signalToggle: [18, 10, 26],
+  release: 8,
+});
 
 function activateKey(key) {
   keys.add(key);
+}
+
+function triggerMobileVibration(pattern) {
+  if (!isMobileLikeDevice()) return;
+  navigator.vibrate?.(pattern);
 }
 
 function syncMapPresetControl(mapId) {
@@ -1082,7 +1103,7 @@ function populateMapPresetOptions() {
 
   const customOption = document.createElement('option');
   customOption.value = 'custom';
-  customOption.textContent = 'custom';
+  customOption.textContent = t('option.custom');
   mapPresetEl.append(customOption);
 }
 
@@ -1130,12 +1151,22 @@ window.addEventListener('pageshow', refreshMobileShellState);
 
 function bindMobileControls() {
   if (!mobileControlsEl) return;
+  let steerHapticStep = 0;
 
   const suppressMobileUiDefault = (element) => {
     if (!element) return;
     ['contextmenu', 'selectstart', 'dragstart'].forEach((eventName) => {
       element.addEventListener(eventName, (event) => event.preventDefault());
     });
+  };
+
+  const startHoldHaptic = (pointerId) => {
+    const binding = activeTouchPointers.get(pointerId);
+    if (!binding) return;
+    if (binding.hapticTimer) window.clearInterval(binding.hapticTimer);
+    binding.hapticTimer = window.setInterval(() => {
+      triggerMobileVibration(MOBILE_HAPTIC.holdPulse);
+    }, MOBILE_HAPTIC.holdIntervalMs);
   };
 
   suppressMobileUiDefault(mobileControlsEl);
@@ -1145,9 +1176,14 @@ function bindMobileControls() {
   const releasePointer = (pointerId) => {
     const binding = activeTouchPointers.get(pointerId);
     if (!binding) return;
+    if (binding.hapticTimer) {
+      window.clearInterval(binding.hapticTimer);
+      binding.hapticTimer = null;
+    }
     if (binding.key) deactivateKey(binding.key);
     binding.button.classList.remove('active');
     activeTouchPointers.delete(pointerId);
+    triggerMobileVibration(MOBILE_HAPTIC.release);
   };
 
   mobileControlButtons.forEach((button) => {
@@ -1161,16 +1197,19 @@ function bindMobileControls() {
       event.preventDefault();
       void ensureAudioRunning();
       void requestMobileImmersiveMode();
-      navigator.vibrate?.(10);
 
       if (holdKey) {
         activateKey(holdKey);
-        activeTouchPointers.set(event.pointerId, { key: holdKey, button });
+        activeTouchPointers.set(event.pointerId, { key: holdKey, button, hapticTimer: null });
         button.classList.add('active');
         button.setPointerCapture?.(event.pointerId);
+        const isBrakeButton = button.classList.contains('mobileBrake') || button.classList.contains('mobileHandbrake');
+        triggerMobileVibration(isBrakeButton ? MOBILE_HAPTIC.holdBrake : MOBILE_HAPTIC.holdDrive);
+        startHoldHaptic(event.pointerId);
         return;
       }
 
+      triggerMobileVibration(MOBILE_HAPTIC.tapStrong);
       button.classList.add('active');
       window.setTimeout(() => button.classList.remove('active'), 140);
       if (tapAction) handleDiscreteControlAction(tapAction);
@@ -1193,11 +1232,12 @@ function bindMobileControls() {
       e.preventDefault();
       void ensureAudioRunning();
       void requestMobileImmersiveMode();
-      navigator.vibrate?.(10);
+      triggerMobileVibration(MOBILE_HAPTIC.steerStart);
       state.touchSteerActive = true;
       state.touchSteerPointerId = e.pointerId;
       state.touchSteerStartX = e.clientX;
       state.touchSteerStartAngle = state.steeringWheelAngle;
+      steerHapticStep = Math.round((state.steeringWheelAngle / STEERING_WHEEL_MAX) * MOBILE_HAPTIC.steerStepCount);
       mobileSteerZoneEl.setPointerCapture(e.pointerId);
       mobileSteerZoneEl.classList.add('active');
     });
@@ -1212,6 +1252,11 @@ function bindMobileControls() {
         -STEERING_WHEEL_MAX,
         STEERING_WHEEL_MAX
       );
+      const nextHapticStep = Math.round((state.steeringWheelAngle / STEERING_WHEEL_MAX) * MOBILE_HAPTIC.steerStepCount);
+      if (nextHapticStep !== steerHapticStep) {
+        steerHapticStep = nextHapticStep;
+        triggerMobileVibration(MOBILE_HAPTIC.steerTick);
+      }
       const pct = Math.round((state.steeringWheelAngle / STEERING_WHEEL_MAX) * -100);
       mobileSteerZoneEl.setAttribute('aria-valuenow', pct);
     });
@@ -1221,6 +1266,7 @@ function bindMobileControls() {
       state.touchSteerActive = false;
       state.touchSteerPointerId = null;
       mobileSteerZoneEl.classList.remove('active');
+      triggerMobileVibration(MOBILE_HAPTIC.release);
     };
     mobileSteerZoneEl.addEventListener('pointerup', endSteer);
     mobileSteerZoneEl.addEventListener('pointercancel', endSteer);
@@ -1239,6 +1285,7 @@ function bindMobileControls() {
       e.preventDefault();
       void ensureAudioRunning();
       void requestMobileImmersiveMode();
+      triggerMobileVibration(MOBILE_HAPTIC.tap);
       leverPointerId = e.pointerId;
       leverStartY = e.clientY;
       leverToggled = false;
@@ -1256,11 +1303,11 @@ function bindMobileControls() {
         if (dy < -LEVER_THRESHOLD) {
           leverToggled = true;
           setTurnSignal('left');
-          navigator.vibrate?.(15);
+          triggerMobileVibration(MOBILE_HAPTIC.signalToggle);
         } else if (dy > LEVER_THRESHOLD) {
           leverToggled = true;
           setTurnSignal('right');
-          navigator.vibrate?.(15);
+          triggerMobileVibration(MOBILE_HAPTIC.signalToggle);
         }
       }
     });
@@ -1273,7 +1320,7 @@ function bindMobileControls() {
       // 轻点（移动 < 6px 且未触发拨动）：关闭当前转向灯
       if (!leverToggled && totalDy < 6 && state.turnSignal !== 'off') {
         setTurnSignal(state.turnSignal); // 传入当前值 → toggle 为 off
-        navigator.vibrate?.(10);
+        triggerMobileVibration(MOBILE_HAPTIC.tapStrong);
       }
       // 旋钮弹回中位（弹性动画）
       signalLeverKnobEl.style.transition = 'transform 0.22s cubic-bezier(0.34, 1.56, 0.64, 1)';
@@ -1287,6 +1334,10 @@ function bindMobileControls() {
 
   window.addEventListener('blur', () => {
     activeTouchPointers.forEach((binding, pointerId) => {
+      if (binding.hapticTimer) {
+        window.clearInterval(binding.hapticTimer);
+        binding.hapticTimer = null;
+      }
       deactivateKey(binding.key);
       binding.button.classList.remove('active');
       activeTouchPointers.delete(pointerId);
@@ -1383,8 +1434,9 @@ function refreshMobileShellState() {
 
 function registerServiceWorker() {
   if (!('serviceWorker' in navigator)) return;
+  const serviceWorkerUrl = new URL('../sw.js', window.location.href);
   window.addEventListener('load', () => {
-    navigator.serviceWorker.register('./sw.js').catch((error) => {
+    navigator.serviceWorker.register(serviceWorkerUrl.href).catch((error) => {
       console.debug('Service worker registration failed:', error);
     });
   }, { once: true });
@@ -1420,7 +1472,7 @@ const state = {
 function setUiCollapsed(collapsed) {
   state.uiCollapsed = collapsed;
   uiEl.classList.toggle('collapsed', collapsed);
-  uiToggleEl.textContent = collapsed ? '显示菜单' : '隐藏菜单';
+  uiToggleEl.textContent = collapsed ? t('ui.showMenu') : t('ui.hideMenu');
   saveSettings();
 }
 
@@ -2283,7 +2335,10 @@ window.addEventListener('resize', () => {
 
 window.addEventListener('orientationchange', refreshMobileShellState);
 
-setAudioStatus(audioState.supported ? 'pending' : 'error', audioState.supported ? '待启用' : '不可用');
+setAudioStatus(
+  audioState.supported ? 'pending' : 'error',
+  audioState.supported ? t('audio.pending') : t('audio.unavailable')
+);
 syncMaxSpeedControl(persistedSettings?.maxSpeed ?? state.maxSpeed);
 syncAccelCurveControl(state.accelCurve);
 syncAutoCenterControl(state.autoCenterSteering);
