@@ -72,6 +72,8 @@ const mirrorHudEl = document.getElementById('mirrorHud');
 const mirrorLeftEl = document.getElementById('mirrorLeft');
 const mirrorCenterEl = document.getElementById('mirrorCenter');
 const mirrorRightEl = document.getElementById('mirrorRight');
+const cockpitSignalHudEl = document.getElementById('cockpitSignalHud');
+const cockpitSignalLampEls = Array.from(document.querySelectorAll('#cockpitSignalHud .cockpitSignalLamp'));
 const miniMapEl = document.getElementById('miniMap');
 const miniMapCloseEl = document.getElementById('miniMapClose');
 const mobileControlsEl = document.getElementById('mobileControls');
@@ -196,6 +198,7 @@ function updateSignalStatus() {
   };
   signalStatusEl.textContent = labels[state.turnSignal];
   signalStatusBoxEl.dataset.signal = state.turnSignal;
+  if (cockpitSignalHudEl) cockpitSignalHudEl.dataset.signal = state.turnSignal;
 }
 
 function setAudioStatus(mode, label) {
@@ -715,6 +718,11 @@ function updateTurnSignalVisuals() {
 
   turnSignalLamps.left.forEach((lamp) => setSignalLampState(lamp, leftActive));
   turnSignalLamps.right.forEach((lamp) => setSignalLampState(lamp, rightActive));
+  cockpitSignalLampEls.forEach((lampEl) => {
+    const direction = lampEl.dataset.direction;
+    const isActive = (direction === 'left' && leftActive) || (direction === 'right' && rightActive);
+    lampEl.classList.toggle('is-active', isActive);
+  });
 }
 
 function updateBrakeLights(isActive) {
@@ -1203,6 +1211,7 @@ function setView(nextView) {
   syncQuickViewButtons();
   mirrorHudEl.style.display = isOrbit ? 'none' : (nextView === 'cockpit' ? 'block' : 'flex');
   mirrorHudEl.classList.toggle('cockpit-layout', nextView === 'cockpit');
+  if (cockpitSignalHudEl) cockpitSignalHudEl.classList.toggle('is-visible', nextView === 'cockpit');
   arrow.visible = !isOrbit && nextView !== 'cockpit';
 
   if (isOrbit) {
