@@ -71,6 +71,8 @@ const miniMapEl = document.getElementById('miniMap');
 const miniMapCloseEl = document.getElementById('miniMapClose');
 const mobileControlsEl = document.getElementById('mobileControls');
 const rotateOverlayEl = document.getElementById('rotateOverlay');
+const mobileSteerZoneEl = document.getElementById('mobileSteerZone');
+const mobileSteerIndicatorEl = document.getElementById('mobileSteerIndicator');
 const signalStatusEl = document.getElementById('signalStatus');
 const signalStatusBoxEl = document.getElementById('signalStatusBox');
 const audioStatusEl = document.getElementById('audioStatus');
@@ -639,6 +641,7 @@ function bindMobileControls() {
     button.addEventListener('pointerdown', (event) => {
       event.preventDefault();
       void ensureAudioRunning();
+      navigator.vibrate?.(10);
 
       if (holdKey) {
         activateKey(holdKey);
@@ -664,12 +667,55 @@ function bindMobileControls() {
     });
   });
 
+  // 滑动转向区域
+  if (mobileSteerZoneEl) {
+    mobileSteerZoneEl.addEventListener('pointerdown', (e) => {
+      e.preventDefault();
+      void ensureAudioRunning();
+      navigator.vibrate?.(10);
+      state.touchSteerActive = true;
+      state.touchSteerPointerId = e.pointerId;
+      state.touchSteerStartX = e.clientX;
+      state.touchSteerStartAngle = state.steeringWheelAngle;
+      mobileSteerZoneEl.setPointerCapture(e.pointerId);
+      mobileSteerZoneEl.classList.add('active');
+    });
+
+    mobileSteerZoneEl.addEventListener('pointermove', (e) => {
+      if (e.pointerId !== state.touchSteerPointerId) return;
+      const dx = e.clientX - state.touchSteerStartX;
+      // 110px 对应满打方向盘，灵敏度可调
+      const sensitivity = STEERING_WHEEL_MAX / 110;
+      state.steeringWheelAngle = THREE.MathUtils.clamp(
+        state.touchSteerStartAngle - dx * sensitivity,
+        -STEERING_WHEEL_MAX,
+        STEERING_WHEEL_MAX
+      );
+      const pct = Math.round((state.steeringWheelAngle / STEERING_WHEEL_MAX) * -100);
+      mobileSteerZoneEl.setAttribute('aria-valuenow', pct);
+    });
+
+    const endSteer = (e) => {
+      if (e.pointerId !== state.touchSteerPointerId) return;
+      state.touchSteerActive = false;
+      state.touchSteerPointerId = null;
+      mobileSteerZoneEl.classList.remove('active');
+    };
+    mobileSteerZoneEl.addEventListener('pointerup', endSteer);
+    mobileSteerZoneEl.addEventListener('pointercancel', endSteer);
+    mobileSteerZoneEl.addEventListener('lostpointercapture', endSteer);
+  }
+
   window.addEventListener('blur', () => {
     activeTouchPointers.forEach((binding, pointerId) => {
       deactivateKey(binding.key);
       binding.button.classList.remove('active');
       activeTouchPointers.delete(pointerId);
     });
+    // 失焦时也复位触控转向
+    state.touchSteerActive = false;
+    state.touchSteerPointerId = null;
+    if (mobileSteerZoneEl) mobileSteerZoneEl.classList.remove('active');
   });
 }
 
@@ -738,6 +784,11 @@ const state = {
   mapImageDataUrl: persistedSettings?.mapImageDataUrl || null,
   startPose: getDefaultStartPose(),
   miniMapExpanded: false,
+  touchSteerActive: false,
+  touchSteerPointerId: null,
+  touchSteerStartX: 0,
+  touchSteerStartAngle: 0,
+  gripExceededLast: false,
 };
 
 function setUiCollapsed(collapsed) {
@@ -961,13 +1012,25 @@ function updateCar(dt) {
   }
 
   if (state.throttleInput < 0.01 && state.reverseInput < 0.01) {
-    const decel = drag * dt;
-    if (Math.abs(state.speed) <= decel) state.speed = 0;
-    else state.speed -= Math.sign(state.speed) * decel;
+    // 滑行阻力 = 滚动阻力（固定）+ 空气阻力（随速度线性增长，近似 v²）
+    const v = Math.abs(state.speed);
+    const rollingRes = 1.6;
+    const aeroDrag = 0.09 * v;
+    const coastDecel = (rollingRes + aeroDrag) * dt;
+    if (v <= coastDecel) state.speed = 0;
+    else state.speed -= Math.sign(state.speed) * coastDecel;
+  }
+
+  // 踩油时也有持续空气阻力，让极速感觉是"推不动了"而非撞到硬限速
+  {
+    const v = Math.abs(state.speed);
+    const contAero = 0.025 * v * v * dt;
+    if (v > contAero) state.speed -= Math.sign(state.speed) * contAero;
   }
 
   if (handbrake) {
-    const hb = brake * dt;
+    // 手刹：仅锁后轮，制动力比脚刹弱，但驻车够用
+    const hb = brake * 0.65 * dt;
     if (Math.abs(state.speed) <= hb) state.speed = 0;
     else state.speed -= Math.sign(state.speed) * hb;
   }
@@ -978,17 +1041,44 @@ function updateCar(dt) {
   maxSpeedValueEl.textContent = `${state.maxSpeed} m/s`;
   state.speed = THREE.MathUtils.clamp(state.speed, -Math.max(MIN_DRIVE_SPEED * reverseFactor, state.maxSpeed * 0.45), state.maxSpeed);
 
-  if (left) state.steeringWheelAngle += steeringWheelSpeed * dt;
-  if (right) state.steeringWheelAngle -= steeringWheelSpeed * dt;
-  if (state.autoCenterSteering && !left && !right) {
-    state.steeringWheelAngle = THREE.MathUtils.damp(state.steeringWheelAngle, 0, steeringReturnSpeed, dt);
+  // 速度敏感转向：速度越快，方向盘转动越迟钝（防止高速急打方向）
+  const speedMs = Math.abs(state.speed);
+  const steerSpeedFactor = 1.0 / (1.0 + speedMs * 0.07);
+  const effectiveSteeringSpeed = steeringWheelSpeed * steerSpeedFactor;
+  const effectiveReturnSpeed = steeringReturnSpeed * (0.55 + 0.45 * steerSpeedFactor);
+
+  // 触控滑动转向时跳过键盘路径，由 touch handler 直接写 steeringWheelAngle
+  if (!state.touchSteerActive) {
+    if (left) state.steeringWheelAngle += effectiveSteeringSpeed * dt;
+    if (right) state.steeringWheelAngle -= effectiveSteeringSpeed * dt;
+    if (state.autoCenterSteering && !left && !right) {
+      state.steeringWheelAngle = THREE.MathUtils.damp(state.steeringWheelAngle, 0, effectiveReturnSpeed, dt);
+    }
+  } else if (state.autoCenterSteering) {
+    // 松手后自动回正（触控路径）
+    state.steeringWheelAngle = THREE.MathUtils.damp(state.steeringWheelAngle, 0, effectiveReturnSpeed, dt);
   }
   state.steeringWheelAngle = THREE.MathUtils.clamp(state.steeringWheelAngle, -STEERING_WHEEL_MAX, STEERING_WHEEL_MAX);
   state.steer = (state.steeringWheelAngle / STEERING_WHEEL_MAX) * MAX_STEER;
 
   if (Math.abs(state.speed) > 0.05 && Math.abs(state.steer) > 0.0005) {
     const turnRadius = wheelBase / Math.tan(state.steer);
-    state.heading += (state.speed / turnRadius) * dt;
+    // 横向抓地力上限：弯道速度过高时产生推头，car往外滑
+    const lateralAccelNeeded = (state.speed * state.speed) / Math.abs(turnRadius);
+    const maxLateralAccel = 7.0; // 约 0.7g，驾校车型的抓地力上限
+    const gripFactor = Math.min(1.0, maxLateralAccel / Math.max(lateralAccelNeeded, 0.01));
+    state.heading += (state.speed / turnRadius) * gripFactor * dt;
+    // 超出抓地力时：轮胎摩擦消耗速度 + 触觉反馈
+    if (gripFactor < 0.98) {
+      const scrubDecel = (1.0 - gripFactor) * 5.0;
+      state.speed -= Math.sign(state.speed) * scrubDecel * dt;
+      if (!state.gripExceededLast) navigator.vibrate?.([18, 8, 18]);
+      state.gripExceededLast = true;
+    } else {
+      state.gripExceededLast = false;
+    }
+  } else {
+    state.gripExceededLast = false;
   }
 
   car.rotation.y = state.heading;
@@ -1005,6 +1095,13 @@ function updateCar(dt) {
   steeringWheel.rotation.z = -state.steeringWheelAngle;
   wheelHudDialEl.style.transform = `rotate(${-state.steeringWheelAngle}rad)`;
   steerAngleEl.textContent = Math.round(THREE.MathUtils.radToDeg(-state.steeringWheelAngle)).toString();
+
+  // 更新触控转向区域的指示点位置
+  if (mobileSteerIndicatorEl && mobileSteerZoneEl) {
+    const ratio = state.steeringWheelAngle / STEERING_WHEEL_MAX;
+    const maxOffset = (mobileSteerZoneEl.offsetWidth - 32) / 2;
+    mobileSteerIndicatorEl.style.transform = `translateX(${-ratio * maxOffset}px)`;
+  }
 
   speedEl.textContent = (Math.abs(state.speed) * 3.6).toFixed(1);
   gearEl.textContent = state.speed > 0.2 ? 'D' : state.speed < -0.2 ? 'R' : 'N';
