@@ -505,8 +505,9 @@ button:hover,
 }
 
 .mobileWheelSlot {
-  width: 108px;
-  height: 84px;
+  width: 56px;
+  height: 56px;
+  flex: 0 0 56px;
 }
 
 .rotateCard {
@@ -701,7 +702,7 @@ button:hover,
   }
 
   .mobileClusterCenter {
-    width: 124px;
+    width: auto;
     align-items: center;
     justify-content: flex-end;
     gap: 6px;
@@ -727,6 +728,12 @@ button:hover,
     justify-content: center;
   }
 
+  .mobileBottomRow {
+    gap: 8px;
+    align-items: center;
+    justify-content: center;
+  }
+
   #hud .status {
     max-width: min(52vw, 480px);
     gap: 6px;
@@ -738,9 +745,9 @@ button:hover,
   }
 
   #wheelHud {
-    bottom: max(18px, env(safe-area-inset-bottom));
-    width: 108px;
-    height: 108px;
+    bottom: max(20px, env(safe-area-inset-bottom));
+    width: 58px;
+    height: 58px;
   }
 
   #miniMap {
@@ -795,14 +802,15 @@ button:hover,
   }
 
   .mobileWheelSlot {
-    width: 94px;
-    height: 72px;
+    width: 50px;
+    height: 50px;
+    flex-basis: 50px;
   }
 
   #wheelHud {
-    width: 94px;
-    height: 94px;
-    bottom: max(8px, env(safe-area-inset-bottom));
+    width: 50px;
+    height: 50px;
+    bottom: max(10px, env(safe-area-inset-bottom));
   }
 
   #miniMap {
@@ -819,6 +827,6 @@ button:hover,
   }
 
   .mobileClusterCenter {
-    width: 108px;
+    width: auto;
   }
 }
