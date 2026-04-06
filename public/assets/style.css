@@ -834,6 +834,7 @@ body.minimap-expanded .mobileClusterRight {
     justify-content: flex-end;
     gap: 6px;
     pointer-events: auto;
+    padding-bottom: 64px;
   }
 
   .mobileDriveStack {
@@ -844,6 +845,10 @@ body.minimap-expanded .mobileClusterRight {
   /* 右侧：列方向，宽度跟随内容（约一个按钮宽） */
   .mobileDriveStackRight {
     max-width: none;
+    flex-direction: row;
+    align-items: flex-end;
+    justify-content: flex-end;
+    gap: 8px;
   }
 
   .mobileSteerPad {
@@ -867,12 +872,13 @@ body.minimap-expanded .mobileClusterRight {
   }
 
   #wheelHud {
-    bottom: auto;
-    top: max(12px, env(safe-area-inset-top));
+    bottom: max(10px, env(safe-area-inset-bottom));
+    top: auto;
     left: 50%;
     transform: translateX(-50%);
     width: 50px;
     height: 50px;
+    z-index: 12;
   }
 
   #miniMap {
