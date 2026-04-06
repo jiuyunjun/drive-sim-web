@@ -443,18 +443,19 @@ button:hover,
 }
 
 .mobileControl {
-  min-width: 58px;
-  min-height: 58px;
-  padding: 0 14px;
+  min-width: 50px;
+  min-height: 50px;
+  padding: 0 12px;
   border: 1px solid rgba(255, 255, 255, 0.18);
-  border-radius: 18px;
+  border-radius: 15px;
   background: rgba(9, 17, 24, 0.68);
-  box-shadow: 0 12px 24px rgba(0, 0, 0, 0.24);
+  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.22);
   color: #f4fbff;
   backdrop-filter: blur(10px);
   touch-action: manipulation;
   user-select: none;
   -webkit-user-select: none;
+  font-size: 13px;
 }
 
 .mobileControl:active,
@@ -468,13 +469,14 @@ button:hover,
 }
 
 .mobileControlTall {
-  min-height: 86px;
+  min-height: 72px;
 }
 
 .mobileThrottle,
-.mobileBrake {
-  min-width: 72px;
-  min-height: 92px;
+.mobileBrake,
+.mobileReverse {
+  min-width: 64px;
+  min-height: 72px;
 }
 
 .mobileThrottle {
@@ -485,17 +487,26 @@ button:hover,
   background: linear-gradient(180deg, rgba(164, 58, 58, 0.84), rgba(100, 24, 24, 0.88));
 }
 
+.mobileReverse {
+  background: linear-gradient(180deg, rgba(62, 92, 172, 0.82), rgba(28, 48, 100, 0.88));
+}
+
 .mobileSignal {
-  min-width: 68px;
+  min-width: 56px;
 }
 
 .mobileSteerPad {
-  gap: 10px;
+  gap: 8px;
 }
 
 .mobileSteer {
-  min-width: 78px;
-  min-height: 78px;
+  min-width: 62px;
+  min-height: 62px;
+}
+
+.mobileWheelSlot {
+  width: 108px;
+  height: 84px;
 }
 
 .rotateCard {
@@ -682,11 +693,19 @@ button:hover,
 
   .mobileClusterLeft,
   .mobileClusterRight {
-    width: min(32vw, 220px);
+    width: min(26vw, 160px);
   }
 
   .mobileClusterLeft {
     align-items: flex-start;
+  }
+
+  .mobileClusterCenter {
+    width: 124px;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 6px;
+    pointer-events: auto;
   }
 
   .mobileClusterRight {
@@ -695,30 +714,43 @@ button:hover,
 
   .mobileDriveStack {
     width: 100%;
-    max-width: 92px;
+    max-width: 72px;
   }
 
   .mobileSteerPad {
     justify-content: flex-end;
+    flex-direction: row;
+  }
+
+  .mobileAuxRowCenter {
+    width: 100%;
+    justify-content: center;
   }
 
   #hud .status {
-    max-width: min(56vw, 520px);
+    max-width: min(52vw, 480px);
+    gap: 6px;
+  }
+
+  #hud .status div {
+    padding: 5px 8px;
+    font-size: 12px;
   }
 
   #wheelHud {
     bottom: max(18px, env(safe-area-inset-bottom));
-    width: 156px;
-    height: 156px;
+    width: 108px;
+    height: 108px;
   }
 
   #miniMap {
     right: 14px;
-    bottom: 188px;
+    bottom: 150px;
+    width: min(19vw, 132px);
   }
 
   #miniMap.expanded {
-    bottom: 182px;
+    bottom: 144px;
   }
 
   #ui {
@@ -740,38 +772,53 @@ button:hover,
   }
 
   .mobileControl {
-    min-width: 52px;
-    min-height: 52px;
-    border-radius: 16px;
-    font-size: 14px;
+    min-width: 46px;
+    min-height: 46px;
+    border-radius: 14px;
+    font-size: 12px;
   }
 
   .mobileThrottle,
-  .mobileBrake {
-    min-width: 64px;
-    min-height: 78px;
+  .mobileBrake,
+  .mobileReverse {
+    min-width: 58px;
+    min-height: 62px;
   }
 
   .mobileSignal {
-    min-width: 58px;
+    min-width: 52px;
   }
 
   .mobileSteer {
-    min-width: 68px;
-    min-height: 68px;
+    min-width: 56px;
+    min-height: 56px;
+  }
+
+  .mobileWheelSlot {
+    width: 94px;
+    height: 72px;
   }
 
   #wheelHud {
-    width: 138px;
-    height: 138px;
+    width: 94px;
+    height: 94px;
     bottom: max(8px, env(safe-area-inset-bottom));
   }
 
   #miniMap {
-    bottom: 168px;
+    bottom: 132px;
   }
 
   #miniMap.expanded {
-    bottom: 162px;
+    bottom: 126px;
+  }
+
+  .mobileClusterLeft,
+  .mobileClusterRight {
+    width: min(28vw, 132px);
+  }
+
+  .mobileClusterCenter {
+    width: 108px;
   }
 }
