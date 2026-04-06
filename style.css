@@ -22,6 +22,10 @@ html, body {
   display: none;
 }
 
+#rotateOverlay {
+  display: none;
+}
+
 #ui {
   position: fixed;
   top: 16px;
@@ -458,6 +462,32 @@ button:hover,
   min-height: 86px;
 }
 
+.rotateCard {
+  width: min(86vw, 320px);
+  padding: 18px 20px;
+  border-radius: 22px;
+  background: rgba(7, 12, 18, 0.86);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  box-shadow: 0 18px 40px rgba(0, 0, 0, 0.34);
+  backdrop-filter: blur(12px);
+  text-align: center;
+}
+
+.rotateCard strong,
+.rotateCard span {
+  display: block;
+}
+
+.rotateCard strong {
+  margin-bottom: 8px;
+  font-size: 20px;
+}
+
+.rotateCard span {
+  color: #dce7f1;
+  line-height: 1.45;
+}
+
 @media (max-width: 900px) {
   #mirrorHud {
     top: 12px;
@@ -554,6 +584,28 @@ button:hover,
 }
 
 @media (hover: none), (pointer: coarse), (max-width: 900px) {
+  #rotateOverlay {
+    position: fixed;
+    inset: 0;
+    z-index: 20;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    background: rgba(4, 8, 12, 0.58);
+  }
+
+  body.mobile-portrait #rotateOverlay {
+    display: flex;
+  }
+
+  body.mobile-portrait #mobileControls,
+  body.mobile-portrait #miniMap,
+  body.mobile-portrait #wheelHud,
+  body.mobile-portrait #mirrorHud {
+    display: none !important;
+  }
+
   #mobileControls {
     position: fixed;
     left: 12px;
