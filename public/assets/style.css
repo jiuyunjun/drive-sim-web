@@ -369,6 +369,7 @@ button:hover,
   border-radius: 24px;
   box-shadow: 0 24px 46px rgba(0, 0, 0, 0.34);
   cursor: crosshair;
+  z-index: 40;
 }
 
 #miniMap::after {
@@ -389,6 +390,36 @@ button:hover,
   color: #eef8ff;
   font-size: 12px;
   letter-spacing: 0.08em;
+  pointer-events: none;
+}
+
+#miniMapClose {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  width: 28px;
+  height: 28px;
+  padding: 0;
+  border-radius: 999px;
+  border: 1px solid rgba(255, 255, 255, 0.24);
+  background: rgba(8, 14, 20, 0.72);
+  color: #eef8ff;
+  font-size: 18px;
+  line-height: 1;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  z-index: 2;
+}
+
+#miniMap.expanded #miniMapClose {
+  display: inline-flex;
+}
+
+body.minimap-expanded #mobileControls,
+body.minimap-expanded #wheelHud,
+body.minimap-expanded #mirrorHud,
+body.minimap-expanded #ui {
   pointer-events: none;
 }
 

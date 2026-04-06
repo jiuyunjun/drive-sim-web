@@ -68,6 +68,7 @@ const mirrorLeftEl = document.getElementById('mirrorLeft');
 const mirrorCenterEl = document.getElementById('mirrorCenter');
 const mirrorRightEl = document.getElementById('mirrorRight');
 const miniMapEl = document.getElementById('miniMap');
+const miniMapCloseEl = document.getElementById('miniMapClose');
 const mobileControlsEl = document.getElementById('mobileControls');
 const rotateOverlayEl = document.getElementById('rotateOverlay');
 const signalStatusEl = document.getElementById('signalStatus');
@@ -855,6 +856,7 @@ function placeCarAtStart() {
 function setMiniMapExpanded(expanded) {
   state.miniMapExpanded = expanded;
   miniMapEl.classList.toggle('expanded', expanded);
+  document.body.classList.toggle('minimap-expanded', expanded);
 }
 
 function teleportCarTo(x, z) {
@@ -1136,6 +1138,10 @@ function handleMiniMapClick(event) {
 }
 
 miniMapEl.addEventListener('click', handleMiniMapClick);
+miniMapCloseEl?.addEventListener('click', (event) => {
+  event.stopPropagation();
+  setMiniMapExpanded(false);
+});
 miniMapEl.addEventListener('contextmenu', (event) => {
   event.preventDefault();
   if (state.miniMapExpanded) {
