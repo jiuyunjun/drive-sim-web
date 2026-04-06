@@ -393,39 +393,6 @@ function createDefaultGround() {
   applyGroundTexture(texture, 80, 45);
 }
 
-const worldRoot = new THREE.Group();
-scene.add(worldRoot);
-
-function createTree(x, z, s = 1) {
-  const group = new THREE.Group();
-  const trunk = new THREE.Mesh(
-    new THREE.CylinderGeometry(0.18 * s, 0.22 * s, 2.0 * s, 8),
-    new THREE.MeshStandardMaterial({ color: 0x7a5330 })
-  );
-  trunk.position.y = 1.0 * s;
-  trunk.castShadow = true;
-
-  const crown = new THREE.Mesh(
-    new THREE.SphereGeometry(1.3 * s, 16, 12),
-    new THREE.MeshStandardMaterial({ color: 0x3d8c40 })
-  );
-  crown.position.y = 2.8 * s;
-  crown.castShadow = true;
-
-  group.add(trunk, crown);
-  group.position.set(x, 0, z);
-  return group;
-}
-
-function populateEnvironment() {
-  const positions = [
-    [-42, -24], [-34, 22], [-18, -28], [18, 26], [36, -20],
-    [42, 20], [-45, 0], [0, -30], [0, 30], [28, 0],
-  ];
-  positions.forEach(([x, z], i) => worldRoot.add(createTree(x, z, 0.85 + (i % 3) * 0.2)));
-}
-populateEnvironment();
-
 const car = new THREE.Group();
 scene.add(car);
 
