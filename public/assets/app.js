@@ -758,9 +758,15 @@ function bindMobileControls() {
 
     const endLever = (e) => {
       if (e.pointerId !== leverPointerId) return;
+      const totalDy = Math.abs(e.clientY - leverStartY);
       leverPointerId = null;
       signalLeverEl.classList.remove('dragging');
-      // 旋钮弹回中位（加 CSS transition 让它弹性回弹）
+      // 轻点（移动 < 6px 且未触发拨动）：关闭当前转向灯
+      if (!leverToggled && totalDy < 6 && state.turnSignal !== 'off') {
+        setTurnSignal(state.turnSignal); // 传入当前值 → toggle 为 off
+        navigator.vibrate?.(10);
+      }
+      // 旋钮弹回中位（弹性动画）
       signalLeverKnobEl.style.transition = 'transform 0.22s cubic-bezier(0.34, 1.56, 0.64, 1)';
       signalLeverKnobEl.style.transform = 'translate(-50%, -50%)';
       setTimeout(() => { signalLeverKnobEl.style.transition = ''; }, 250);

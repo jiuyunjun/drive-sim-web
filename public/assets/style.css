@@ -824,7 +824,7 @@ body.minimap-expanded .mobileClusterRight {
   }
 
   .mobileClusterRight {
-    width: min(34vw, 200px);
+    width: min(28vw, 170px);
     align-items: stretch;
   }
 
@@ -965,11 +965,11 @@ body.minimap-expanded .mobileClusterRight {
   }
 
   .mobileSignalLever {
-    height: 46px;
+    height: 44px;
   }
 
   .mobileClusterRight {
-    width: min(36vw, 190px);
+    width: min(30vw, 172px);
   }
 
   .mobileSteerZone {
