@@ -18,6 +18,10 @@ html, body {
   height: 100vh;
 }
 
+#mobileControls {
+  display: none;
+}
+
 #ui {
   position: fixed;
   top: 16px;
@@ -418,6 +422,42 @@ button:hover,
   text-transform: uppercase;
 }
 
+.mobileCluster,
+.mobilePad,
+.mobileDriveStack,
+.mobileAuxRow {
+  display: flex;
+}
+
+.mobileControl {
+  min-width: 58px;
+  min-height: 58px;
+  padding: 0 14px;
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  border-radius: 18px;
+  background: rgba(9, 17, 24, 0.68);
+  box-shadow: 0 12px 24px rgba(0, 0, 0, 0.24);
+  color: #f4fbff;
+  backdrop-filter: blur(10px);
+  touch-action: manipulation;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+.mobileControl:active,
+.mobileControl.active {
+  background: rgba(86, 190, 255, 0.3);
+  border-color: rgba(154, 221, 255, 0.72);
+}
+
+.mobileControlLarge {
+  min-width: 76px;
+}
+
+.mobileControlTall {
+  min-height: 86px;
+}
+
 @media (max-width: 900px) {
   #mirrorHud {
     top: 12px;
@@ -510,5 +550,92 @@ button:hover,
 
   .mirrorCenter {
     width: min(34vw, 156px);
+  }
+}
+
+@media (hover: none), (pointer: coarse), (max-width: 900px) {
+  #mobileControls {
+    position: fixed;
+    left: 12px;
+    right: 12px;
+    bottom: 12px;
+    z-index: 11;
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    pointer-events: none;
+  }
+
+  .mobileCluster {
+    flex-direction: column;
+    gap: 10px;
+    pointer-events: auto;
+  }
+
+  .mobilePad {
+    gap: 10px;
+    align-items: center;
+  }
+
+  .mobileDriveStack {
+    flex-direction: column;
+    gap: 10px;
+    align-items: stretch;
+  }
+
+  .mobileAuxRow {
+    gap: 8px;
+    justify-content: center;
+  }
+
+  .mobileAuxRowRight {
+    justify-content: flex-end;
+  }
+
+  #wheelHud {
+    bottom: 118px;
+  }
+
+  #miniMap {
+    bottom: 154px;
+  }
+
+  #miniMap.expanded {
+    bottom: 148px;
+  }
+}
+
+@media (max-width: 700px) {
+  #mobileControls {
+    left: 8px;
+    right: 8px;
+    bottom: 8px;
+  }
+
+  .mobileControl {
+    min-width: 52px;
+    min-height: 52px;
+    border-radius: 16px;
+    font-size: 14px;
+  }
+
+  .mobileControlLarge {
+    min-width: 68px;
+  }
+
+  .mobileControlTall {
+    min-height: 78px;
+  }
+
+  #wheelHud {
+    bottom: 104px;
+  }
+
+  #miniMap {
+    bottom: 138px;
+  }
+
+  #miniMap.expanded {
+    bottom: 132px;
   }
 }
