@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <meta name="theme-color" content="#091118" />
+  <meta name="mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-touch-fullscreen" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="Drive Sim Web" />
+  <meta name="screen-orientation" content="landscape" />
+  <meta name="full-screen" content="yes" />
+  <meta name="x5-fullscreen" content="true" />
+  <meta name="x5-orientation" content="landscape" />
+  <link rel="manifest" href="./manifest.webmanifest" />
+  <link rel="icon" type="image/png" sizes="192x192" href="../assets/icons/icon-192.png" />
+  <link rel="apple-touch-icon" sizes="180x180" href="../assets/icons/apple-touch-icon.png" />
+  <title>Drive Sim Web</title>
+  <link rel="stylesheet" href="../assets/style.css" />
+  <script type="importmap">
+    {
+      "imports": {
+        "three": "https://unpkg.com/three@0.180.0/build/three.module.js",
+        "three/addons/": "https://unpkg.com/three@0.180.0/examples/jsm/"
+      }
+    }
+  </script>
+</head>
+<body>
+  <div id="ui">
+    <button id="uiToggle" type="button" data-i18n="ui.hideMenu">Hide Menu</button>
+    <div id="collapsedQuickActions" data-i18n-aria-label="quick.menuAria" aria-label="Quick view menu">
+      <button class="quickViewBtn" data-view-target="follow" type="button" data-i18n="quick.follow">Chase</button>
+      <button class="quickViewBtn" data-view-target="cockpit" type="button" data-i18n="quick.cockpit">Cockpit</button>
+      <button class="quickViewBtn" data-view-target="orbit" type="button" data-i18n="quick.orbit">Free</button>
+    </div>
+    <div class="panel">
+      <h1 data-i18n="hero.title">Driving Test Center 3D Driving Simulator</h1>
+      <p data-i18n="hero.description">Upload a top-down map image, use it as the ground texture, and drive directly in the browser.</p>
+
+      <div class="row">
+        <label>
+          <span data-i18n="controls.vehicleType">Vehicle</span>
+          <select id="vehicleType">
+            <option value="sedan" data-i18n="controls.sedan">Corolla Sedan</option>
+            <option value="motorcycle" data-i18n="controls.motorcycle">Motorcycle</option>
+          </select>
+        </label>
+        <label>
+          <span data-i18n="controls.map">Map</span>
+          <select id="mapPreset"></select>
+        </label>
+        <label class="file-label">
+          <span data-i18n="controls.uploadMap">Upload Map</span>
+          <input id="mapInput" type="file" accept="image/*" />
+        </label>
+        <button id="resetBtn" data-i18n="controls.resetVehicle">Reset Vehicle</button>
+        <button id="setSpawnBtn" data-i18n="controls.setSpawn">Set Spawn</button>
+        <button id="viewBtn" data-i18n="controls.changeView">Change View</button>
+      </div>
+
+      <div class="row compact">
+        <label>
+          <span data-i18n="controls.mapWidth">Map Width (m)</span>
+          <input id="mapWidth" type="number" min="10" max="1000" step="1" value="80" />
+        </label>
+        <div class="range-card">
+          <span data-i18n="controls.resizeMap">Map Scale</span>
+          <input id="mapScale" type="range" min="10" max="1000" step="1" value="80" />
+          <span id="mapScaleValue">80 m</span>
+        </div>
+        <label>
+          <span data-i18n="controls.maxSpeed">Max Speed</span>
+          <input id="maxSpeed" type="range" min="2" max="40" step="1" value="18" />
+        </label>
+        <span id="maxSpeedValue">18 m/s</span>
+        <label>
+          <input id="autoCenterSteering" type="checkbox" />
+          <span data-i18n="controls.autoCenterSteering">Auto-center Steering</span>
+        </label>
+      </div>
+
+      <div class="curveCard" data-i18n-aria-label="curve.cardLabel" aria-label="Acceleration curve chart">
+        <div class="curveCardHeader">
+          <div class="curveCardTitle">
+            <strong data-i18n="curve.title">Acceleration Curve</strong>
+            <span data-i18n="curve.description">X axis is throttle input, Y axis is drive output</span>
+          </div>
+          <span id="accelCurveValue" class="curveValue">1.35</span>
+        </div>
+        <div class="curveSliderRow">
+          <span class="curveSliderLabel" data-i18n="curve.soft">Soft</span>
+          <input id="accelCurve" type="range" min="80" max="180" step="1" value="135" />
+          <span class="curveSliderLabel" data-i18n="curve.direct">Direct</span>
+        </div>
+        <svg id="accelCurveChart" class="curveChart" viewBox="0 0 220 136" role="img" aria-labelledby="accelCurveChartTitle accelCurveChartDesc">
+          <title id="accelCurveChartTitle" data-i18n="curve.chartTitle">Acceleration curve chart</title>
+          <desc id="accelCurveChartDesc" data-i18n="curve.chartDesc">Shows how throttle input maps to drive output.</desc>
+          <rect class="curveChartFrame" x="16" y="10" width="188" height="104" rx="14" />
+          <path class="curveChartGrid" d="M32 108H188 M32 86H188 M32 64H188 M32 42H188 M32 20V108 M71 20V108 M110 20V108 M149 20V108 M188 20V108" />
+          <path class="curveChartAxis" d="M32 108H188 M32 108V20" />
+          <polyline id="accelCurveLine" class="curveChartLine" points="32,108 188,20" />
+          <line id="accelCurveGuideX" class="curveChartGuide" x1="32" y1="108" x2="32" y2="108" />
+          <line id="accelCurveGuideY" class="curveChartGuide" x1="32" y1="108" x2="32" y2="108" />
+          <circle id="accelCurveDot" class="curveChartDot" cx="32" cy="108" r="4.8" />
+          <text x="32" y="124" text-anchor="middle">0%</text>
+          <text x="110" y="124" text-anchor="middle">50%</text>
+          <text x="188" y="124" text-anchor="middle">100%</text>
+          <text x="24" y="111" text-anchor="end">0</text>
+          <text x="24" y="67" text-anchor="end">50</text>
+          <text x="24" y="24" text-anchor="end">100</text>
+        </svg>
+        <div class="curveMeta">
+          <span><span data-i18n="curve.currentInput">Current Input</span> <strong id="accelCurveInputValue">0%</strong></span>
+          <span><span data-i18n="curve.currentOutput">Current Output</span> <strong id="accelCurveOutputValue">0%</strong></span>
+        </div>
+      </div>
+
+      <div class="tips">
+        <strong data-i18n="tips.title">Controls:</strong>
+        <span data-i18n="tips.forward">W / Up Forward</span>
+        <span data-i18n="tips.reverse">S / Down Reverse</span>
+        <span data-i18n="tips.left">A / Left Steer Left</span>
+        <span data-i18n="tips.right">D / Right Steer Right</span>
+        <span data-i18n="tips.signalLeft">Q Left Signal</span>
+        <span data-i18n="tips.signalRight">E Right Signal</span>
+        <span data-i18n="tips.brake">Space Brake</span>
+        <span data-i18n="tips.reset">O Reset</span>
+        <span data-i18n="tips.cycleViews">V Cycle Views</span>
+      </div>
+    </div>
+  </div>
+
+  <div id="hud">
+    <div class="status">
+      <div><span data-i18n="hud.speed">Speed:</span> <span id="speed">0.0</span> km/h</div>
+      <div><span data-i18n="hud.gear">Gear:</span> <span id="gear">N</span></div>
+      <div><span data-i18n="hud.view">View:</span> <span id="viewMode">Chase View</span></div>
+      <div><span data-i18n="hud.position">Position:</span> <span id="position">0.0, 0.0</span></div>
+      <div><span data-i18n="hud.heading">Heading:</span> <span id="heading">0.0</span>&deg;</div>
+      <div><span data-i18n="hud.steering">Steering:</span> <span id="steerAngle">0</span>&deg;</div>
+      <div id="signalStatusBox" data-signal="off"><span data-i18n="hud.signal">Signal:</span> <span id="signalStatus">Off</span></div>
+      <div id="audioStatusBox" data-audio="pending"><span data-i18n="hud.audio">Audio:</span> <span id="audioStatus">Waiting</span></div>
+    </div>
+    <div id="wheelHud" aria-hidden="true">
+      <div class="wheelHudTopMark"></div>
+      <div id="wheelHudDial">
+        <svg viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <circle cx="50" cy="50" r="44" stroke="#d4dfe8" stroke-width="7" stroke-opacity="0.9"/>
+          <line x1="50" y1="41" x2="50" y2="9.5" stroke="#c8d5e0" stroke-width="7" stroke-linecap="round" stroke-opacity="0.88"/>
+          <line x1="57.8" y1="54.5" x2="85.1" y2="70.3" stroke="#c8d5e0" stroke-width="7" stroke-linecap="round" stroke-opacity="0.88"/>
+          <line x1="42.2" y1="54.5" x2="14.9" y2="70.3" stroke="#c8d5e0" stroke-width="7" stroke-linecap="round" stroke-opacity="0.88"/>
+          <circle cx="50" cy="50" r="9" fill="#9fb0bc" fill-opacity="0.92" stroke="#d4dfe8" stroke-width="1.5" stroke-opacity="0.5"/>
+        </svg>
+      </div>
+    </div>
+  </div>
+
+  <div id="mirrorHud" aria-hidden="true">
+    <div class="mirrorPane" id="mirrorLeft">
+      <span class="mirrorLabel" data-i18n="mirrors.left">Left Mirror</span>
+    </div>
+    <div class="mirrorPane mirrorCenter" id="mirrorCenter">
+      <span class="mirrorLabel" data-i18n="mirrors.center">Center Mirror</span>
+    </div>
+    <div class="mirrorPane" id="mirrorRight">
+      <span class="mirrorLabel" data-i18n="mirrors.right">Right Mirror</span>
+    </div>
+  </div>
+
+  <div id="cockpitSignalHud" aria-hidden="true" data-signal="off">
+    <div class="cockpitSignalLamp" data-direction="left" data-i18n="cockpitSignal.left">← Left</div>
+    <div class="cockpitSignalLamp" data-direction="right" data-i18n="cockpitSignal.right">Right →</div>
+  </div>
+
+  <div id="miniMap" aria-hidden="true">
+    <span class="miniMapLabel" data-i18n="minimap.label">Mini Map</span>
+    <button id="miniMapClose" type="button" data-i18n-aria-label="minimap.close" aria-label="Close mini map">×</button>
+  </div>
+
+  <div id="mobileControls" data-i18n-aria-label="mobile.controls" aria-label="Mobile driving controls">
+    <div class="mobileCluster mobileClusterLeft">
+      <div class="mobileSteerRow">
+        <div
+          class="mobileSteerZone"
+          id="mobileSteerZone"
+          data-i18n-aria-label="mobile.steer"
+          aria-label="Swipe left and right to steer"
+          role="slider"
+          aria-valuemin="-100"
+          aria-valuemax="100"
+          aria-valuenow="0"
+        >
+          <div class="mobileSteerIndicator" id="mobileSteerIndicator"></div>
+          <span class="mobileSteerHint" data-i18n="mobile.steerHint">← Swipe to steer →</span>
+        </div>
+        <div class="mobileViewResetStack">
+          <button class="mobileControl" data-tap-action="view" data-i18n="mobile.view" data-i18n-aria-label="mobile.view" aria-label="View">View</button>
+          <button class="mobileControl" data-tap-action="reset" data-i18n="mobile.reset" data-i18n-aria-label="mobile.reset" aria-label="Reset">Reset</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="mobileCluster mobileClusterCenter">
+      <div class="mobileAuxRow mobileAuxRowCenter mobileBottomRow">
+        <div class="mobileWheelSlot" aria-hidden="true"></div>
+      </div>
+    </div>
+
+    <div class="mobileCluster mobileClusterRight">
+      <div
+        id="signalLever"
+        class="mobileSignalLever"
+        role="slider"
+        data-i18n-aria-label="mobile.signalLever"
+        aria-label="Turn signal lever: up for left, down for right"
+        aria-valuemin="-1"
+        aria-valuemax="1"
+        aria-valuenow="0"
+      >
+        <span class="signalLeverLabel signalLeverLabelTop" data-i18n="mobile.signalLeft">↑ Left</span>
+        <div class="signalLeverKnob" id="signalLeverKnob"></div>
+        <span class="signalLeverLabel signalLeverLabelBottom" data-i18n="mobile.signalRight">Right ↓</span>
+      </div>
+      <div class="mobileDriveStack mobileDriveStackRight">
+        <button class="mobileControl mobileHandbrake" data-hold-key=" " data-i18n="mobile.brake" data-i18n-aria-label="mobile.brake" aria-label="Brake">Brake</button>
+        <button class="mobileControl mobileControlTall mobileReverse" data-hold-key="s" data-i18n="mobile.reverse" data-i18n-aria-label="mobile.reverse" aria-label="Reverse">Reverse</button>
+        <button class="mobileControl mobileControlTall mobileBrake mobileBrakePrimary" data-hold-key=" " data-i18n="mobile.brake" data-i18n-aria-label="mobile.brake" aria-label="Brake">Brake</button>
+        <button class="mobileControl mobileControlTall mobileThrottle" data-hold-key="w" data-i18n="mobile.throttle" data-i18n-aria-label="mobile.throttle" aria-label="Throttle">Throttle</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="rotateOverlay" aria-live="polite">
+    <div class="rotateCard">
+      <strong data-i18n="rotate.title">Use Landscape Mode</strong>
+      <span data-i18n="rotate.description">The mobile layout is designed for landscape play. Rotate your device to continue.</span>
+    </div>
+  </div>
+
+  <div id="loadingOverlay" aria-live="polite" data-i18n-aria-label="loading.label" aria-label="Loading map">
+    <div class="loadingCard">
+      <div class="loadingSpinner"></div>
+      <span data-i18n="loading.text">Loading map…</span>
+    </div>
+  </div>
+
+  <canvas id="app"></canvas>
+  <script type="module" src="../assets/app.js"></script>
+</body>
+</html>
