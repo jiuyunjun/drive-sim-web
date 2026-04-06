@@ -59,7 +59,16 @@ const positionEl = document.getElementById('position');
 const headingEl = document.getElementById('heading');
 const maxSpeedEl = document.getElementById('maxSpeed');
 const maxSpeedValueEl = document.getElementById('maxSpeedValue');
+const accelCurveEl = document.getElementById('accelCurve');
+const accelCurveValueEl = document.getElementById('accelCurveValue');
+const accelCurveLineEl = document.getElementById('accelCurveLine');
+const accelCurveGuideXEl = document.getElementById('accelCurveGuideX');
+const accelCurveGuideYEl = document.getElementById('accelCurveGuideY');
+const accelCurveDotEl = document.getElementById('accelCurveDot');
+const accelCurveInputValueEl = document.getElementById('accelCurveInputValue');
+const accelCurveOutputValueEl = document.getElementById('accelCurveOutputValue');
 const autoCenterSteeringEl = document.getElementById('autoCenterSteering');
+const vehicleTypeEl = document.getElementById('vehicleType');
 const mapWidthEl = document.getElementById('mapWidth');
 const mapScaleEl = document.getElementById('mapScale');
 const mapScaleValueEl = document.getElementById('mapScaleValue');
@@ -101,6 +110,13 @@ const STEERING_WHEEL_MAX = Math.PI * 1.35;
 const AudioContextClass = window.AudioContext || window.webkitAudioContext;
 const SETTINGS_STORAGE_KEY = 'driveSimSettingsV2';
 const MAPS_BASE_URL = new URL('./maps/', import.meta.url);
+const ACCEL_CURVE_CHART = Object.freeze({
+  left: 32,
+  right: 188,
+  top: 20,
+  bottom: 108,
+  samples: 32,
+});
 const VIEW_LABELS = {
   follow: '跟车视角',
   cockpit: '第一人称',
@@ -158,7 +174,9 @@ function loadSettings() {
 function saveSettings() {
   const settings = {
     maxSpeed: state.maxSpeed,
+    accelCurve: state.accelCurve,
     autoCenterSteering: state.autoCenterSteering,
+    vehicleType: state.vehicleType,
     uiCollapsed: state.uiCollapsed,
     selectedMapId: state.selectedMapId,
     mapImageDataUrl: state.mapImageDataUrl,
@@ -184,8 +202,77 @@ function syncMaxSpeedControl(speed) {
   maxSpeedValueEl.textContent = `${clampedSpeed} m/s`;
 }
 
+function syncAccelCurveControl(curve) {
+  const clampedCurve = THREE.MathUtils.clamp(curve, 0.8, 1.8);
+  accelCurveEl.value = String(Math.round(clampedCurve * 100));
+  accelCurveValueEl.textContent = clampedCurve.toFixed(2);
+  updateAccelCurveChart(clampedCurve);
+}
+
+function getAccelCurveOutput(inputAmount, curveAmount) {
+  return Math.pow(
+    THREE.MathUtils.clamp(inputAmount, 0, 1),
+    THREE.MathUtils.clamp(curveAmount, 0.8, 1.8)
+  );
+}
+
+function getAccelCurveChartX(inputAmount) {
+  return THREE.MathUtils.lerp(ACCEL_CURVE_CHART.left, ACCEL_CURVE_CHART.right, inputAmount);
+}
+
+function getAccelCurveChartY(outputAmount) {
+  return THREE.MathUtils.lerp(ACCEL_CURVE_CHART.bottom, ACCEL_CURVE_CHART.top, outputAmount);
+}
+
+function updateAccelCurveMarker(inputAmount) {
+  if (!accelCurveDotEl || !accelCurveGuideXEl || !accelCurveGuideYEl) return;
+
+  const clampedInput = THREE.MathUtils.clamp(inputAmount, 0, 1);
+  const outputAmount = getAccelCurveOutput(clampedInput, state.accelCurve);
+  const x = getAccelCurveChartX(clampedInput);
+  const y = getAccelCurveChartY(outputAmount);
+  const bottom = ACCEL_CURVE_CHART.bottom;
+  const left = ACCEL_CURVE_CHART.left;
+
+  accelCurveGuideXEl.setAttribute('x1', x.toFixed(1));
+  accelCurveGuideXEl.setAttribute('y1', bottom.toFixed(1));
+  accelCurveGuideXEl.setAttribute('x2', x.toFixed(1));
+  accelCurveGuideXEl.setAttribute('y2', y.toFixed(1));
+
+  accelCurveGuideYEl.setAttribute('x1', left.toFixed(1));
+  accelCurveGuideYEl.setAttribute('y1', y.toFixed(1));
+  accelCurveGuideYEl.setAttribute('x2', x.toFixed(1));
+  accelCurveGuideYEl.setAttribute('y2', y.toFixed(1));
+
+  accelCurveDotEl.setAttribute('cx', x.toFixed(1));
+  accelCurveDotEl.setAttribute('cy', y.toFixed(1));
+
+  if (accelCurveInputValueEl) accelCurveInputValueEl.textContent = `${Math.round(clampedInput * 100)}%`;
+  if (accelCurveOutputValueEl) accelCurveOutputValueEl.textContent = `${Math.round(outputAmount * 100)}%`;
+}
+
+function updateAccelCurveChart(curve) {
+  if (!accelCurveLineEl) return;
+
+  const clampedCurve = THREE.MathUtils.clamp(curve, 0.8, 1.8);
+  const points = [];
+
+  for (let sample = 0; sample <= ACCEL_CURVE_CHART.samples; sample += 1) {
+    const inputAmount = sample / ACCEL_CURVE_CHART.samples;
+    const outputAmount = getAccelCurveOutput(inputAmount, clampedCurve);
+    points.push(`${getAccelCurveChartX(inputAmount).toFixed(1)},${getAccelCurveChartY(outputAmount).toFixed(1)}`);
+  }
+
+  accelCurveLineEl.setAttribute('points', points.join(' '));
+  updateAccelCurveMarker(typeof state === 'object' ? state.throttleInput : 0);
+}
+
 function syncAutoCenterControl(enabled) {
   autoCenterSteeringEl.checked = Boolean(enabled);
+}
+
+function syncVehicleTypeControl(vehicleType) {
+  vehicleTypeEl.value = vehicleType;
 }
 
 function updateSignalStatus() {
@@ -410,154 +497,205 @@ const car = new THREE.Group();
 scene.add(car);
 
 /* ── Car body (shaped with custom geometry) ── */
-const bodyMat = new THREE.MeshStandardMaterial({ color: 0xd32f2f, metalness: 0.35, roughness: 0.45 });
+const bodyMat = new THREE.MeshStandardMaterial({ color: 0xc5ccd2, metalness: 0.76, roughness: 0.28 });
+const chromeMat = new THREE.MeshStandardMaterial({ color: 0xd8dee3, metalness: 0.92, roughness: 0.16 });
+const trimBlackMat = new THREE.MeshStandardMaterial({ color: 0x14181d, metalness: 0.38, roughness: 0.58 });
 
 // Lower body shell
-const body = new THREE.Mesh(new THREE.BoxGeometry(2.0, 0.7, 4.4), bodyMat);
-body.position.y = 0.85;
+const body = new THREE.Mesh(new THREE.BoxGeometry(1.98, 0.64, 4.56), bodyMat);
+body.position.y = 0.8;
 body.castShadow = true;
 body.receiveShadow = true;
 car.add(body);
 
+const shoulderShell = new THREE.Mesh(new THREE.BoxGeometry(1.84, 0.2, 3.44), bodyMat);
+shoulderShell.position.set(0, 1.02, -0.04);
+shoulderShell.castShadow = true;
+car.add(shoulderShell);
+
 // Hood (sloped front)
-const hoodGeo = new THREE.BoxGeometry(1.9, 0.12, 1.5);
-hoodGeo.attributes.position.array[1] += 0.04; // slight slope front-left
-hoodGeo.attributes.position.array[4] += 0.04;
-hoodGeo.attributes.position.array[7] -= 0.06;
-hoodGeo.attributes.position.array[10] -= 0.06;
+const hoodGeo = new THREE.BoxGeometry(1.84, 0.12, 1.5);
 const hood = new THREE.Mesh(hoodGeo, bodyMat);
-hood.position.set(0, 1.26, 1.35);
+hood.position.set(0, 1.18, 1.34);
+hood.rotation.x = -0.08;
 hood.castShadow = true;
 car.add(hood);
 
 // Trunk lid
-const trunk = new THREE.Mesh(new THREE.BoxGeometry(1.86, 0.1, 1.1), bodyMat);
-trunk.position.set(0, 1.24, -1.55);
+const trunk = new THREE.Mesh(new THREE.BoxGeometry(1.8, 0.12, 0.96), bodyMat);
+trunk.position.set(0, 1.19, -1.66);
+trunk.rotation.x = 0.04;
 trunk.castShadow = true;
 car.add(trunk);
 
 // Front bumper
 const frontBumper = new THREE.Mesh(
-  new THREE.BoxGeometry(2.1, 0.32, 0.22),
-  new THREE.MeshStandardMaterial({ color: 0x1a1a1a, roughness: 0.85 })
+  new THREE.BoxGeometry(2.0, 0.36, 0.34),
+  bodyMat
 );
-frontBumper.position.set(0, 0.66, 2.25);
+frontBumper.position.set(0, 0.7, 2.2);
 frontBumper.castShadow = true;
+const frontLowerIntake = new THREE.Mesh(new THREE.BoxGeometry(1.76, 0.16, 0.12), trimBlackMat);
+frontLowerIntake.position.set(0, -0.16, 0.06);
+const fogPocketL = new THREE.Mesh(new THREE.BoxGeometry(0.24, 0.08, 0.08), trimBlackMat);
+fogPocketL.position.set(-0.74, -0.08, 0.04);
+const fogPocketR = fogPocketL.clone();
+fogPocketR.position.x = 0.74;
+frontBumper.add(frontLowerIntake, fogPocketL, fogPocketR);
 car.add(frontBumper);
 
 // Rear bumper
 const rearBumper = new THREE.Mesh(
-  new THREE.BoxGeometry(2.1, 0.32, 0.22),
-  new THREE.MeshStandardMaterial({ color: 0x1a1a1a, roughness: 0.85 })
+  new THREE.BoxGeometry(2.02, 0.32, 0.28),
+  bodyMat
 );
-rearBumper.position.set(0, 0.66, -2.25);
+rearBumper.position.set(0, 0.69, -2.22);
 rearBumper.castShadow = true;
+const rearDiffuser = new THREE.Mesh(new THREE.BoxGeometry(1.46, 0.12, 0.1), trimBlackMat);
+rearDiffuser.position.set(0, -0.12, -0.03);
+rearBumper.add(rearDiffuser);
 car.add(rearBumper);
 
 // Front grille
 const grille = new THREE.Mesh(
-  new THREE.BoxGeometry(1.2, 0.22, 0.06),
-  new THREE.MeshStandardMaterial({ color: 0x111111, metalness: 0.6, roughness: 0.3 })
+  new THREE.BoxGeometry(1.06, 0.22, 0.04),
+  trimBlackMat
 );
-grille.position.set(0, 0.78, 2.22);
+grille.position.set(0, 0.8, 2.29);
+const upperGrille = new THREE.Mesh(new THREE.BoxGeometry(0.88, 0.11, 0.04), trimBlackMat);
+upperGrille.position.set(0, 0.17, 0);
+const chromeWingL = new THREE.Mesh(new THREE.BoxGeometry(0.34, 0.03, 0.04), chromeMat);
+chromeWingL.position.set(-0.27, 0.2, 0.01);
+chromeWingL.rotation.z = 0.22;
+const chromeWingR = chromeWingL.clone();
+chromeWingR.position.x = 0.27;
+chromeWingR.rotation.z = -0.22;
+const grilleBadge = new THREE.Mesh(new THREE.TorusGeometry(0.08, 0.015, 8, 22), chromeMat);
+grilleBadge.position.set(0, 0.17, 0.04);
+grille.add(upperGrille, chromeWingL, chromeWingR, grilleBadge);
 car.add(grille);
 
 /* ── Cabin (with pillar structure) ── */
-const cabinMat = new THREE.MeshStandardMaterial({ color: 0x181818, metalness: 0.2, roughness: 0.4 });
+const cabinMat = new THREE.MeshStandardMaterial({ color: 0x111315, metalness: 0.16, roughness: 0.44 });
 
-const cabin = new THREE.Mesh(new THREE.BoxGeometry(1.7, 0.72, 2.2), cabinMat);
-cabin.position.set(0, 1.56, -0.05);
+const cabin = new THREE.Mesh(new THREE.BoxGeometry(1.62, 0.56, 2.16), cabinMat);
+cabin.position.set(0, 1.57, -0.08);
 cabin.castShadow = true;
 car.add(cabin);
+
+const roofPanel = new THREE.Mesh(new THREE.BoxGeometry(1.52, 0.08, 1.42), bodyMat);
+roofPanel.position.set(0, 1.9, -0.08);
+roofPanel.castShadow = true;
+car.add(roofPanel);
 
 // A-pillars (front windshield pillars)
 const pillarMat = new THREE.MeshStandardMaterial({ color: 0x1a1a1a, roughness: 0.7 });
 const aPillarGeo = new THREE.BoxGeometry(0.08, 0.76, 0.1);
 const aPillarL = new THREE.Mesh(aPillarGeo, pillarMat);
-aPillarL.position.set(-0.82, 1.56, 0.85);
+aPillarL.position.set(-0.76, 1.58, 0.83);
 aPillarL.rotation.z = -0.18;
 car.add(aPillarL);
 const aPillarR = new THREE.Mesh(aPillarGeo, pillarMat);
-aPillarR.position.set(0.82, 1.56, 0.85);
+aPillarR.position.set(0.76, 1.58, 0.83);
 aPillarR.rotation.z = 0.18;
 car.add(aPillarR);
 
 // C-pillars (rear)
 const cPillarL = new THREE.Mesh(aPillarGeo, pillarMat);
-cPillarL.position.set(-0.82, 1.56, -0.95);
+cPillarL.position.set(-0.74, 1.59, -0.98);
 cPillarL.rotation.z = -0.12;
 car.add(cPillarL);
 const cPillarR = new THREE.Mesh(aPillarGeo, pillarMat);
-cPillarR.position.set(0.82, 1.56, -0.95);
+cPillarR.position.set(0.74, 1.59, -0.98);
 cPillarR.rotation.z = 0.12;
 car.add(cPillarR);
 
 /* ── Windows (semi-transparent glass) ── */
 const glassMat = new THREE.MeshStandardMaterial({
-  color: 0x88bbdd, metalness: 0.1, roughness: 0.05, transparent: true, opacity: 0.35,
+  color: 0x88b6d0, metalness: 0.12, roughness: 0.08, transparent: true, opacity: 0.34,
 });
 
 // Windshield
-const windshield = new THREE.Mesh(new THREE.PlaneGeometry(1.52, 0.68), glassMat);
-windshield.position.set(0, 1.58, 0.99);
-windshield.rotation.x = 0.22;
+const windshield = new THREE.Mesh(new THREE.PlaneGeometry(1.48, 0.7), glassMat);
+windshield.position.set(0, 1.57, 0.97);
+windshield.rotation.x = 0.26;
 car.add(windshield);
 
 // Rear window
-const rearWindow = new THREE.Mesh(new THREE.PlaneGeometry(1.48, 0.6), glassMat);
-rearWindow.position.set(0, 1.56, -1.12);
-rearWindow.rotation.x = -0.25;
+const rearWindow = new THREE.Mesh(new THREE.PlaneGeometry(1.38, 0.54), glassMat);
+rearWindow.position.set(0, 1.59, -1.12);
+rearWindow.rotation.x = -0.33;
 rearWindow.rotation.y = Math.PI;
 car.add(rearWindow);
 
 // Side windows
-const sideWindowGeo = new THREE.PlaneGeometry(1.5, 0.5);
+const sideWindowGeo = new THREE.PlaneGeometry(1.42, 0.46);
 const sideWindowL = new THREE.Mesh(sideWindowGeo, glassMat);
-sideWindowL.position.set(-0.86, 1.58, -0.05);
+sideWindowL.position.set(-0.82, 1.58, -0.08);
 sideWindowL.rotation.y = -Math.PI / 2;
 car.add(sideWindowL);
 const sideWindowR = new THREE.Mesh(sideWindowGeo, glassMat);
-sideWindowR.position.set(0.86, 1.58, -0.05);
+sideWindowR.position.set(0.82, 1.58, -0.08);
 sideWindowR.rotation.y = Math.PI / 2;
 car.add(sideWindowR);
 
 /* ── Headlights ── */
 const headlightMat = new THREE.MeshStandardMaterial({
-  color: 0xffffee, emissive: 0xffffcc, emissiveIntensity: 0.4, metalness: 0.3, roughness: 0.2,
+  color: 0xfffff1, emissive: 0xffffcf, emissiveIntensity: 0.42, metalness: 0.3, roughness: 0.18,
 });
-const headlightGeo = new THREE.BoxGeometry(0.38, 0.2, 0.12);
+const headlightGeo = new THREE.BoxGeometry(0.42, 0.1, 0.1);
 const headlightL = new THREE.Mesh(headlightGeo, headlightMat);
-headlightL.position.set(-0.7, 0.88, 2.22);
+headlightL.position.set(-0.72, 0.93, 2.18);
+headlightL.rotation.y = -0.34;
+headlightL.rotation.z = -0.1;
+const headlightLTip = new THREE.Mesh(new THREE.BoxGeometry(0.2, 0.08, 0.08), headlightMat);
+headlightLTip.position.set(-0.18, -0.02, -0.06);
+headlightLTip.rotation.y = -0.2;
+headlightL.add(headlightLTip);
 car.add(headlightL);
 const headlightR = new THREE.Mesh(headlightGeo, headlightMat);
-headlightR.position.set(0.7, 0.88, 2.22);
+headlightR.position.set(0.72, 0.93, 2.18);
+headlightR.rotation.y = 0.34;
+headlightR.rotation.z = 0.1;
+const headlightRTip = new THREE.Mesh(new THREE.BoxGeometry(0.2, 0.08, 0.08), headlightMat);
+headlightRTip.position.set(0.18, -0.02, -0.06);
+headlightRTip.rotation.y = 0.2;
+headlightR.add(headlightRTip);
 car.add(headlightR);
 
 /* ── Tail lights ── */
 const taillightMat = new THREE.MeshStandardMaterial({
-  color: 0x660000, emissive: 0xff1111, emissiveIntensity: 0.15, metalness: 0.2, roughness: 0.3,
+  color: 0x6f0a0a, emissive: 0xff1b1b, emissiveIntensity: 0.16, metalness: 0.24, roughness: 0.3,
 });
-const taillightGeo = new THREE.BoxGeometry(0.32, 0.18, 0.1);
+const taillightGeo = new THREE.BoxGeometry(0.34, 0.12, 0.09);
 const taillightL = new THREE.Mesh(taillightGeo, taillightMat);
-taillightL.position.set(-0.72, 0.88, -2.22);
+taillightL.position.set(-0.72, 0.9, -2.18);
+taillightL.rotation.y = -0.18;
+const taillightLInner = new THREE.Mesh(new THREE.BoxGeometry(0.18, 0.1, 0.07), taillightMat);
+taillightLInner.position.set(0.22, 0, 0.02);
+taillightL.add(taillightLInner);
 car.add(taillightL);
 const taillightR = new THREE.Mesh(taillightGeo, taillightMat);
-taillightR.position.set(0.72, 0.88, -2.22);
+taillightR.position.set(0.72, 0.9, -2.18);
+taillightR.rotation.y = 0.18;
+const taillightRInner = new THREE.Mesh(new THREE.BoxGeometry(0.18, 0.1, 0.07), taillightMat);
+taillightRInner.position.set(-0.22, 0, 0.02);
+taillightR.add(taillightRInner);
 car.add(taillightR);
 
 /* ── Side mirrors ── */
-const mirrorBodyMat = new THREE.MeshStandardMaterial({ color: 0xd32f2f, metalness: 0.3, roughness: 0.5 });
+const mirrorBodyMat = new THREE.MeshStandardMaterial({ color: 0xc5ccd2, metalness: 0.68, roughness: 0.3 });
 const mirrorGlassMat = new THREE.MeshStandardMaterial({ color: 0xaaccee, metalness: 0.8, roughness: 0.05 });
 function createSideMirror(side) {
   const g = new THREE.Group();
-  const arm = new THREE.Mesh(new THREE.BoxGeometry(0.28, 0.06, 0.06), mirrorBodyMat);
-  const housing = new THREE.Mesh(new THREE.BoxGeometry(0.06, 0.14, 0.2), mirrorBodyMat);
-  housing.position.set(side * 0.14, 0, 0.04);
-  const glass = new THREE.Mesh(new THREE.PlaneGeometry(0.04, 0.12), mirrorGlassMat);
-  glass.position.set(side * 0.17, 0, 0.04);
+  const arm = new THREE.Mesh(new THREE.BoxGeometry(0.24, 0.05, 0.05), trimBlackMat);
+  const housing = new THREE.Mesh(new THREE.BoxGeometry(0.08, 0.14, 0.22), mirrorBodyMat);
+  housing.position.set(side * 0.13, 0.01, 0.05);
+  const glass = new THREE.Mesh(new THREE.PlaneGeometry(0.06, 0.11), mirrorGlassMat);
+  glass.position.set(side * 0.18, 0.01, 0.05);
   glass.rotation.y = side > 0 ? Math.PI / 2 : -Math.PI / 2;
   g.add(arm, housing, glass);
-  g.position.set(side * 1.08, 1.28, 0.7);
+  g.position.set(side * 1.04, 1.3, 0.75);
   car.add(g);
   return g;
 }
@@ -565,13 +703,13 @@ const sideMirrorL = createSideMirror(-1);
 const sideMirrorR = createSideMirror(1);
 
 /* ── Roof rail accents ── */
-const roofRailMat = new THREE.MeshStandardMaterial({ color: 0x888888, metalness: 0.5, roughness: 0.3 });
-const roofRailGeo = new THREE.BoxGeometry(0.04, 0.04, 1.8);
+const roofRailMat = chromeMat;
+const roofRailGeo = new THREE.BoxGeometry(0.02, 0.02, 1.46);
 const roofRailL = new THREE.Mesh(roofRailGeo, roofRailMat);
-roofRailL.position.set(-0.82, 1.93, -0.05);
+roofRailL.position.set(-0.72, 1.86, -0.08);
 car.add(roofRailL);
 const roofRailR = new THREE.Mesh(roofRailGeo, roofRailMat);
-roofRailR.position.set(0.82, 1.93, -0.05);
+roofRailR.position.set(0.72, 1.86, -0.08);
 car.add(roofRailR);
 
 /* ── Dashboard ── */
@@ -646,6 +784,110 @@ for (const angle of [0, Math.PI * 2 / 3, Math.PI * 4 / 3]) {
 
 car.add(steeringWheel);
 
+const motorcycleRoot = new THREE.Group();
+car.add(motorcycleRoot);
+
+const bikeFrameMat = new THREE.MeshStandardMaterial({ color: 0x2a2d31, metalness: 0.46, roughness: 0.44 });
+const bikeSilverMat = new THREE.MeshStandardMaterial({ color: 0xc9ced3, metalness: 0.78, roughness: 0.28 });
+const bikeSeatMat = new THREE.MeshStandardMaterial({ color: 0x111214, roughness: 0.9, metalness: 0.06 });
+
+const bikeFrame = new THREE.Mesh(new THREE.BoxGeometry(0.22, 0.22, 1.78), bikeFrameMat);
+bikeFrame.position.set(0, 0.95, 0);
+motorcycleRoot.add(bikeFrame);
+
+const bikeTank = new THREE.Mesh(new THREE.BoxGeometry(0.5, 0.34, 0.7), bikeSilverMat);
+bikeTank.position.set(0, 1.18, 0.46);
+bikeTank.rotation.x = -0.22;
+motorcycleRoot.add(bikeTank);
+
+const bikeSeat = new THREE.Mesh(new THREE.BoxGeometry(0.42, 0.14, 0.74), bikeSeatMat);
+bikeSeat.position.set(0, 1.08, -0.34);
+bikeSeat.rotation.x = 0.08;
+motorcycleRoot.add(bikeSeat);
+
+const bikeTail = new THREE.Mesh(new THREE.BoxGeometry(0.34, 0.16, 0.48), bikeSilverMat);
+bikeTail.position.set(0, 1.12, -0.84);
+bikeTail.rotation.x = 0.18;
+motorcycleRoot.add(bikeTail);
+
+const bikeEngine = new THREE.Mesh(new THREE.BoxGeometry(0.38, 0.36, 0.34), bikeFrameMat);
+bikeEngine.position.set(0, 0.72, -0.02);
+motorcycleRoot.add(bikeEngine);
+
+const bikeFork = new THREE.Group();
+const bikeForkL = new THREE.Mesh(new THREE.CylinderGeometry(0.028, 0.028, 0.72, 10), chromeMat);
+bikeForkL.position.set(-0.08, 0.92, 1.18);
+bikeForkL.rotation.x = 0.12;
+const bikeForkR = bikeForkL.clone();
+bikeForkR.position.x = 0.08;
+bikeFork.add(bikeForkL, bikeForkR);
+motorcycleRoot.add(bikeFork);
+
+const bikeHandlebar = new THREE.Group();
+const bikeBar = new THREE.Mesh(new THREE.CylinderGeometry(0.026, 0.026, 0.66, 12), chromeMat);
+bikeBar.rotation.z = Math.PI / 2;
+const bikeBarCenter = new THREE.Mesh(new THREE.BoxGeometry(0.12, 0.05, 0.08), bikeFrameMat);
+bikeHandlebar.add(bikeBar, bikeBarCenter);
+bikeHandlebar.position.set(0, 1.34, 0.84);
+motorcycleRoot.add(bikeHandlebar);
+
+const bikeHeadlight = new THREE.Mesh(
+  new THREE.CylinderGeometry(0.14, 0.14, 0.18, 18),
+  new THREE.MeshStandardMaterial({ color: 0xf7f4eb, emissive: 0xffffd8, emissiveIntensity: 0.34, metalness: 0.34, roughness: 0.22 })
+);
+bikeHeadlight.rotation.x = Math.PI / 2;
+bikeHeadlight.position.set(0, 1.18, 1.46);
+motorcycleRoot.add(bikeHeadlight);
+
+const bikeScreen = new THREE.Mesh(
+  new THREE.PlaneGeometry(0.32, 0.24),
+  new THREE.MeshStandardMaterial({ color: 0x88b6d0, transparent: true, opacity: 0.22, metalness: 0.1, roughness: 0.08 })
+);
+bikeScreen.position.set(0, 1.38, 1.18);
+bikeScreen.rotation.x = 0.32;
+motorcycleRoot.add(bikeScreen);
+
+function createBikeWheel() {
+  const group = new THREE.Group();
+  const tire = new THREE.Mesh(
+    new THREE.CylinderGeometry(0.46, 0.46, 0.14, 24),
+    new THREE.MeshStandardMaterial({ color: 0x181818, roughness: 0.94 })
+  );
+  tire.rotation.z = Math.PI / 2;
+  const rim = new THREE.Mesh(
+    new THREE.CylinderGeometry(0.28, 0.28, 0.16, 18),
+    new THREE.MeshStandardMaterial({ color: 0x9ea7af, metalness: 0.78, roughness: 0.22 })
+  );
+  rim.rotation.z = Math.PI / 2;
+  group.add(tire, rim);
+  return { group, tire };
+}
+
+const bikeFrontWheelPivot = new THREE.Group();
+bikeFrontWheelPivot.position.set(0, 0.48, 1.35);
+const bikeFrontWheelAssembly = createBikeWheel();
+bikeFrontWheelPivot.add(bikeFrontWheelAssembly.group);
+motorcycleRoot.add(bikeFrontWheelPivot);
+
+const bikeRearWheelMount = new THREE.Group();
+bikeRearWheelMount.position.set(0, 0.48, -1.35);
+const bikeRearWheelAssembly = createBikeWheel();
+bikeRearWheelMount.add(bikeRearWheelAssembly.group);
+motorcycleRoot.add(bikeRearWheelMount);
+
+const bikeCockpitRoot = new THREE.Group();
+car.add(bikeCockpitRoot);
+const bikeCockpitBar = bikeHandlebar.clone();
+bikeCockpitBar.position.set(0, 1.26, 0.72);
+const bikeCockpitCluster = new THREE.Mesh(
+  new THREE.BoxGeometry(0.2, 0.12, 0.05),
+  new THREE.MeshStandardMaterial({ color: 0x061015, emissive: 0x14394d, emissiveIntensity: 0.18, roughness: 0.32 })
+);
+bikeCockpitCluster.position.set(0, 1.33, 0.61);
+const bikeCockpitScreen = bikeScreen.clone();
+bikeCockpitScreen.position.set(0, 1.42, 0.96);
+bikeCockpitRoot.add(bikeCockpitBar, bikeCockpitCluster, bikeCockpitScreen);
+
 function createSignalLamp(x, y, z) {
   const mesh = new THREE.Mesh(
     new THREE.BoxGeometry(0.34, 0.18, 0.16),
@@ -704,6 +946,32 @@ const brakeLamps = [
   createBrakeLamp(0.5, 0.96, -2.13),
 ];
 
+function createReverseLamp(x, y, z) {
+  const mesh = new THREE.Mesh(
+    new THREE.BoxGeometry(0.22, 0.1, 0.08),
+    new THREE.MeshStandardMaterial({
+      color: 0xeeeeff,
+      emissive: 0xeef6ff,
+      emissiveIntensity: 0.02,
+      roughness: 0.26,
+      metalness: 0.16,
+    })
+  );
+  mesh.position.set(x, y, z);
+  mesh.castShadow = true;
+
+  const light = new THREE.PointLight(0xeef6ff, 0, 4.5, 2);
+  light.position.copy(mesh.position);
+
+  car.add(mesh, light);
+  return { mesh, light };
+}
+
+const reverseLamps = [
+  createReverseLamp(-0.2, 0.88, -2.16),
+  createReverseLamp(0.2, 0.88, -2.16),
+];
+
 function setSignalLampState(lamp, isActive) {
   lamp.mesh.material.emissiveIntensity = isActive ? 2.2 : 0.02;
   lamp.mesh.scale.setScalar(isActive ? 1.06 : 1);
@@ -728,6 +996,13 @@ function updateBrakeLights(isActive) {
     lamp.mesh.material.emissiveIntensity = isActive ? 2.4 : 0.04;
     lamp.mesh.scale.setScalar(isActive ? 1.04 : 1);
     lamp.light.intensity = isActive ? 1.6 : 0;
+  });
+}
+
+function updateReverseLights(isActive) {
+  reverseLamps.forEach((lamp) => {
+    lamp.mesh.material.emissiveIntensity = isActive ? 1.8 : 0.02;
+    lamp.light.intensity = isActive ? 1.1 : 0;
   });
 }
 
@@ -847,9 +1122,25 @@ window.addEventListener('pointerdown', () => {
   void ensureAudioRunning();
   void requestMobileImmersiveMode();
 }, { passive: true });
+window.addEventListener('fullscreenchange', refreshMobileShellState);
+window.addEventListener('visibilitychange', () => {
+  if (!document.hidden) refreshMobileShellState();
+});
+window.addEventListener('pageshow', refreshMobileShellState);
 
 function bindMobileControls() {
   if (!mobileControlsEl) return;
+
+  const suppressMobileUiDefault = (element) => {
+    if (!element) return;
+    ['contextmenu', 'selectstart', 'dragstart'].forEach((eventName) => {
+      element.addEventListener(eventName, (event) => event.preventDefault());
+    });
+  };
+
+  suppressMobileUiDefault(mobileControlsEl);
+  suppressMobileUiDefault(mobileSteerZoneEl);
+  suppressMobileUiDefault(signalLeverEl);
 
   const releasePointer = (pointerId) => {
     const binding = activeTouchPointers.get(pointerId);
@@ -863,9 +1154,13 @@ function bindMobileControls() {
     const holdKey = button.dataset.holdKey;
     const tapAction = button.dataset.tapAction;
 
+    button.setAttribute('draggable', 'false');
+    suppressMobileUiDefault(button);
+
     button.addEventListener('pointerdown', (event) => {
       event.preventDefault();
       void ensureAudioRunning();
+      void requestMobileImmersiveMode();
       navigator.vibrate?.(10);
 
       if (holdKey) {
@@ -897,6 +1192,7 @@ function bindMobileControls() {
     mobileSteerZoneEl.addEventListener('pointerdown', (e) => {
       e.preventDefault();
       void ensureAudioRunning();
+      void requestMobileImmersiveMode();
       navigator.vibrate?.(10);
       state.touchSteerActive = true;
       state.touchSteerPointerId = e.pointerId;
@@ -942,6 +1238,7 @@ function bindMobileControls() {
     signalLeverEl.addEventListener('pointerdown', (e) => {
       e.preventDefault();
       void ensureAudioRunning();
+      void requestMobileImmersiveMode();
       leverPointerId = e.pointerId;
       leverStartY = e.clientY;
       leverToggled = false;
@@ -1005,9 +1302,15 @@ function isMobileLikeDevice() {
   return window.matchMedia('(hover: none), (pointer: coarse), (max-width: 900px)').matches;
 }
 
+function isStandaloneDisplayMode() {
+  return window.matchMedia('(display-mode: standalone)').matches
+    || window.matchMedia('(display-mode: fullscreen)').matches
+    || window.navigator.standalone === true;
+}
+
 async function tryEnterFullscreen() {
   if (!isMobileLikeDevice()) return;
-  if (document.fullscreenElement) return;
+  if (document.fullscreenElement || isStandaloneDisplayMode()) return;
 
   const root = document.documentElement;
   const requestFullscreen = root.requestFullscreen
@@ -1038,7 +1341,11 @@ async function tryLockLandscapeOrientation() {
   try {
     await screen.orientation.lock('landscape');
   } catch (error) {
-    console.debug('Landscape orientation lock unavailable:', error);
+    try {
+      await screen.orientation.lock('landscape-primary');
+    } catch (fallbackError) {
+      console.debug('Landscape orientation lock unavailable:', fallbackError ?? error);
+    }
   }
 }
 
@@ -1065,6 +1372,15 @@ async function requestMobileImmersiveMode() {
   tryHideAddressBar();
 }
 
+function refreshMobileShellState() {
+  if (!isMobileLikeDevice()) return;
+  updateOrientationUi();
+  if (isStandaloneDisplayMode() || document.fullscreenElement) {
+    void tryLockLandscapeOrientation();
+  }
+  tryHideAddressBar();
+}
+
 function registerServiceWorker() {
   if (!('serviceWorker' in navigator)) return;
   window.addEventListener('load', () => {
@@ -1079,9 +1395,11 @@ const state = {
   heading: 0,
   steer: 0,
   steeringWheelAngle: 0,
+  vehicleType: persistedSettings?.vehicleType === 'motorcycle' ? 'motorcycle' : 'sedan',
   view: 'follow',
   uiCollapsed: false,
   maxSpeed: Number(maxSpeedEl.value),
+  accelCurve: THREE.MathUtils.clamp((Number(persistedSettings?.accelCurve) || 1.35), 0.8, 1.8),
   turnSignal: 'off',
   signalBlinkVisible: false,
   signalTimer: 0,
@@ -1152,6 +1470,15 @@ function getViewPose(view) {
   const { forward, right } = getVehicleAxes();
 
   if (view === 'cockpit') {
+    if (state.vehicleType === 'motorcycle') {
+      const position = car.position.clone()
+        .add(new THREE.Vector3(0, 1.42, 0))
+        .add(forward.clone().multiplyScalar(0.18));
+      const lookTarget = position.clone()
+        .add(forward.clone().multiplyScalar(30))
+        .add(new THREE.Vector3(0, -0.08, 0));
+      return { position, lookTarget };
+    }
     // Keep the eye point slightly raised and forward to avoid clipping into the dash.
     const position = car.position.clone()
       .add(new THREE.Vector3(0, 1.6, 0))
@@ -1165,23 +1492,68 @@ function getViewPose(view) {
   }
 
   const position = car.position.clone()
-    .add(new THREE.Vector3(0, 5.5, 0))
-    .add(forward.clone().multiplyScalar(-9));
+    .add(new THREE.Vector3(0, state.vehicleType === 'motorcycle' ? 4.6 : 5.5, 0))
+    .add(forward.clone().multiplyScalar(state.vehicleType === 'motorcycle' ? -7.2 : -9));
   const lookTarget = car.position.clone()
-    .add(new THREE.Vector3(0, 1.6, 0))
+    .add(new THREE.Vector3(0, state.vehicleType === 'motorcycle' ? 1.28 : 1.6, 0))
     .add(forward.clone().multiplyScalar(7));
   return { position, lookTarget };
 }
 
 function setCockpitBodyVisibility(isVisible) {
+  if (state.vehicleType === 'motorcycle') {
+    body.visible = false;
+    shoulderShell.visible = false;
+    hood.visible = false;
+    trunk.visible = false;
+    frontBumper.visible = false;
+    rearBumper.visible = false;
+    grille.visible = false;
+    cabin.visible = false;
+    roofPanel.visible = false;
+    headlightL.visible = false;
+    headlightR.visible = false;
+    taillightL.visible = false;
+    taillightR.visible = false;
+    sideMirrorL.visible = false;
+    sideMirrorR.visible = false;
+    roofRailL.visible = false;
+    roofRailR.visible = false;
+    rearWindow.visible = false;
+    driverSeat.visible = false;
+    passengerSeat.visible = false;
+    dashboard.visible = false;
+    instrumentCluster.visible = false;
+    centerScreen.visible = false;
+    steeringWheel.visible = false;
+    windshield.visible = false;
+    sideWindowL.visible = false;
+    sideWindowR.visible = false;
+    aPillarL.visible = false;
+    aPillarR.visible = false;
+    cPillarL.visible = false;
+    cPillarR.visible = false;
+    motorcycleRoot.visible = isVisible;
+    bikeCockpitRoot.visible = !isVisible;
+    wheelAssemblies.forEach((assembly) => {
+      assembly.pivot.visible = false;
+    });
+    bikeFrontWheelPivot.visible = isVisible;
+    bikeRearWheelMount.visible = isVisible;
+    arrow.visible = isVisible && state.view !== 'cockpit';
+    return;
+  }
+
   // Exterior parts: hidden in cockpit
   body.visible = isVisible;
+  shoulderShell.visible = isVisible;
   hood.visible = isVisible;
   trunk.visible = isVisible;
   frontBumper.visible = isVisible;
   rearBumper.visible = isVisible;
   grille.visible = isVisible;
   cabin.visible = isVisible;
+  roofPanel.visible = isVisible;
   headlightL.visible = isVisible;
   headlightR.visible = isVisible;
   taillightL.visible = isVisible;
@@ -1206,8 +1578,34 @@ function setCockpitBodyVisibility(isVisible) {
   aPillarR.visible = true;
   cPillarL.visible = !isVisible; // only show C-pillars from cockpit for framing
   cPillarR.visible = !isVisible;
+  motorcycleRoot.visible = false;
+  bikeCockpitRoot.visible = false;
+  wheelAssemblies.forEach((assembly) => {
+    assembly.pivot.visible = true;
+  });
+  bikeFrontWheelPivot.visible = false;
+  bikeRearWheelMount.visible = false;
 
   arrow.visible = isVisible && state.view !== 'cockpit';
+}
+
+function setVehicleType(nextVehicleType) {
+  state.vehicleType = nextVehicleType === 'motorcycle' ? 'motorcycle' : 'sedan';
+  syncVehicleTypeControl(state.vehicleType);
+  motorcycleRoot.rotation.z = 0;
+  bikeCockpitRoot.rotation.z = 0;
+  bikeHandlebar.rotation.y = state.steer;
+  bikeCockpitBar.rotation.y = state.steer;
+  setCockpitBodyVisibility(state.view !== 'cockpit');
+  const pose = getViewPose(state.view);
+  if (state.view === 'orbit') {
+    controls.target.copy(car.position).add(new THREE.Vector3(0, state.vehicleType === 'motorcycle' ? 1.0 : 1.2, 0));
+    controls.update();
+  } else {
+    camera.position.copy(pose.position);
+    camera.lookAt(pose.lookTarget);
+  }
+  saveSettings();
 }
 
 function setView(nextView) {
@@ -1228,7 +1626,7 @@ function setView(nextView) {
     setCockpitBodyVisibility(true);
     setUiCollapsed(false);
     camera.position.set(car.position.x + 20, 22, car.position.z + 20);
-    controls.target.copy(car.position).add(new THREE.Vector3(0, 1.2, 0));
+    controls.target.copy(car.position).add(new THREE.Vector3(0, state.vehicleType === 'motorcycle' ? 1.0 : 1.2, 0));
     controls.update();
     return;
   }
@@ -1260,6 +1658,52 @@ function setMiniMapExpanded(expanded) {
   document.body.classList.toggle('minimap-expanded', expanded);
 }
 
+function getVehicleDynamics() {
+  if (state.vehicleType === 'motorcycle') {
+    return {
+      accel: 10.2,
+      brake: 18.5,
+      drag: 2.1,
+      reverseFactor: 0.3,
+      steeringWheelSpeed: 5.4,
+      steeringReturnSpeed: 4.8,
+      wheelBase: 1.62,
+      throttleRise: 4.2,
+      throttleFall: 6.2,
+      reverseRise: 2.1,
+      reverseFall: 5.8,
+      maxSteer: 0.86,
+      steerSpeedDrop: 0.04,
+      maxLateralAccel: 10.2,
+      scrubFactor: 2.4,
+      leanGain: 0.9,
+      leanMax: 0.5,
+      leanResponse: 10,
+    };
+  }
+
+  return {
+    accel: 8.5,
+    brake: 16.0,
+    drag: 2.8,
+    reverseFactor: 0.45,
+    steeringWheelSpeed: 3.8,
+    steeringReturnSpeed: 3.2,
+    wheelBase: 2.8,
+    throttleRise: 3.2,
+    throttleFall: 4.6,
+    reverseRise: 2.8,
+    reverseFall: 4.2,
+    maxSteer: MAX_STEER,
+    steerSpeedDrop: 0.07,
+    maxLateralAccel: 7.0,
+    scrubFactor: 5.0,
+    leanGain: 0,
+    leanMax: 0,
+    leanResponse: 8,
+  };
+}
+
 function teleportCarTo(x, z) {
   car.position.set(x, 0, z);
   clampCarInsideMap();
@@ -1268,9 +1712,10 @@ function teleportCarTo(x, z) {
   state.reverseInput = 0;
   car.rotation.y = state.heading;
   updateBrakeLights(false);
+  updateReverseLights(false);
 
   if (controls.enabled) {
-    controls.target.copy(car.position).add(new THREE.Vector3(0, 1.2, 0));
+    controls.target.copy(car.position).add(new THREE.Vector3(0, state.vehicleType === 'motorcycle' ? 1.0 : 1.2, 0));
     controls.update();
   }
 
@@ -1295,6 +1740,8 @@ function resetCar() {
   updateSignalStatus();
   updateTurnSignalVisuals();
   updateBrakeLights(false);
+  updateReverseLights(false);
+  setCockpitBodyVisibility(state.view !== 'cockpit');
   steeringWheel.rotation.z = 0;
   wheelHudDialEl.style.transform = 'rotate(0rad)';
   steerAngleEl.textContent = '0';
@@ -1303,9 +1750,17 @@ function resetCar() {
     assembly.pivot.rotation.y = 0;
     assembly.wheel.rotation.x = 0;
   });
+  bikeFrontWheelPivot.rotation.y = 0;
+  bikeFrontWheelAssembly.group.rotation.x = 0;
+  bikeRearWheelAssembly.group.rotation.x = 0;
+  bikeHandlebar.rotation.y = 0;
+  bikeCockpitBar.rotation.y = 0;
+  motorcycleRoot.rotation.z = 0;
+  bikeCockpitRoot.rotation.z = 0;
+  updateAccelCurveMarker(0);
 
   if (controls.enabled) {
-    controls.target.copy(car.position).add(new THREE.Vector3(0, 1.2, 0));
+    controls.target.copy(car.position).add(new THREE.Vector3(0, state.vehicleType === 'motorcycle' ? 1.0 : 1.2, 0));
     controls.update();
   }
 
@@ -1317,42 +1772,45 @@ function resetCar() {
 }
 
 function updateCar(dt) {
-  const accel = 8.5;
-  const brake = 16.0;
-  const drag = 2.8;
-  const reverseFactor = 0.45;
-  const steeringWheelSpeed = 3.8;
-  const steeringReturnSpeed = 3.2;
-  const wheelBase = 2.8;
-  const throttleRise = 3.2;
-  const throttleFall = 4.6;
-  const reverseRise = 2.8;
-  const reverseFall = 4.2;
+  const dynamics = getVehicleDynamics();
+  const accel = dynamics.accel;
+  const brake = dynamics.brake;
+  const drag = dynamics.drag;
+  const reverseFactor = dynamics.reverseFactor;
+  const steeringWheelSpeed = dynamics.steeringWheelSpeed;
+  const steeringReturnSpeed = dynamics.steeringReturnSpeed;
+  const wheelBase = dynamics.wheelBase;
+  const throttleRise = dynamics.throttleRise;
+  const throttleFall = dynamics.throttleFall;
+  const reverseRise = dynamics.reverseRise;
+  const reverseFall = dynamics.reverseFall;
 
   const forward = keys.has('w') || keys.has('arrowup');
   const backward = keys.has('s') || keys.has('arrowdown');
   const left = keys.has('a') || keys.has('arrowleft');
   const right = keys.has('d') || keys.has('arrowright');
-  const handbrake = keys.has(' ');
-  const throttleTarget = forward ? 1 : 0;
-  const reverseTarget = backward ? 1 : 0;
+  const brakePedal = keys.has(' ');
+  const throttleTarget = brakePedal ? 0 : (forward ? 1 : 0);
+  const reverseTarget = brakePedal ? 0 : (backward ? 1 : 0);
+  const effectiveThrottleFall = brakePedal ? 14.0 : throttleFall;
+  const effectiveReverseFall = brakePedal ? 14.0 : reverseFall;
 
   state.throttleInput = THREE.MathUtils.damp(
     state.throttleInput,
     throttleTarget,
-    throttleTarget > state.throttleInput ? throttleRise : throttleFall,
+    throttleTarget > state.throttleInput ? throttleRise : effectiveThrottleFall,
     dt
   );
   state.reverseInput = THREE.MathUtils.damp(
     state.reverseInput,
     reverseTarget,
-    reverseTarget > state.reverseInput ? reverseRise : reverseFall,
+    reverseTarget > state.reverseInput ? reverseRise : effectiveReverseFall,
     dt
   );
 
   if (state.throttleInput > 0.001) {
     const launchBoost = THREE.MathUtils.lerp(0.38, 1, Math.min(Math.abs(state.speed) / Math.max(state.maxSpeed * 0.4, MIN_DRIVE_SPEED), 1));
-    state.speed += accel * Math.pow(state.throttleInput, 1.35) * launchBoost * dt;
+    state.speed += accel * Math.pow(state.throttleInput, state.accelCurve) * launchBoost * dt;
     if (state.speed > 0 && state.speed < MIN_DRIVE_SPEED) state.speed = MIN_DRIVE_SPEED;
   }
   if (state.reverseInput > 0.001) {
@@ -1364,7 +1822,7 @@ function updateCar(dt) {
   if (state.throttleInput < 0.01 && state.reverseInput < 0.01) {
     // 滑行阻力 = 滚动阻力（固定）+ 空气阻力（随速度线性增长，近似 v²）
     const v = Math.abs(state.speed);
-    const rollingRes = 1.6;
+    const rollingRes = drag * 0.57;
     const aeroDrag = 0.09 * v;
     const coastDecel = (rollingRes + aeroDrag) * dt;
     if (v <= coastDecel) state.speed = 0;
@@ -1378,22 +1836,28 @@ function updateCar(dt) {
     if (v > contAero) state.speed -= Math.sign(state.speed) * contAero;
   }
 
-  if (handbrake) {
-    // 手刹：仅锁后轮，制动力比脚刹弱，但驻车够用
-    const hb = brake * 0.65 * dt;
-    if (Math.abs(state.speed) <= hb) state.speed = 0;
-    else state.speed -= Math.sign(state.speed) * hb;
+  if (brakePedal) {
+    // 脚刹：桌面端空格作为制动踏板，制动力强于手刹
+    const brakeForce = brake * dt;
+    if (Math.abs(state.speed) <= brakeForce) state.speed = 0;
+    else state.speed -= Math.sign(state.speed) * brakeForce;
+
+    // 脚刹踩住时不保留残余推进，避免速度卡在中低速区间
+    if (state.throttleInput < 0.02) state.throttleInput = 0;
+    if (state.reverseInput < 0.02) state.reverseInput = 0;
   }
 
-  updateBrakeLights(state.reverseInput > 0.05 || handbrake);
+  updateBrakeLights(state.reverseInput > 0.05 || brakePedal);
+  updateReverseLights(state.reverseInput > 0.05 || state.speed < -0.2);
 
   state.maxSpeed = Number(maxSpeedEl.value);
+  state.accelCurve = Number(accelCurveEl.value) / 100;
   maxSpeedValueEl.textContent = `${state.maxSpeed} m/s`;
   state.speed = THREE.MathUtils.clamp(state.speed, -Math.max(MIN_DRIVE_SPEED * reverseFactor, state.maxSpeed * 0.45), state.maxSpeed);
 
   // 速度敏感转向：速度越快，方向盘转动越迟钝（防止高速急打方向）
   const speedMs = Math.abs(state.speed);
-  const steerSpeedFactor = 1.0 / (1.0 + speedMs * 0.07);
+  const steerSpeedFactor = 1.0 / (1.0 + speedMs * dynamics.steerSpeedDrop);
   const effectiveSteeringSpeed = steeringWheelSpeed * steerSpeedFactor;
   const effectiveReturnSpeed = steeringReturnSpeed * (0.55 + 0.45 * steerSpeedFactor);
 
@@ -1409,18 +1873,18 @@ function updateCar(dt) {
     state.steeringWheelAngle = THREE.MathUtils.damp(state.steeringWheelAngle, 0, effectiveReturnSpeed, dt);
   }
   state.steeringWheelAngle = THREE.MathUtils.clamp(state.steeringWheelAngle, -STEERING_WHEEL_MAX, STEERING_WHEEL_MAX);
-  state.steer = (state.steeringWheelAngle / STEERING_WHEEL_MAX) * MAX_STEER;
+  state.steer = (state.steeringWheelAngle / STEERING_WHEEL_MAX) * dynamics.maxSteer;
 
   if (Math.abs(state.speed) > 0.05 && Math.abs(state.steer) > 0.0005) {
     const turnRadius = wheelBase / Math.tan(state.steer);
     // 横向抓地力上限：弯道速度过高时产生推头，car往外滑
     const lateralAccelNeeded = (state.speed * state.speed) / Math.abs(turnRadius);
     const maxLateralAccel = 7.0; // 约 0.7g，驾校车型的抓地力上限
-    const gripFactor = Math.min(1.0, maxLateralAccel / Math.max(lateralAccelNeeded, 0.01));
+    const gripFactor = Math.min(1.0, dynamics.maxLateralAccel / Math.max(lateralAccelNeeded, 0.01));
     state.heading += (state.speed / turnRadius) * gripFactor * dt;
     // 超出抓地力时：轮胎摩擦消耗速度 + 触觉反馈
     if (gripFactor < 0.98) {
-      const scrubDecel = (1.0 - gripFactor) * 5.0;
+      const scrubDecel = (1.0 - gripFactor) * dynamics.scrubFactor;
       state.speed -= Math.sign(state.speed) * scrubDecel * dt;
       if (!state.gripExceededLast) navigator.vibrate?.([18, 8, 18]);
       state.gripExceededLast = true;
@@ -1436,15 +1900,28 @@ function updateCar(dt) {
   car.position.addScaledVector(moveDirection, state.speed * dt);
   clampCarInsideMap();
 
+  const leanSpeedRatio = Math.min(speedMs / Math.max(state.maxSpeed, 1), 1);
+  const bikeLeanTarget = state.vehicleType === 'motorcycle' && speedMs > 0.35
+    ? THREE.MathUtils.clamp(-state.steer * (0.22 + leanSpeedRatio * dynamics.leanGain), -dynamics.leanMax, dynamics.leanMax)
+    : 0;
+  motorcycleRoot.rotation.z = THREE.MathUtils.damp(motorcycleRoot.rotation.z, bikeLeanTarget, dynamics.leanResponse, dt);
+  bikeCockpitRoot.rotation.z = THREE.MathUtils.damp(bikeCockpitRoot.rotation.z, bikeLeanTarget * 0.45, dynamics.leanResponse, dt);
+
   wheelAssemblies.forEach((assembly) => {
     const steerAngle = assembly.steerable ? state.steer : 0;
     assembly.pivot.rotation.y = steerAngle;
     assembly.wheel.rotation.x -= (state.speed * dt) / 0.48;
   });
+  bikeFrontWheelPivot.rotation.y = state.steer;
+  bikeFrontWheelAssembly.group.rotation.x -= (state.speed * dt) / 0.48;
+  bikeRearWheelAssembly.group.rotation.x -= (state.speed * dt) / 0.48;
 
   steeringWheel.rotation.z = -state.steeringWheelAngle;
+  bikeHandlebar.rotation.y = state.steer;
+  bikeCockpitBar.rotation.y = state.steer;
   wheelHudDialEl.style.transform = `rotate(${-state.steeringWheelAngle}rad)`;
   steerAngleEl.textContent = Math.round(THREE.MathUtils.radToDeg(-state.steeringWheelAngle)).toString();
+  updateAccelCurveMarker(state.throttleInput);
 
   // 更新触控转向区域的指示点位置
   if (mobileSteerIndicatorEl && mobileSteerZoneEl) {
@@ -1480,7 +1957,7 @@ function updateEngineAudio() {
 
 function updateCamera(dt) {
   if (state.view === 'orbit') {
-    const orbitTarget = car.position.clone().add(new THREE.Vector3(0, 1.2, 0));
+    const orbitTarget = car.position.clone().add(new THREE.Vector3(0, state.vehicleType === 'motorcycle' ? 1.0 : 1.2, 0));
     controls.target.lerp(orbitTarget, 1 - Math.pow(0.01, dt));
     controls.update();
     return;
@@ -1667,9 +2144,19 @@ maxSpeedEl.addEventListener('input', () => {
   saveSettings();
 });
 
+accelCurveEl.addEventListener('input', () => {
+  state.accelCurve = Number(accelCurveEl.value) / 100;
+  syncAccelCurveControl(state.accelCurve);
+  saveSettings();
+});
+
 autoCenterSteeringEl.addEventListener('change', () => {
   state.autoCenterSteering = autoCenterSteeringEl.checked;
   saveSettings();
+});
+
+vehicleTypeEl.addEventListener('change', () => {
+  setVehicleType(vehicleTypeEl.value);
 });
 
 function applyMapSource(src, shouldReset = true) {
@@ -1783,6 +2270,7 @@ mapPresetEl?.addEventListener('change', () => {
 
 bindMobileControls();
 updateOrientationUi();
+refreshMobileShellState();
 void tryLockLandscapeOrientation();
 registerServiceWorker();
 
@@ -1790,18 +2278,21 @@ window.addEventListener('resize', () => {
   camera.aspect = window.innerWidth / window.innerHeight;
   camera.updateProjectionMatrix();
   renderer.setSize(window.innerWidth, window.innerHeight);
-  updateOrientationUi();
+  refreshMobileShellState();
 });
 
-window.addEventListener('orientationchange', updateOrientationUi);
+window.addEventListener('orientationchange', refreshMobileShellState);
 
 setAudioStatus(audioState.supported ? 'pending' : 'error', audioState.supported ? '待启用' : '不可用');
 syncMaxSpeedControl(persistedSettings?.maxSpeed ?? state.maxSpeed);
+syncAccelCurveControl(state.accelCurve);
 syncAutoCenterControl(state.autoCenterSteering);
+syncVehicleTypeControl(state.vehicleType);
 state.maxSpeed = Number(maxSpeedEl.value);
 
 resetCar();
 setView('follow');
+setVehicleType(state.vehicleType);
 setUiCollapsed(isMobileLikeDevice() ? true : Boolean(persistedSettings?.uiCollapsed));
 
 async function initializeMaps() {

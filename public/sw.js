@@ -1,9 +1,12 @@
-const CACHE_NAME = 'drive-sim-shell-v1';
+const CACHE_NAME = 'drive-sim-shell-v5';
 const APP_SHELL = [
   '/',
   '/index.html',
   '/assets/style.css',
   '/assets/app.js',
+  '/assets/icons/icon-192.png',
+  '/assets/icons/icon-512.png',
+  '/assets/icons/apple-touch-icon.png',
   '/manifest.webmanifest',
 ];
 
