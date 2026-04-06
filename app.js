@@ -16,6 +16,11 @@ const camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerH
 camera.position.set(0, 18, 20);
 const miniMapCamera = new THREE.OrthographicCamera(-24, 24, 24, -24, 0.1, 300);
 miniMapCamera.up.set(0, 0, -1);
+const miniMapViewport = {
+  centerX: 0,
+  centerZ: 0,
+  halfSize: 24,
+};
 
 const mirrorCameras = {
   left: new THREE.PerspectiveCamera(56, 1.38, 0.1, 500),
@@ -617,6 +622,7 @@ const state = {
   autoCenterSteering: Boolean(persistedSettings?.autoCenterSteering),
   mapImageDataUrl: persistedSettings?.mapImageDataUrl || null,
   startPose: sanitizeStartPose(persistedSettings?.startPose),
+  miniMapExpanded: false,
 };
 
 function setUiCollapsed(collapsed) {
@@ -730,6 +736,32 @@ function placeCarAtStart() {
   state.heading = state.startPose.heading;
   clampCarInsideMap();
   car.rotation.y = state.heading;
+}
+
+function setMiniMapExpanded(expanded) {
+  state.miniMapExpanded = expanded;
+  miniMapEl.classList.toggle('expanded', expanded);
+}
+
+function teleportCarTo(x, z) {
+  car.position.set(x, 0, z);
+  clampCarInsideMap();
+  state.speed = 0;
+  state.throttleInput = 0;
+  state.reverseInput = 0;
+  car.rotation.y = state.heading;
+  updateBrakeLights(false);
+
+  if (controls.enabled) {
+    controls.target.copy(car.position).add(new THREE.Vector3(0, 1.2, 0));
+    controls.update();
+  }
+
+  if (state.view !== 'orbit') {
+    const pose = getViewPose(state.view);
+    camera.position.copy(pose.position);
+    camera.lookAt(pose.lookTarget);
+  }
 }
 
 function resetCar() {
@@ -939,17 +971,26 @@ function renderRearViewMirrors() {
 function updateMiniMapCamera() {
   const mapHalfWidth = groundSize.width * 0.5;
   const mapHalfHeight = groundSize.height * 0.5;
-  const miniHalfSize = Math.max(16, Math.max(groundSize.width, groundSize.height) * 0.34);
+  const miniHalfSize = state.miniMapExpanded
+    ? Math.max(groundSize.width, groundSize.height) * 0.56
+    : Math.max(16, Math.max(groundSize.width, groundSize.height) * 0.34);
+  const centerX = state.miniMapExpanded
+    ? 0
+    : THREE.MathUtils.clamp(car.position.x, -mapHalfWidth, mapHalfWidth);
+  const centerZ = state.miniMapExpanded
+    ? 0
+    : THREE.MathUtils.clamp(car.position.z, -mapHalfHeight, mapHalfHeight);
+
+  miniMapViewport.centerX = centerX;
+  miniMapViewport.centerZ = centerZ;
+  miniMapViewport.halfSize = miniHalfSize;
+
   miniMapCamera.left = -miniHalfSize;
   miniMapCamera.right = miniHalfSize;
   miniMapCamera.top = miniHalfSize;
   miniMapCamera.bottom = -miniHalfSize;
-  miniMapCamera.position.set(
-    THREE.MathUtils.clamp(car.position.x, -mapHalfWidth, mapHalfWidth),
-    80,
-    THREE.MathUtils.clamp(car.position.z, -mapHalfHeight, mapHalfHeight)
-  );
-  miniMapCamera.lookAt(miniMapCamera.position.x, 0, miniMapCamera.position.z);
+  miniMapCamera.position.set(centerX, 80, centerZ);
+  miniMapCamera.lookAt(centerX, 0, centerZ);
   miniMapCamera.updateProjectionMatrix();
 }
 
@@ -965,6 +1006,34 @@ function renderMiniMap() {
   renderer.render(scene, miniMapCamera);
   renderer.setScissorTest(false);
 }
+
+function handleMiniMapClick(event) {
+  if (!state.miniMapExpanded) {
+    setMiniMapExpanded(true);
+    return;
+  }
+
+  const rect = miniMapEl.getBoundingClientRect();
+  const normalizedX = (event.clientX - rect.left) / rect.width;
+  const normalizedY = (event.clientY - rect.top) / rect.height;
+  const worldX = miniMapViewport.centerX + (normalizedX - 0.5) * miniMapViewport.halfSize * 2;
+  const worldZ = miniMapViewport.centerZ + (normalizedY - 0.5) * miniMapViewport.halfSize * 2;
+  teleportCarTo(worldX, worldZ);
+}
+
+miniMapEl.addEventListener('click', handleMiniMapClick);
+miniMapEl.addEventListener('contextmenu', (event) => {
+  event.preventDefault();
+  if (state.miniMapExpanded) {
+    setMiniMapExpanded(false);
+  }
+});
+
+window.addEventListener('keydown', (event) => {
+  if (event.key === 'Escape' && state.miniMapExpanded) {
+    setMiniMapExpanded(false);
+  }
+});
 
 document.getElementById('viewBtn').addEventListener('click', toggleView);
 document.getElementById('resetBtn').addEventListener('click', resetCar);
