@@ -824,7 +824,7 @@ body.minimap-expanded .mobileClusterRight {
   }
 
   .mobileClusterRight {
-    width: min(28vw, 170px);
+    width: auto;
     align-items: stretch;
   }
 
@@ -841,22 +841,9 @@ body.minimap-expanded .mobileClusterRight {
     max-width: 72px;
   }
 
-  /* 右侧：横排 后退|刹车|油门 */
+  /* 右侧：列方向，宽度跟随内容（约一个按钮宽） */
   .mobileDriveStackRight {
-    flex-direction: row;
     max-width: none;
-    align-items: flex-end;
-  }
-
-  .mobileDriveStackRight .mobileThrottle,
-  .mobileDriveStackRight .mobileReverse {
-    flex: 1;
-    min-width: 0;
-  }
-
-  .mobileDriveStackRight .mobileBrakePrimary {
-    flex: 1.4;
-    min-width: 0;
   }
 
   .mobileSteerPad {
@@ -880,7 +867,10 @@ body.minimap-expanded .mobileClusterRight {
   }
 
   #wheelHud {
-    bottom: max(20px, env(safe-area-inset-bottom));
+    bottom: auto;
+    top: max(12px, env(safe-area-inset-top));
+    left: 50%;
+    transform: translateX(-50%);
     width: 50px;
     height: 50px;
   }
@@ -969,7 +959,13 @@ body.minimap-expanded .mobileClusterRight {
   }
 
   .mobileClusterRight {
-    width: min(30vw, 172px);
+    width: auto;
+  }
+
+  #wheelHud {
+    top: max(10px, env(safe-area-inset-top));
+    width: 46px;
+    height: 46px;
   }
 
   .mobileSteerZone {
