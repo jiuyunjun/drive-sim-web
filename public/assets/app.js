@@ -114,6 +114,7 @@ const audioState = {
 const persistedSettings = loadSettings();
 let attemptedLandscapeLock = false;
 let attemptedFullscreen = false;
+let attemptedAddressBarHide = false;
 let availableMaps = [];
 
 function getDefaultStartPose() {
@@ -621,6 +622,7 @@ window.addEventListener('pointerdown', () => {
   void ensureAudioRunning();
   void tryEnterFullscreen();
   void tryLockLandscapeOrientation();
+  tryHideAddressBar();
 }, { passive: true });
 
 function bindMobileControls() {
@@ -764,6 +766,21 @@ async function tryLockLandscapeOrientation() {
   } catch (error) {
     console.debug('Landscape orientation lock unavailable:', error);
   }
+}
+
+function tryHideAddressBar() {
+  if (attemptedAddressBarHide) return;
+  attemptedAddressBarHide = true;
+  if (!isMobileLikeDevice()) return;
+  // 浏览器地址栏在有可滚动内容时会自动收起，临时放开 overflow 触发一次滚动
+  const html = document.documentElement;
+  html.style.overflow = 'auto';
+  html.style.height = (window.screen.height + 1) + 'px';
+  window.scrollTo(0, 1);
+  setTimeout(() => {
+    html.style.overflow = '';
+    html.style.height = '';
+  }, 400);
 }
 
 const state = {
