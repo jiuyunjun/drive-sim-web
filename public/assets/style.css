@@ -781,13 +781,7 @@ body.minimap-expanded .mobileClusterRight {
   }
 
   #hud .status {
-    max-width: min(52vw, 480px);
-    gap: 6px;
-  }
-
-  #hud .status div {
-    padding: 5px 8px;
-    font-size: 12px;
+    display: none;
   }
 
   #wheelHud {
@@ -813,9 +807,10 @@ body.minimap-expanded .mobileClusterRight {
     left: calc(10px + env(safe-area-inset-left));
   }
 
-  #ui.collapsed {
-    opacity: 0;
-    pointer-events: none;
+  #uiToggle {
+    display: inline-flex;
+    position: relative;
+    z-index: 16;
   }
 }
 
