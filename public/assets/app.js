@@ -1512,6 +1512,10 @@ function renderMirrorPane(container, cameraRef, side) {
 
   cameraRef.aspect = rect.width / rect.height;
   cameraRef.updateProjectionMatrix();
+  if (side === 'center') {
+    cameraRef.projectionMatrix.elements[0] *= -1;
+    cameraRef.projectionMatrixInverse.copy(cameraRef.projectionMatrix).invert();
+  }
   updateMirrorCamera(cameraRef, side);
 
   renderer.clearDepth();
