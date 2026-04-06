@@ -40,6 +40,7 @@ html, body {
 
 .panel {
   width: min(560px, calc(100vw - 32px));
+  max-height: calc(100vh - 88px);
   background: rgba(20, 20, 20, 0.82);
   backdrop-filter: blur(8px);
   border: 1px solid rgba(255, 255, 255, 0.12);
@@ -47,6 +48,9 @@ html, body {
   padding: 16px 18px;
   box-shadow: 0 12px 40px rgba(0, 0, 0, 0.3);
   pointer-events: auto;
+  overflow: auto;
+  overscroll-behavior: contain;
+  -webkit-overflow-scrolling: touch;
 }
 
 #uiToggle {
@@ -805,12 +809,43 @@ body.minimap-expanded .mobileClusterRight {
   #ui {
     top: calc(10px + env(safe-area-inset-top));
     left: calc(10px + env(safe-area-inset-left));
+    right: calc(10px + env(safe-area-inset-right));
+    max-width: calc(100vw - 20px - env(safe-area-inset-left) - env(safe-area-inset-right));
   }
 
   #uiToggle {
     display: inline-flex;
     position: relative;
     z-index: 16;
+  }
+
+  .panel {
+    width: min(440px, calc(100vw - 20px - env(safe-area-inset-left) - env(safe-area-inset-right)));
+    max-height: calc(100vh - 74px - env(safe-area-inset-top) - env(safe-area-inset-bottom));
+    padding: 12px 12px 14px;
+    border-radius: 12px;
+  }
+
+  .row {
+    gap: 8px;
+    margin-bottom: 10px;
+  }
+
+  .row.compact label,
+  .range-card {
+    width: 100%;
+  }
+
+  h1 {
+    font-size: 18px;
+    margin-bottom: 8px;
+  }
+
+  p,
+  .tips,
+  .tips span,
+  .tips strong {
+    font-size: 12px;
   }
 }
 
