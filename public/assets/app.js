@@ -1260,8 +1260,14 @@ async function loadBuiltInMap(mapId, shouldReset = true) {
   state.selectedMapId = resolvedMapId;
   state.mapImageDataUrl = null;
   state.startPose = sanitizeStartPose(mapConfig.startPose);
+  state.maxSpeed = THREE.MathUtils.clamp(
+    Number.isFinite(mapConfig.maxSpeed) ? mapConfig.maxSpeed : state.maxSpeed,
+    Number(maxSpeedEl.min) || MIN_DRIVE_SPEED,
+    Number(maxSpeedEl.max) || 40
+  );
   syncMapPresetControl(resolvedMapId);
   syncMapControls(mapConfig.mapWidth ?? groundSize.width);
+  syncMaxSpeedControl(state.maxSpeed);
 
   applyMapSource(new URL(mapConfig.image, MAPS_BASE_URL).href, shouldReset);
   saveSettings();

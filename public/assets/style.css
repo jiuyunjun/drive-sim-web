@@ -547,11 +547,11 @@ button:hover,
   }
 
   .mirrorPane {
-    width: min(21vw, 150px);
+    width: min(18vw, 126px);
   }
 
   .mirrorCenter {
-    width: min(27vw, 190px);
+    width: min(22vw, 160px);
   }
 
   #mirrorHud.cockpit-layout #mirrorLeft,
@@ -560,11 +560,11 @@ button:hover,
   }
 
   #miniMap {
-    width: min(24vw, 180px);
+    width: min(20vw, 136px);
   }
 
   #miniMap.expanded {
-    width: min(48vw, 360px);
+    width: min(42vw, 320px);
   }
 }
 
@@ -615,23 +615,25 @@ button:hover,
   }
 
   #miniMap {
-    right: 12px;
-    bottom: 12px;
-    width: min(30vw, 138px);
+    right: 10px;
+    top: max(10px, env(safe-area-inset-top));
+    bottom: auto;
+    width: min(24vw, 120px);
   }
 
   #miniMap.expanded {
-    right: 12px;
-    bottom: 12px;
-    width: min(62vw, 320px);
+    right: 10px;
+    top: max(10px, env(safe-area-inset-top));
+    bottom: auto;
+    width: min(60vw, 300px);
   }
 
   .mirrorPane {
-    width: min(26vw, 118px);
+    width: min(21vw, 92px);
   }
 
   .mirrorCenter {
-    width: min(34vw, 156px);
+    width: min(28vw, 126px);
   }
 }
 
@@ -759,13 +761,15 @@ button:hover,
   }
 
   #miniMap {
-    right: 14px;
-    bottom: 150px;
+    right: calc(10px + env(safe-area-inset-right));
+    top: calc(10px + env(safe-area-inset-top));
+    bottom: auto;
     width: min(19vw, 132px);
   }
 
   #miniMap.expanded {
-    bottom: 144px;
+    top: calc(10px + env(safe-area-inset-top));
+    bottom: auto;
   }
 
   #ui {
@@ -826,11 +830,13 @@ button:hover,
   }
 
   #miniMap {
-    bottom: 132px;
+    top: calc(8px + env(safe-area-inset-top));
+    bottom: auto;
   }
 
   #miniMap.expanded {
-    bottom: 126px;
+    top: calc(8px + env(safe-area-inset-top));
+    bottom: auto;
   }
 
   .mobileClusterLeft,
