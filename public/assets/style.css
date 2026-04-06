@@ -328,6 +328,46 @@ button:hover,
   right: 14px;
 }
 
+#cockpitSignalHud {
+  position: fixed;
+  top: 108px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: none;
+  gap: 14px;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+  z-index: 11;
+}
+
+#cockpitSignalHud.is-visible {
+  display: flex;
+}
+
+.cockpitSignalLamp {
+  min-width: 88px;
+  padding: 8px 12px;
+  border-radius: 999px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: rgba(9, 14, 19, 0.56);
+  color: rgba(232, 239, 245, 0.52);
+  text-align: center;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  backdrop-filter: blur(10px);
+  box-shadow: 0 10px 26px rgba(0, 0, 0, 0.24);
+  transition: background 0.12s ease, color 0.12s ease, box-shadow 0.12s ease, transform 0.12s ease;
+}
+
+.cockpitSignalLamp.is-active {
+  background: rgba(255, 181, 77, 0.22);
+  color: #ffe1ad;
+  box-shadow: 0 0 18px rgba(255, 181, 77, 0.28);
+  transform: translateY(-1px);
+}
+
 #miniMap {
   position: fixed;
   right: 16px;
