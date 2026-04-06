@@ -6,9 +6,16 @@
   <meta name="theme-color" content="#091118" />
   <meta name="mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-touch-fullscreen" content="yes" />
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
   <meta name="apple-mobile-web-app-title" content="Drive Sim Web" />
+  <meta name="screen-orientation" content="landscape" />
+  <meta name="full-screen" content="yes" />
+  <meta name="x5-fullscreen" content="true" />
+  <meta name="x5-orientation" content="landscape" />
   <link rel="manifest" href="./manifest.webmanifest" />
+  <link rel="icon" type="image/png" sizes="192x192" href="./assets/icons/icon-192.png" />
+  <link rel="apple-touch-icon" sizes="180x180" href="./assets/icons/apple-touch-icon.png" />
   <title>驾驶考试中心 3D 模拟驾驶</title>
   <link rel="stylesheet" href="./assets/style.css" />
   <script type="importmap">
@@ -33,6 +40,13 @@
       <p>上传一张平面地图图片，把它作为地面贴图，然后直接在网页里开车。</p>
 
       <div class="row">
+        <label>
+          <span>车型</span>
+          <select id="vehicleType">
+            <option value="sedan">卡罗拉轿车</option>
+            <option value="motorcycle">摩托车</option>
+          </select>
+        </label>
         <label>
           <span>地图选择</span>
           <select id="mapPreset"></select>
@@ -65,6 +79,42 @@
         </label>
       </div>
 
+      <div class="curveCard" aria-label="加速曲线图">
+        <div class="curveCardHeader">
+          <div class="curveCardTitle">
+            <strong>加速曲线</strong>
+            <span>横轴是油门输入，纵轴是驱动输出</span>
+          </div>
+          <span id="accelCurveValue" class="curveValue">1.35</span>
+        </div>
+        <div class="curveSliderRow">
+          <span class="curveSliderLabel">柔和</span>
+          <input id="accelCurve" type="range" min="80" max="180" step="1" value="135" />
+          <span class="curveSliderLabel">直接</span>
+        </div>
+        <svg id="accelCurveChart" class="curveChart" viewBox="0 0 220 136" role="img" aria-labelledby="accelCurveChartTitle accelCurveChartDesc">
+          <title id="accelCurveChartTitle">加速曲线图</title>
+          <desc id="accelCurveChartDesc">展示当前油门输入与驱动输出的响应关系。</desc>
+          <rect class="curveChartFrame" x="16" y="10" width="188" height="104" rx="14" />
+          <path class="curveChartGrid" d="M32 108H188 M32 86H188 M32 64H188 M32 42H188 M32 20V108 M71 20V108 M110 20V108 M149 20V108 M188 20V108" />
+          <path class="curveChartAxis" d="M32 108H188 M32 108V20" />
+          <polyline id="accelCurveLine" class="curveChartLine" points="32,108 188,20" />
+          <line id="accelCurveGuideX" class="curveChartGuide" x1="32" y1="108" x2="32" y2="108" />
+          <line id="accelCurveGuideY" class="curveChartGuide" x1="32" y1="108" x2="32" y2="108" />
+          <circle id="accelCurveDot" class="curveChartDot" cx="32" cy="108" r="4.8" />
+          <text x="32" y="124" text-anchor="middle">0%</text>
+          <text x="110" y="124" text-anchor="middle">50%</text>
+          <text x="188" y="124" text-anchor="middle">100%</text>
+          <text x="24" y="111" text-anchor="end">0</text>
+          <text x="24" y="67" text-anchor="end">50</text>
+          <text x="24" y="24" text-anchor="end">100</text>
+        </svg>
+        <div class="curveMeta">
+          <span>当前输入 <strong id="accelCurveInputValue">0%</strong></span>
+          <span>当前输出 <strong id="accelCurveOutputValue">0%</strong></span>
+        </div>
+      </div>
+
       <div class="tips">
         <strong>操作：</strong>
         <span>W / ↑ 前进</span>
@@ -73,7 +123,7 @@
         <span>D / → 右转</span>
         <span>Q 左转向灯</span>
         <span>E 右转向灯</span>
-        <span>空格 手刹</span>
+        <span>空格 刹车</span>
         <span>O 重置</span>
         <span>V 切换三种视角</span>
       </div>
@@ -158,7 +208,7 @@
         <span class="signalLeverLabel signalLeverLabelBottom">右灯 ↓</span>
       </div>
       <div class="mobileDriveStack mobileDriveStackRight">
-        <button class="mobileControl mobileHandbrake" data-hold-key=" " aria-label="手刹">手刹</button>
+        <button class="mobileControl mobileHandbrake" data-hold-key=" " aria-label="刹车">刹车</button>
         <button class="mobileControl mobileControlTall mobileReverse" data-hold-key="s" aria-label="后退">后退</button>
         <button class="mobileControl mobileControlTall mobileBrake mobileBrakePrimary" data-hold-key=" " aria-label="刹车">刹车</button>
         <button class="mobileControl mobileControlTall mobileThrottle" data-hold-key="w" aria-label="油门">油门</button>
