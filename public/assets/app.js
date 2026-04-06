@@ -406,33 +406,219 @@ function createDefaultGround() {
 const car = new THREE.Group();
 scene.add(car);
 
-const body = new THREE.Mesh(
-  new THREE.BoxGeometry(2.0, 0.8, 4.2),
-  new THREE.MeshStandardMaterial({ color: 0xd32f2f, metalness: 0.15, roughness: 0.6 })
-);
-body.position.y = 0.9;
+/* ── Car body (shaped with custom geometry) ── */
+const bodyMat = new THREE.MeshStandardMaterial({ color: 0xd32f2f, metalness: 0.35, roughness: 0.45 });
+
+// Lower body shell
+const body = new THREE.Mesh(new THREE.BoxGeometry(2.0, 0.7, 4.4), bodyMat);
+body.position.y = 0.85;
 body.castShadow = true;
 body.receiveShadow = true;
 car.add(body);
 
-const cabin = new THREE.Mesh(
-  new THREE.BoxGeometry(1.5, 0.72, 2.0),
-  new THREE.MeshStandardMaterial({ color: 0x212121, metalness: 0.2, roughness: 0.45 })
+// Hood (sloped front)
+const hoodGeo = new THREE.BoxGeometry(1.9, 0.12, 1.5);
+hoodGeo.attributes.position.array[1] += 0.04; // slight slope front-left
+hoodGeo.attributes.position.array[4] += 0.04;
+hoodGeo.attributes.position.array[7] -= 0.06;
+hoodGeo.attributes.position.array[10] -= 0.06;
+const hood = new THREE.Mesh(hoodGeo, bodyMat);
+hood.position.set(0, 1.26, 1.35);
+hood.castShadow = true;
+car.add(hood);
+
+// Trunk lid
+const trunk = new THREE.Mesh(new THREE.BoxGeometry(1.86, 0.1, 1.1), bodyMat);
+trunk.position.set(0, 1.24, -1.55);
+trunk.castShadow = true;
+car.add(trunk);
+
+// Front bumper
+const frontBumper = new THREE.Mesh(
+  new THREE.BoxGeometry(2.1, 0.32, 0.22),
+  new THREE.MeshStandardMaterial({ color: 0x1a1a1a, roughness: 0.85 })
 );
-cabin.position.set(0, 1.45, -0.1);
+frontBumper.position.set(0, 0.66, 2.25);
+frontBumper.castShadow = true;
+car.add(frontBumper);
+
+// Rear bumper
+const rearBumper = new THREE.Mesh(
+  new THREE.BoxGeometry(2.1, 0.32, 0.22),
+  new THREE.MeshStandardMaterial({ color: 0x1a1a1a, roughness: 0.85 })
+);
+rearBumper.position.set(0, 0.66, -2.25);
+rearBumper.castShadow = true;
+car.add(rearBumper);
+
+// Front grille
+const grille = new THREE.Mesh(
+  new THREE.BoxGeometry(1.2, 0.22, 0.06),
+  new THREE.MeshStandardMaterial({ color: 0x111111, metalness: 0.6, roughness: 0.3 })
+);
+grille.position.set(0, 0.78, 2.22);
+car.add(grille);
+
+/* ── Cabin (with pillar structure) ── */
+const cabinMat = new THREE.MeshStandardMaterial({ color: 0x181818, metalness: 0.2, roughness: 0.4 });
+
+const cabin = new THREE.Mesh(new THREE.BoxGeometry(1.7, 0.72, 2.2), cabinMat);
+cabin.position.set(0, 1.56, -0.05);
 cabin.castShadow = true;
 car.add(cabin);
 
+// A-pillars (front windshield pillars)
+const pillarMat = new THREE.MeshStandardMaterial({ color: 0x1a1a1a, roughness: 0.7 });
+const aPillarGeo = new THREE.BoxGeometry(0.08, 0.76, 0.1);
+const aPillarL = new THREE.Mesh(aPillarGeo, pillarMat);
+aPillarL.position.set(-0.82, 1.56, 0.85);
+aPillarL.rotation.z = -0.18;
+car.add(aPillarL);
+const aPillarR = new THREE.Mesh(aPillarGeo, pillarMat);
+aPillarR.position.set(0.82, 1.56, 0.85);
+aPillarR.rotation.z = 0.18;
+car.add(aPillarR);
+
+// C-pillars (rear)
+const cPillarL = new THREE.Mesh(aPillarGeo, pillarMat);
+cPillarL.position.set(-0.82, 1.56, -0.95);
+cPillarL.rotation.z = -0.12;
+car.add(cPillarL);
+const cPillarR = new THREE.Mesh(aPillarGeo, pillarMat);
+cPillarR.position.set(0.82, 1.56, -0.95);
+cPillarR.rotation.z = 0.12;
+car.add(cPillarR);
+
+/* ── Windows (semi-transparent glass) ── */
+const glassMat = new THREE.MeshStandardMaterial({
+  color: 0x88bbdd, metalness: 0.1, roughness: 0.05, transparent: true, opacity: 0.35,
+});
+
+// Windshield
+const windshield = new THREE.Mesh(new THREE.PlaneGeometry(1.52, 0.68), glassMat);
+windshield.position.set(0, 1.58, 0.99);
+windshield.rotation.x = 0.22;
+car.add(windshield);
+
+// Rear window
+const rearWindow = new THREE.Mesh(new THREE.PlaneGeometry(1.48, 0.6), glassMat);
+rearWindow.position.set(0, 1.56, -1.12);
+rearWindow.rotation.x = -0.25;
+rearWindow.rotation.y = Math.PI;
+car.add(rearWindow);
+
+// Side windows
+const sideWindowGeo = new THREE.PlaneGeometry(1.5, 0.5);
+const sideWindowL = new THREE.Mesh(sideWindowGeo, glassMat);
+sideWindowL.position.set(-0.86, 1.58, -0.05);
+sideWindowL.rotation.y = -Math.PI / 2;
+car.add(sideWindowL);
+const sideWindowR = new THREE.Mesh(sideWindowGeo, glassMat);
+sideWindowR.position.set(0.86, 1.58, -0.05);
+sideWindowR.rotation.y = Math.PI / 2;
+car.add(sideWindowR);
+
+/* ── Headlights ── */
+const headlightMat = new THREE.MeshStandardMaterial({
+  color: 0xffffee, emissive: 0xffffcc, emissiveIntensity: 0.4, metalness: 0.3, roughness: 0.2,
+});
+const headlightGeo = new THREE.BoxGeometry(0.38, 0.2, 0.12);
+const headlightL = new THREE.Mesh(headlightGeo, headlightMat);
+headlightL.position.set(-0.7, 0.88, 2.22);
+car.add(headlightL);
+const headlightR = new THREE.Mesh(headlightGeo, headlightMat);
+headlightR.position.set(0.7, 0.88, 2.22);
+car.add(headlightR);
+
+/* ── Tail lights ── */
+const taillightMat = new THREE.MeshStandardMaterial({
+  color: 0x660000, emissive: 0xff1111, emissiveIntensity: 0.15, metalness: 0.2, roughness: 0.3,
+});
+const taillightGeo = new THREE.BoxGeometry(0.32, 0.18, 0.1);
+const taillightL = new THREE.Mesh(taillightGeo, taillightMat);
+taillightL.position.set(-0.72, 0.88, -2.22);
+car.add(taillightL);
+const taillightR = new THREE.Mesh(taillightGeo, taillightMat);
+taillightR.position.set(0.72, 0.88, -2.22);
+car.add(taillightR);
+
+/* ── Side mirrors ── */
+const mirrorBodyMat = new THREE.MeshStandardMaterial({ color: 0xd32f2f, metalness: 0.3, roughness: 0.5 });
+const mirrorGlassMat = new THREE.MeshStandardMaterial({ color: 0xaaccee, metalness: 0.8, roughness: 0.05 });
+function createSideMirror(side) {
+  const g = new THREE.Group();
+  const arm = new THREE.Mesh(new THREE.BoxGeometry(0.28, 0.06, 0.06), mirrorBodyMat);
+  const housing = new THREE.Mesh(new THREE.BoxGeometry(0.06, 0.14, 0.2), mirrorBodyMat);
+  housing.position.set(side * 0.14, 0, 0.04);
+  const glass = new THREE.Mesh(new THREE.PlaneGeometry(0.04, 0.12), mirrorGlassMat);
+  glass.position.set(side * 0.17, 0, 0.04);
+  glass.rotation.y = side > 0 ? Math.PI / 2 : -Math.PI / 2;
+  g.add(arm, housing, glass);
+  g.position.set(side * 1.08, 1.28, 0.7);
+  car.add(g);
+  return g;
+}
+const sideMirrorL = createSideMirror(-1);
+const sideMirrorR = createSideMirror(1);
+
+/* ── Roof rail accents ── */
+const roofRailMat = new THREE.MeshStandardMaterial({ color: 0x888888, metalness: 0.5, roughness: 0.3 });
+const roofRailGeo = new THREE.BoxGeometry(0.04, 0.04, 1.8);
+const roofRailL = new THREE.Mesh(roofRailGeo, roofRailMat);
+roofRailL.position.set(-0.82, 1.93, -0.05);
+car.add(roofRailL);
+const roofRailR = new THREE.Mesh(roofRailGeo, roofRailMat);
+roofRailR.position.set(0.82, 1.93, -0.05);
+car.add(roofRailR);
+
+/* ── Dashboard ── */
 const dashboard = new THREE.Mesh(
-  new THREE.BoxGeometry(1.45, 0.16, 0.75),
-  new THREE.MeshStandardMaterial({ color: 0x141414, roughness: 0.85 })
+  new THREE.BoxGeometry(1.6, 0.22, 0.8),
+  new THREE.MeshStandardMaterial({ color: 0x0e0e0e, roughness: 0.9 })
 );
-dashboard.position.set(0, 1.58, 0.65);
+dashboard.position.set(0, 1.32, 0.65);
 car.add(dashboard);
 
+/* ── Instrument cluster ── */
+const instrumentCluster = new THREE.Mesh(
+  new THREE.BoxGeometry(0.5, 0.18, 0.06),
+  new THREE.MeshStandardMaterial({ color: 0x001a00, emissive: 0x003300, emissiveIntensity: 0.3, roughness: 0.6 })
+);
+instrumentCluster.position.set(-0.32, 1.42, 0.32);
+instrumentCluster.rotation.x = -0.4;
+car.add(instrumentCluster);
+
+/* ── Center console / infotainment ── */
+const centerScreen = new THREE.Mesh(
+  new THREE.BoxGeometry(0.36, 0.24, 0.04),
+  new THREE.MeshStandardMaterial({ color: 0x0a0a12, emissive: 0x112244, emissiveIntensity: 0.15, roughness: 0.3 })
+);
+centerScreen.position.set(0.1, 1.42, 0.36);
+centerScreen.rotation.x = -0.35;
+car.add(centerScreen);
+
+/* ── Front seats ── */
+const seatMat = new THREE.MeshStandardMaterial({ color: 0x1a1a1a, roughness: 0.85 });
+function createSeat(x) {
+  const seatGroup = new THREE.Group();
+  const cushion = new THREE.Mesh(new THREE.BoxGeometry(0.52, 0.12, 0.52), seatMat);
+  cushion.position.y = 0;
+  const backrest = new THREE.Mesh(new THREE.BoxGeometry(0.5, 0.58, 0.12), seatMat);
+  backrest.position.set(0, 0.32, -0.22);
+  backrest.rotation.x = -0.15;
+  const headrest = new THREE.Mesh(new THREE.BoxGeometry(0.28, 0.2, 0.08), seatMat);
+  headrest.position.set(0, 0.64, -0.24);
+  seatGroup.add(cushion, backrest, headrest);
+  seatGroup.position.set(x, 1.08, 0.05);
+  car.add(seatGroup);
+  return seatGroup;
+}
+const driverSeat = createSeat(-0.38);
+const passengerSeat = createSeat(0.38);
+
 const steeringWheel = new THREE.Group();
-steeringWheel.position.set(-0.36, 1.6, 0.4);
-steeringWheel.rotation.x = 1.05;
+steeringWheel.position.set(-0.36, 1.38, 0.42);
+steeringWheel.rotation.x = 1.1;
 
 const wheelRing = new THREE.Mesh(
   new THREE.TorusGeometry(0.26, 0.035, 12, 28),
@@ -541,15 +727,32 @@ function createWheelAssembly(x, z, steerable) {
   const pivot = new THREE.Group();
   pivot.position.set(x, 0.48, z);
 
+  // Tire
   const wheel = new THREE.Mesh(
-    new THREE.CylinderGeometry(0.48, 0.48, 0.36, 20),
-    new THREE.MeshStandardMaterial({ color: 0x161616, roughness: 0.9 })
+    new THREE.CylinderGeometry(0.48, 0.48, 0.32, 24),
+    new THREE.MeshStandardMaterial({ color: 0x1a1a1a, roughness: 0.95 })
   );
   wheel.rotation.z = Math.PI / 2;
   wheel.castShadow = true;
   pivot.add(wheel);
-  car.add(pivot);
 
+  // Rim
+  const rim = new THREE.Mesh(
+    new THREE.CylinderGeometry(0.3, 0.3, 0.34, 24),
+    new THREE.MeshStandardMaterial({ color: 0x999999, metalness: 0.7, roughness: 0.2 })
+  );
+  rim.rotation.z = Math.PI / 2;
+  pivot.add(rim);
+
+  // Hub cap
+  const hubCap = new THREE.Mesh(
+    new THREE.CylinderGeometry(0.12, 0.12, 0.36, 12),
+    new THREE.MeshStandardMaterial({ color: 0xcccccc, metalness: 0.8, roughness: 0.15 })
+  );
+  hubCap.rotation.z = Math.PI / 2;
+  pivot.add(hubCap);
+
+  car.add(pivot);
   return { pivot, wheel, steerable };
 }
 
@@ -929,14 +1132,15 @@ function getViewPose(view) {
   const { forward, right } = getVehicleAxes();
 
   if (view === 'cockpit') {
+    // Driver eye position: seated, slightly left of center, behind windshield
     const position = car.position.clone()
-      .add(new THREE.Vector3(0, 1.72, 0))
-      .add(forward.clone().multiplyScalar(0.26))
-      .add(right.clone().multiplyScalar(-0.34));
+      .add(new THREE.Vector3(0, 1.52, 0))
+      .add(forward.clone().multiplyScalar(0.15))
+      .add(right.clone().multiplyScalar(-0.36));
     const lookTarget = position.clone()
       .add(forward.clone().multiplyScalar(22))
-      .add(right.clone().multiplyScalar(-0.08))
-      .add(new THREE.Vector3(0, 0.2, 0));
+      .add(right.clone().multiplyScalar(-0.06))
+      .add(new THREE.Vector3(0, -0.3, 0));
     return { position, lookTarget };
   }
 
@@ -950,10 +1154,39 @@ function getViewPose(view) {
 }
 
 function setCockpitBodyVisibility(isVisible) {
+  // Exterior parts: hidden in cockpit
   body.visible = isVisible;
+  hood.visible = isVisible;
+  trunk.visible = isVisible;
+  frontBumper.visible = isVisible;
+  rearBumper.visible = isVisible;
+  grille.visible = isVisible;
   cabin.visible = isVisible;
-  dashboard.visible = isVisible;
-  steeringWheel.visible = isVisible;
+  headlightL.visible = isVisible;
+  headlightR.visible = isVisible;
+  taillightL.visible = isVisible;
+  taillightR.visible = isVisible;
+  sideMirrorL.visible = isVisible;
+  sideMirrorR.visible = isVisible;
+  roofRailL.visible = isVisible;
+  roofRailR.visible = isVisible;
+  rearWindow.visible = isVisible;
+  driverSeat.visible = isVisible;
+  passengerSeat.visible = isVisible;
+
+  // Interior parts: always visible (seen from cockpit)
+  dashboard.visible = true;
+  instrumentCluster.visible = true;
+  centerScreen.visible = true;
+  steeringWheel.visible = true;
+  windshield.visible = true;
+  sideWindowL.visible = true;
+  sideWindowR.visible = true;
+  aPillarL.visible = true;
+  aPillarR.visible = true;
+  cPillarL.visible = !isVisible; // only show C-pillars from cockpit for framing
+  cPillarR.visible = !isVisible;
+
   arrow.visible = isVisible && state.view !== 'cockpit';
 }
 
@@ -1231,7 +1464,7 @@ function updateCamera(dt) {
   }
 
   const pose = getViewPose(state.view);
-  const smooth = state.view === 'cockpit' ? 1 - Math.pow(0.0005, dt) : 1 - Math.pow(0.002, dt);
+  const smooth = state.view === 'cockpit' ? 1 - Math.pow(0.0002, dt) : 1 - Math.pow(0.002, dt);
   camera.position.lerp(pose.position, smooth);
   camera.lookAt(pose.lookTarget);
 }
