@@ -1464,7 +1464,13 @@ function updateCamera(dt) {
   }
 
   const pose = getViewPose(state.view);
-  const smooth = state.view === 'cockpit' ? 1 - Math.pow(0.0002, dt) : 1 - Math.pow(0.002, dt);
+  if (state.view === 'cockpit') {
+    camera.position.copy(pose.position);
+    camera.lookAt(pose.lookTarget);
+    return;
+  }
+
+  const smooth = 1 - Math.pow(0.002, dt);
   camera.position.lerp(pose.position, smooth);
   camera.lookAt(pose.lookTarget);
 }
