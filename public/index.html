@@ -2,7 +2,10 @@
 <html lang="zh-CN">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <meta name="theme-color" content="#091118" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
   <title>驾驶考试中心 3D 模拟驾驶</title>
   <link rel="stylesheet" href="./assets/style.css" />
   <script type="importmap">
@@ -110,25 +113,24 @@
 
   <div id="mobileControls" aria-label="移动端驾驶控制">
     <div class="mobileCluster mobileClusterLeft">
-      <div class="mobilePad">
-        <button class="mobileControl" data-hold-key="a" aria-label="左转">左</button>
-        <button class="mobileControl mobileControlLarge" data-hold-key="w" aria-label="前进">前</button>
-        <button class="mobileControl" data-hold-key="d" aria-label="右转">右</button>
+      <div class="mobileDriveStack">
+        <button class="mobileControl mobileControlTall mobileThrottle" data-hold-key="w" aria-label="油门">油门</button>
+        <button class="mobileControl mobileControlTall mobileBrake" data-hold-key="s" aria-label="刹车">刹车</button>
       </div>
       <div class="mobileAuxRow">
-        <button class="mobileControl" data-tap-action="signal-left" aria-label="左转向灯">左灯</button>
-        <button class="mobileControl" data-hold-key=" " aria-label="手刹">刹</button>
-        <button class="mobileControl" data-tap-action="signal-right" aria-label="右转向灯">右灯</button>
+        <button class="mobileControl mobileSignal" data-tap-action="signal-left" aria-label="左转向灯">左灯</button>
+        <button class="mobileControl mobileSignal" data-tap-action="signal-right" aria-label="右转向灯">右灯</button>
       </div>
     </div>
 
     <div class="mobileCluster mobileClusterRight">
-      <div class="mobileDriveStack">
-        <button class="mobileControl mobileControlTall" data-hold-key="w" aria-label="油门">油门</button>
-        <button class="mobileControl" data-hold-key="s" aria-label="倒车">倒车</button>
+      <div class="mobilePad mobileSteerPad">
+        <button class="mobileControl mobileSteer" data-hold-key="a" aria-label="左转">左</button>
+        <button class="mobileControl mobileSteer" data-hold-key="d" aria-label="右转">右</button>
       </div>
       <div class="mobileAuxRow mobileAuxRowRight">
         <button class="mobileControl" data-tap-action="view" aria-label="切换视角">视角</button>
+        <button class="mobileControl" data-hold-key=" " aria-label="手刹">手刹</button>
         <button class="mobileControl" data-tap-action="reset" aria-label="重置车辆">重置</button>
       </div>
     </div>
