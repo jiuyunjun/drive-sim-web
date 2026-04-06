@@ -436,6 +436,11 @@ body.minimap-expanded .mobileClusterRight {
   display: flex;
 }
 
+.mobileSteerRow,
+.mobileViewResetStack {
+  display: flex;
+}
+
 .mobileControl {
   min-width: 50px;
   min-height: 50px;
@@ -616,6 +621,16 @@ body.minimap-expanded .mobileClusterRight {
   width: 56px;
   height: 56px;
   flex: 0 0 56px;
+}
+
+.mobileSteerRow {
+  align-items: flex-end;
+  gap: 8px;
+}
+
+.mobileViewResetStack {
+  flex-direction: column;
+  gap: 8px;
 }
 
 .rotateCard {
@@ -851,6 +866,10 @@ body.minimap-expanded .mobileClusterRight {
     gap: 8px;
   }
 
+  .mobileViewResetStack {
+    justify-content: flex-end;
+  }
+
   .mobileSteerPad {
     justify-content: flex-end;
     flex-direction: row;
@@ -982,6 +1001,11 @@ body.minimap-expanded .mobileClusterRight {
     width: 50px;
     height: 50px;
     flex-basis: 50px;
+  }
+
+  .mobileSteerRow,
+  .mobileViewResetStack {
+    gap: 6px;
   }
 
   #wheelHud {
