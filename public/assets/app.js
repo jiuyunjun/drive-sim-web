@@ -110,6 +110,7 @@ const TURN_SIGNAL_INTERVAL = 0.42;
 const MIN_DRIVE_SPEED = 2;
 const MAX_STEER = 0.6;
 const STEERING_WHEEL_MAX = Math.PI * 1.35;
+const FOLLOW_PITCH_LIMIT = THREE.MathUtils.degToRad(35);
 const COCKPIT_LOOK_LIMIT = THREE.MathUtils.degToRad(75);
 const AudioContextClass = window.AudioContext || window.webkitAudioContext;
 const SETTINGS_STORAGE_KEY = 'driveSimSettingsV2';
@@ -1398,7 +1399,9 @@ renderer.domElement.addEventListener('pointerdown', (event) => {
   state.lookDragActive = true;
   state.lookDragPointerId = event.pointerId;
   state.lookDragStartX = event.clientX;
+  state.lookDragStartY = event.clientY;
   state.lookDragStartOffset = state.view === 'cockpit' ? state.cockpitLookOffset : state.followLookOffset;
+  state.lookDragStartPitch = state.followLookPitch;
   renderer.domElement.setPointerCapture?.(event.pointerId);
 });
 
@@ -1407,11 +1410,17 @@ renderer.domElement.addEventListener('pointermove', (event) => {
   if (state.view !== 'cockpit' && state.view !== 'follow') return;
   const sensitivity = event.pointerType === 'touch' ? 0.008 : 0.006;
   const deltaX = event.clientX - state.lookDragStartX;
+  const deltaY = event.clientY - state.lookDragStartY;
   const nextOffset = state.lookDragStartOffset - deltaX * sensitivity;
   if (state.view === 'cockpit') {
     state.cockpitLookOffset = THREE.MathUtils.clamp(nextOffset, -COCKPIT_LOOK_LIMIT, COCKPIT_LOOK_LIMIT);
   } else if (state.view === 'follow') {
     state.followLookOffset = nextOffset;
+    state.followLookPitch = THREE.MathUtils.clamp(
+      state.lookDragStartPitch - deltaY * sensitivity,
+      -FOLLOW_PITCH_LIMIT,
+      FOLLOW_PITCH_LIMIT
+    );
   }
 });
 
@@ -1743,11 +1752,14 @@ const state = {
   startPose: getDefaultStartPose(),
   miniMapExpanded: false,
   followLookOffset: 0,
+  followLookPitch: 0,
   cockpitLookOffset: 0,
   lookDragActive: false,
   lookDragPointerId: null,
   lookDragStartX: 0,
+  lookDragStartY: 0,
   lookDragStartOffset: 0,
+  lookDragStartPitch: 0,
   touchSteerActive: false,
   touchSteerPointerId: null,
   touchSteerStartX: 0,
@@ -1841,9 +1853,13 @@ function getViewPose(view) {
   }
 
   const { viewForward } = getViewAxesWithOffset(state.followLookOffset);
+  const followDistance = state.vehicleType === 'motorcycle' ? 7.2 : 9;
+  const followBaseHeight = state.vehicleType === 'motorcycle' ? 4.6 : 5.5;
+  const followHeight = followBaseHeight + Math.sin(state.followLookPitch) * followDistance * 0.72;
+  const horizontalDistance = Math.cos(state.followLookPitch) * followDistance;
   const position = car.position.clone()
-    .add(new THREE.Vector3(0, state.vehicleType === 'motorcycle' ? 4.6 : 5.5, 0))
-    .add(viewForward.clone().multiplyScalar(state.vehicleType === 'motorcycle' ? -7.2 : -9));
+    .add(new THREE.Vector3(0, followHeight, 0))
+    .add(viewForward.clone().multiplyScalar(-horizontalDistance));
   const lookTarget = car.position.clone()
     .add(new THREE.Vector3(0, state.vehicleType === 'motorcycle' ? 1.28 : 1.6, 0));
   return { position, lookTarget };
@@ -1991,6 +2007,7 @@ function setView(nextView) {
   }
   if (nextView !== 'follow') {
     state.followLookOffset = 0;
+    state.followLookPitch = 0;
   }
   if (nextView === 'orbit') {
     state.lookDragActive = false;
@@ -2339,6 +2356,7 @@ function updateEngineAudio() {
 function updateCamera(dt) {
   if (!state.lookDragActive || state.view !== 'follow') {
     state.followLookOffset = THREE.MathUtils.damp(state.followLookOffset, 0, 6.5, dt);
+    state.followLookPitch = THREE.MathUtils.damp(state.followLookPitch, 0, 6.5, dt);
   }
   if (!state.lookDragActive || state.view !== 'cockpit') {
     state.cockpitLookOffset = THREE.MathUtils.damp(state.cockpitLookOffset, 0, 7.5, dt);
