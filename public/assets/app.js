@@ -110,6 +110,7 @@ const TURN_SIGNAL_INTERVAL = 0.42;
 const MIN_DRIVE_SPEED = 2;
 const MAX_STEER = 0.6;
 const STEERING_WHEEL_MAX = Math.PI * 1.35;
+const COCKPIT_LOOK_LIMIT = THREE.MathUtils.degToRad(75);
 const AudioContextClass = window.AudioContext || window.webkitAudioContext;
 const SETTINGS_STORAGE_KEY = 'driveSimSettingsV2';
 const MAPS_BASE_URL = new URL('./maps/', import.meta.url);
@@ -1390,6 +1391,36 @@ window.addEventListener('pointerdown', () => {
   void ensureAudioRunning();
   void requestMobileImmersiveMode();
 }, { passive: true });
+
+renderer.domElement.addEventListener('pointerdown', (event) => {
+  if (state.view !== 'cockpit') return;
+  if (event.button !== 0 && event.pointerType !== 'touch') return;
+  state.cockpitLookActive = true;
+  state.cockpitLookPointerId = event.pointerId;
+  state.cockpitLookStartX = event.clientX;
+  state.cockpitLookStartOffset = state.cockpitLookOffset;
+  renderer.domElement.setPointerCapture?.(event.pointerId);
+});
+
+renderer.domElement.addEventListener('pointermove', (event) => {
+  if (!state.cockpitLookActive || state.cockpitLookPointerId !== event.pointerId || state.view !== 'cockpit') return;
+  const sensitivity = event.pointerType === 'touch' ? 0.008 : 0.006;
+  const deltaX = event.clientX - state.cockpitLookStartX;
+  state.cockpitLookOffset = THREE.MathUtils.clamp(
+    state.cockpitLookStartOffset - deltaX * sensitivity,
+    -COCKPIT_LOOK_LIMIT,
+    COCKPIT_LOOK_LIMIT
+  );
+});
+
+function endCockpitLook(event) {
+  if (state.cockpitLookPointerId !== event.pointerId) return;
+  state.cockpitLookActive = false;
+  state.cockpitLookPointerId = null;
+}
+
+renderer.domElement.addEventListener('pointerup', endCockpitLook);
+renderer.domElement.addEventListener('pointercancel', endCockpitLook);
 window.addEventListener('fullscreenchange', refreshMobileShellState);
 window.addEventListener('visibilitychange', () => {
   if (!document.hidden) refreshMobileShellState();
@@ -1709,6 +1740,11 @@ const state = {
   mapImageDataUrl: persistedSettings?.mapImageDataUrl || null,
   startPose: getDefaultStartPose(),
   miniMapExpanded: false,
+  cockpitLookOffset: 0,
+  cockpitLookActive: false,
+  cockpitLookPointerId: null,
+  cockpitLookStartX: 0,
+  cockpitLookStartOffset: 0,
   touchSteerActive: false,
   touchSteerPointerId: null,
   touchSteerStartX: 0,
@@ -1765,16 +1801,27 @@ function getVehicleAxes() {
   return { forward, right };
 }
 
+function getCockpitViewAxes() {
+  const { forward, right } = getVehicleAxes();
+  const cosYaw = Math.cos(state.cockpitLookOffset);
+  const sinYaw = Math.sin(state.cockpitLookOffset);
+  const viewForward = forward.clone().multiplyScalar(cosYaw).add(right.clone().multiplyScalar(sinYaw));
+  const viewRight = forward.clone().multiplyScalar(-sinYaw).add(right.clone().multiplyScalar(cosYaw));
+  return { forward, right, viewForward, viewRight };
+}
+
 function getViewPose(view) {
   const { forward, right } = getVehicleAxes();
 
   if (view === 'cockpit') {
+    const { viewForward, viewRight } = getCockpitViewAxes();
     if (state.vehicleType === 'motorcycle') {
       const position = car.position.clone()
         .add(new THREE.Vector3(0, 1.42, 0))
         .add(forward.clone().multiplyScalar(0.18));
       const lookTarget = position.clone()
-        .add(forward.clone().multiplyScalar(30))
+        .add(viewForward.clone().multiplyScalar(30))
+        .add(viewRight.clone().multiplyScalar(0.04))
         .add(new THREE.Vector3(0, -0.08, 0));
       return { position, lookTarget };
     }
@@ -1784,8 +1831,8 @@ function getViewPose(view) {
       .add(forward.clone().multiplyScalar(0.28))
       .add(right.clone().multiplyScalar(-0.3));
     const lookTarget = position.clone()
-      .add(forward.clone().multiplyScalar(28))
-      .add(right.clone().multiplyScalar(-0.04))
+      .add(viewForward.clone().multiplyScalar(28))
+      .add(viewRight.clone().multiplyScalar(-0.04))
       .add(new THREE.Vector3(0, -0.12, 0));
     return { position, lookTarget };
   }
@@ -1936,6 +1983,11 @@ function setView(nextView) {
   const isOrbit = nextView === 'orbit';
   camera.fov = nextView === 'cockpit' ? COCKPIT_CAMERA_FOV : DEFAULT_CAMERA_FOV;
   camera.updateProjectionMatrix();
+  if (nextView !== 'cockpit') {
+    state.cockpitLookOffset = 0;
+    state.cockpitLookActive = false;
+    state.cockpitLookPointerId = null;
+  }
 
   controls.enabled = isOrbit;
   viewModeEl.textContent = VIEW_LABELS[nextView];
@@ -1947,7 +1999,6 @@ function setView(nextView) {
 
   if (isOrbit) {
     setCockpitBodyVisibility(true);
-    setUiCollapsed(false);
     camera.position.set(car.position.x + 20, 22, car.position.z + 20);
     controls.target.copy(car.position).add(new THREE.Vector3(0, state.vehicleType === 'motorcycle' ? 1.0 : 1.2, 0));
     controls.update();
@@ -1955,7 +2006,6 @@ function setView(nextView) {
   }
 
   setCockpitBodyVisibility(nextView !== 'cockpit');
-  setUiCollapsed(nextView === 'cockpit');
 
   const pose = getViewPose(nextView);
   camera.position.copy(pose.position);
