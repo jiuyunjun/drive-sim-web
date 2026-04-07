@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://drive-sim-web.web.app/sitemap.xml
