@@ -1,10 +1,5 @@
-const CACHE_NAME = 'drive-sim-shell-v10';
-const APP_SHELL = [
-  '/',
-  '/index.html',
-  '/zh/index.html',
-  '/en/index.html',
-  '/ja/index.html',
+const CACHE_NAME = 'drive-sim-runtime-v11';
+const APP_SHELL_CACHE = [
   '/assets/style.css',
   '/assets/app.js',
   '/assets/i18n.js',
@@ -19,7 +14,7 @@ const APP_SHELL = [
 
 self.addEventListener('install', (event) => {
   event.waitUntil(
-    caches.open(CACHE_NAME).then((cache) => cache.addAll(APP_SHELL)).then(() => self.skipWaiting())
+    caches.open(CACHE_NAME).then((cache) => cache.addAll(APP_SHELL_CACHE)).then(() => self.skipWaiting())
   );
 });
 
@@ -31,13 +26,63 @@ self.addEventListener('activate', (event) => {
   );
 });
 
+function isHtmlRequest(request) {
+  return request.mode === 'navigate'
+    || request.destination === 'document'
+    || (request.headers.get('accept') || '').includes('text/html');
+}
+
+async function networkFirst(request) {
+  const cache = await caches.open(CACHE_NAME);
+  try {
+    const response = await fetch(request);
+    cache.put(request, response.clone());
+    return response;
+  } catch (error) {
+    const cachedResponse = await cache.match(request);
+    if (cachedResponse) return cachedResponse;
+    throw error;
+  }
+}
+
 self.addEventListener('fetch', (event) => {
   if (event.request.method !== 'GET') return;
 
-  event.respondWith(
-    caches.match(event.request).then((cachedResponse) => {
-      if (cachedResponse) return cachedResponse;
+  const url = new URL(event.request.url);
+  if (url.origin !== self.location.origin) return;
+
+  if (isHtmlRequest(event.request)) {
+    event.respondWith(networkFirst(event.request));
+    return;
+  }
+
+  if (
+    event.request.destination === 'script'
+    || event.request.destination === 'style'
+    || event.request.destination === 'manifest'
+    || event.request.destination === 'image'
+  ) {
+    event.respondWith((async () => {
+      const cache = await caches.open(CACHE_NAME);
+      const cachedResponse = await cache.match(event.request);
+      const fetchPromise = fetch(event.request)
+        .then((response) => {
+          cache.put(event.request, response.clone());
+          return response;
+        })
+        .catch(() => null);
+
+      if (cachedResponse) {
+        event.waitUntil(fetchPromise);
+        return cachedResponse;
+      }
+
+      const networkResponse = await fetchPromise;
+      if (networkResponse) return networkResponse;
       return fetch(event.request);
-    })
-  );
+    })());
+    return;
+  }
+
+  event.respondWith(networkFirst(event.request));
 });
