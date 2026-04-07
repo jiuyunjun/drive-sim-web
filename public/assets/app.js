@@ -976,39 +976,38 @@ motorcycleRoot.add(bikeShockL, bikeShockR);
 
 /* --- Wheels --- */
 function createBikeWheel() {
-  /* group 整体绕 X 轴旋转来模拟滚动，
-     内部所有部件在 YZ 平面上组装（轮轴沿 X 方向） */
+  /*
+   * 结构：group (滚动轴) → orient (朝向修正) → 所有轮子部件
+   * group 绕 X 轴旋转来模拟前进滚动
+   * orient 负责把默认朝向的几何体转到正确位置
+   * 所有 Cylinder 默认沿 Y 轴，在 orient 里统一绕 Z 转 90° 让轴沿 X
+   */
   const group = new THREE.Group();
+  const orient = new THREE.Group();
+  orient.rotation.z = Math.PI / 2; // 让所有 Cylinder 的轴从 Y 转到 X（即轮轴沿 X）
+  group.add(orient);
 
-  /* 轮胎：TorusGeometry 默认在 XY 平面，需要绕 X 转 90° 竖起来 */
+  /* 轮胎：用 CylinderGeometry 代替 Torus 避免朝向问题 */
   const tire = new THREE.Mesh(
-    new THREE.TorusGeometry(0.32, 0.10, 14, 28),
+    new THREE.CylinderGeometry(0.42, 0.42, 0.14, 28),
     new THREE.MeshStandardMaterial({ color: 0x161616, roughness: 0.94 })
   );
-  tire.rotation.x = Math.PI / 2;
+  orient.add(tire);
 
-  /* 轮辋：CylinderGeometry 默认沿 Y 轴，需要绕 Z 转 90° 让轴沿 X */
+  /* 轮辋 */
   const rim = new THREE.Mesh(
-    new THREE.CylinderGeometry(0.26, 0.26, 0.10, 20),
+    new THREE.CylinderGeometry(0.28, 0.28, 0.10, 20),
     new THREE.MeshStandardMaterial({ color: 0x9ea7af, metalness: 0.82, roughness: 0.18 })
   );
-  rim.rotation.z = Math.PI / 2;
-
-  /* 辐条：在 YZ 平面上旋转排列 */
-  const spokeMat = new THREE.MeshStandardMaterial({ color: 0xaab2ba, metalness: 0.80, roughness: 0.22 });
-  for (let i = 0; i < 6; i++) {
-    const spoke = new THREE.Mesh(new THREE.BoxGeometry(0.02, 0.44, 0.02), spokeMat);
-    spoke.rotation.x = (Math.PI / 6) * i;
-    group.add(spoke);
-  }
+  orient.add(rim);
 
   /* 轮毂 */
   const hub = new THREE.Mesh(
-    new THREE.CylinderGeometry(0.05, 0.05, 0.14, 12),
+    new THREE.CylinderGeometry(0.06, 0.06, 0.16, 12),
     chromeMat
   );
-  hub.rotation.z = Math.PI / 2;
-  group.add(tire, rim, hub);
+  orient.add(hub);
+
   return { group, tire };
 }
 
@@ -1115,12 +1114,12 @@ function createBikeSignalLamp(x, y, z) {
 /* 后转向灯：紧贴尾壳两侧 */
 const bikeSignalLamps = {
   left: [
-    createBikeSignalLamp(-0.18, 1.06, 1.12),
-    createBikeSignalLamp(-0.16, 0.96, -0.92),
-  ],
-  right: [
     createBikeSignalLamp(0.18, 1.06, 1.12),
     createBikeSignalLamp(0.16, 0.96, -0.92),
+  ],
+  right: [
+    createBikeSignalLamp(-0.18, 1.06, 1.12),
+    createBikeSignalLamp(-0.16, 0.96, -0.92),
   ],
 };
 
@@ -1841,6 +1840,18 @@ function setCockpitBodyVisibility(isVisible) {
     bikeFrontWheelPivot.visible = isVisible;
     bikeRearWheelMount.visible = isVisible;
     arrow.visible = isVisible && state.view !== 'cockpit';
+
+    /* 隐藏轿车灯具 mesh（转向灯、刹车灯、倒车灯） */
+    sedanSignalLamps.left.forEach((l) => { l.mesh.visible = false; l.light.visible = false; });
+    sedanSignalLamps.right.forEach((l) => { l.mesh.visible = false; l.light.visible = false; });
+    sedanBrakeLamps.forEach((l) => { l.mesh.visible = false; l.light.visible = false; });
+    reverseLamps.forEach((l) => { l.mesh.visible = false; l.light.visible = false; });
+
+    /* 显示摩托灯具 */
+    bikeSignalLamps.left.forEach((l) => { l.mesh.visible = true; l.light.visible = true; });
+    bikeSignalLamps.right.forEach((l) => { l.mesh.visible = true; l.light.visible = true; });
+    bikeBrakeLamp.mesh.visible = true;
+    bikeBrakeLamp.light.visible = true;
     return;
   }
 
@@ -1885,6 +1896,18 @@ function setCockpitBodyVisibility(isVisible) {
   });
   bikeFrontWheelPivot.visible = false;
   bikeRearWheelMount.visible = false;
+
+  /* 显示轿车灯具 */
+  sedanSignalLamps.left.forEach((l) => { l.mesh.visible = true; l.light.visible = true; });
+  sedanSignalLamps.right.forEach((l) => { l.mesh.visible = true; l.light.visible = true; });
+  sedanBrakeLamps.forEach((l) => { l.mesh.visible = true; l.light.visible = true; });
+  reverseLamps.forEach((l) => { l.mesh.visible = true; l.light.visible = true; });
+
+  /* 隐藏摩托灯具 */
+  bikeSignalLamps.left.forEach((l) => { l.mesh.visible = false; l.light.visible = false; });
+  bikeSignalLamps.right.forEach((l) => { l.mesh.visible = false; l.light.visible = false; });
+  bikeBrakeLamp.mesh.visible = false;
+  bikeBrakeLamp.light.visible = false;
 
   arrow.visible = isVisible && state.view !== 'cockpit';
 }
