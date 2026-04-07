@@ -110,7 +110,6 @@ const TURN_SIGNAL_INTERVAL = 0.42;
 const MIN_DRIVE_SPEED = 2;
 const MAX_STEER = 0.6;
 const STEERING_WHEEL_MAX = Math.PI * 1.35;
-const FOLLOW_LOOK_LIMIT = THREE.MathUtils.degToRad(65);
 const COCKPIT_LOOK_LIMIT = THREE.MathUtils.degToRad(75);
 const AudioContextClass = window.AudioContext || window.webkitAudioContext;
 const SETTINGS_STORAGE_KEY = 'driveSimSettingsV2';
@@ -1412,7 +1411,7 @@ renderer.domElement.addEventListener('pointermove', (event) => {
   if (state.view === 'cockpit') {
     state.cockpitLookOffset = THREE.MathUtils.clamp(nextOffset, -COCKPIT_LOOK_LIMIT, COCKPIT_LOOK_LIMIT);
   } else if (state.view === 'follow') {
-    state.followLookOffset = THREE.MathUtils.clamp(nextOffset, -FOLLOW_LOOK_LIMIT, FOLLOW_LOOK_LIMIT);
+    state.followLookOffset = nextOffset;
   }
 });
 
@@ -1844,10 +1843,9 @@ function getViewPose(view) {
   const { viewForward } = getViewAxesWithOffset(state.followLookOffset);
   const position = car.position.clone()
     .add(new THREE.Vector3(0, state.vehicleType === 'motorcycle' ? 4.6 : 5.5, 0))
-    .add(forward.clone().multiplyScalar(state.vehicleType === 'motorcycle' ? -7.2 : -9));
+    .add(viewForward.clone().multiplyScalar(state.vehicleType === 'motorcycle' ? -7.2 : -9));
   const lookTarget = car.position.clone()
-    .add(new THREE.Vector3(0, state.vehicleType === 'motorcycle' ? 1.28 : 1.6, 0))
-    .add(viewForward.clone().multiplyScalar(7));
+    .add(new THREE.Vector3(0, state.vehicleType === 'motorcycle' ? 1.28 : 1.6, 0));
   return { position, lookTarget };
 }
 
