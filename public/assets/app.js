@@ -15,6 +15,32 @@ const scene = new THREE.Scene();
 scene.background = new THREE.Color(0x9fd0ff);
 scene.fog = new THREE.Fog(0x9fd0ff, 90, 220);
 
+// Clouds
+{
+  const cloudMat = new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 1, metalness: 0, transparent: true, opacity: 0.9 });
+  function makeCloud(x, y, z, s) {
+    const g = new THREE.Group();
+    const puffs = [[0,0,0,5],[-4,-1,0,3.5],[4,-1,0,3.5],[-2,1.5,0,2.8],[2.5,1.5,0,2.8],[-6,-2,0,2],[6,-2,0,2]];
+    for (const [px,py,pz,pr] of puffs) {
+      const m = new THREE.Mesh(new THREE.SphereGeometry(pr, 7, 5), cloudMat);
+      m.position.set(px, py, pz);
+      m.castShadow = false;
+      m.receiveShadow = false;
+      g.add(m);
+    }
+    g.position.set(x, y, z);
+    g.scale.setScalar(s);
+    scene.add(g);
+  }
+  makeCloud(-80, 48, -60, 1.2);
+  makeCloud(60, 42, -90, 1.0);
+  makeCloud(-30, 52, -110, 0.85);
+  makeCloud(110, 46, -70, 1.15);
+  makeCloud(10, 55, -130, 0.95);
+  makeCloud(-120, 44, -80, 1.3);
+  makeCloud(70, 50, -150, 1.1);
+}
+
 const DEFAULT_CAMERA_FOV = 60;
 const COCKPIT_CAMERA_FOV = 78;
 const camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.05, 1000);
@@ -1746,7 +1772,7 @@ const state = {
   signalTimer: 0,
   throttleInput: 0,
   reverseInput: 0,
-  autoCenterSteering: Boolean(persistedSettings?.autoCenterSteering),
+  autoCenterSteering: persistedSettings?.autoCenterSteering !== undefined ? Boolean(persistedSettings.autoCenterSteering) : true,
   selectedMapId: persistedSettings?.selectedMapId || '',
   mapImageDataUrl: persistedSettings?.mapImageDataUrl || null,
   startPose: getDefaultStartPose(),
