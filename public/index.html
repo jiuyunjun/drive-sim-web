@@ -104,27 +104,103 @@
       "inLanguage": ["en", "ja", "zh-CN"]
     }
   </script>
+  <script>
+    const ROOT_PAGE_COPY = {
+      en: {
+        lang: 'en',
+        heroLead: 'A browser driving simulator for driving test center course practice, custom map uploads, and fullscreen mobile play.',
+        languageLinks: ['Japanese', 'English', '中文'],
+        heroBody: 'Choose a language to open the simulator. Each localized page is directly indexable and includes the same driving simulator with map presets, vehicle switching, and mobile controls.',
+        copyTitle: 'What This Site Offers',
+        bullets: [
+          'Practice driving test center courses in the browser without installing an app.',
+          'Switch between sedan and motorcycle layouts with map-specific start positions and speed presets.',
+          'Use fullscreen landscape mode on mobile and a keyboard-driven desktop mode.',
+          'Open Japanese, English, or Chinese landing pages for search and direct sharing.'
+        ]
+      },
+      ja: {
+        lang: 'ja',
+        heroLead: '免許センターのコース練習、地図アップロード、スマホ全画面操作に対応したブラウザ版ドライブシミュレーターです。',
+        languageLinks: ['日本語', 'English', '中文'],
+        heroBody: '表示言語を選ぶと、その言語専用ページで同じシミュレーターを開けます。各ページは個別に検索対象になり、地図プリセット、車種切替、モバイル操作にも対応しています。',
+        copyTitle: 'このサイトでできること',
+        bullets: [
+          'アプリを入れずにブラウザで免許センターのコース練習ができます。',
+          '四輪とバイクを切り替え、地図ごとの開始位置や速度設定を使えます。',
+          'スマホ横画面の全画面表示と、PC のキーボード操作の両方に対応しています。',
+          '日本語、英語、中国語の各ページをそのまま共有できます。'
+        ]
+      },
+      zh: {
+        lang: 'zh-CN',
+        heroLead: '这是一个支持免许中心路线练习、地图上传和手机全屏操作的浏览器驾驶模拟器。',
+        languageLinks: ['日本語', 'English', '中文'],
+        heroBody: '选择显示语言后会进入对应语言页面。每个语言页都可以被单独索引，并包含相同的地图预设、车辆切换和移动端操作功能。',
+        copyTitle: '这个网站能做什么',
+        bullets: [
+          '不用安装 App，直接在浏览器里练习免许中心或自定义路线。',
+          '支持四轮和摩托切换，并读取各地图独立的起点和速度配置。',
+          '支持手机横屏全屏操作，也支持桌面键盘操作。',
+          '日语、英语、中文页面都可以直接分享和被搜索引擎收录。'
+        ]
+      }
+    };
+
+    function resolveRootLocale() {
+      const languages = Array.isArray(navigator.languages) && navigator.languages.length
+        ? navigator.languages
+        : [navigator.language || 'en'];
+
+      for (const language of languages) {
+        const normalized = String(language || '').toLowerCase();
+        if (normalized.startsWith('ja')) return 'ja';
+        if (normalized.startsWith('zh')) return 'zh';
+        if (normalized.startsWith('en')) return 'en';
+      }
+      return 'en';
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+      const locale = resolveRootLocale();
+      const copy = ROOT_PAGE_COPY[locale];
+      document.documentElement.lang = copy.lang;
+      document.getElementById('rootHeroLead').textContent = copy.heroLead;
+      document.getElementById('rootHeroBody').textContent = copy.heroBody;
+      document.getElementById('rootCopyTitle').textContent = copy.copyTitle;
+
+      const languageLinks = document.querySelectorAll('[data-root-link]');
+      languageLinks.forEach((link, index) => {
+        link.textContent = copy.languageLinks[index];
+      });
+
+      const bulletEls = document.querySelectorAll('[data-root-bullet]');
+      bulletEls.forEach((bullet, index) => {
+        bullet.textContent = copy.bullets[index];
+      });
+    });
+  </script>
 </head>
 <body>
   <main>
     <section class="heroCard">
       <h1>Drive Sim Web</h1>
-      <p class="heroLead">A browser driving simulator for driving test center course practice, custom map uploads, and fullscreen mobile play.</p>
+      <p class="heroLead" id="rootHeroLead">A browser driving simulator for driving test center course practice, custom map uploads, and fullscreen mobile play.</p>
       <div class="links">
-        <a href="./ja/index.html">日本語</a>
-        <a href="./en/index.html">English</a>
-        <a href="./zh/index.html">中文</a>
+        <a href="./ja/index.html" data-root-link>日本語</a>
+        <a href="./en/index.html" data-root-link>English</a>
+        <a href="./zh/index.html" data-root-link>中文</a>
       </div>
-      <p>Choose a language to open the simulator. Each localized page is directly indexable and includes the same driving simulator with map presets, vehicle switching, and mobile controls.</p>
+      <p id="rootHeroBody">Choose a language to open the simulator. Each localized page is directly indexable and includes the same driving simulator with map presets, vehicle switching, and mobile controls.</p>
     </section>
 
     <section class="copyCard">
-      <h2>What This Site Offers</h2>
+      <h2 id="rootCopyTitle">What This Site Offers</h2>
       <ul class="highlights">
-        <li>Practice driving test center courses in the browser without installing an app.</li>
-        <li>Switch between sedan and motorcycle layouts with map-specific start positions and speed presets.</li>
-        <li>Use fullscreen landscape mode on mobile and a keyboard-driven desktop mode.</li>
-        <li>Open Japanese, English, or Chinese landing pages for search and direct sharing.</li>
+        <li data-root-bullet>Practice driving test center courses in the browser without installing an app.</li>
+        <li data-root-bullet>Switch between sedan and motorcycle layouts with map-specific start positions and speed presets.</li>
+        <li data-root-bullet>Use fullscreen landscape mode on mobile and a keyboard-driven desktop mode.</li>
+        <li data-root-bullet>Open Japanese, English, or Chinese landing pages for search and direct sharing.</li>
       </ul>
     </section>
   </main>
