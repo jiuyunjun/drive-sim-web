@@ -72,14 +72,6 @@
       text-transform: uppercase;
     }
 
-    .brandBadge img {
-      width: 22px;
-      height: 22px;
-      border-radius: 6px;
-      object-fit: cover;
-      flex: 0 0 auto;
-    }
-
     h1,
     h2 {
       margin: 0 0 10px;
@@ -121,7 +113,7 @@
     .promoLink {
       display: inline-flex;
       align-items: center;
-      gap: 14px;
+      gap: 8px;
       margin-top: 16px;
       color: #eef7ff;
       text-decoration: none;
@@ -129,13 +121,6 @@
       border-radius: 16px;
       background: rgba(255, 255, 255, 0.06);
       border: 1px solid rgba(255, 255, 255, 0.12);
-    }
-
-    .promoLink img {
-      width: min(180px, 28vw);
-      height: auto;
-      display: block;
-      flex: 0 0 auto;
     }
 
     .promoLink strong {
@@ -148,6 +133,18 @@
       color: #bdd3e2;
       font-size: 13px;
       line-height: 1.5;
+    }
+
+    .brandFooter {
+      display: grid;
+      gap: 14px;
+      justify-items: start;
+    }
+
+    .brandFooter img {
+      width: min(280px, 100%);
+      height: auto;
+      display: block;
     }
   </style>
   <script type="application/ld+json">
@@ -251,7 +248,7 @@
 <body>
   <main>
     <section class="heroCard">
-      <div class="brandBadge"><img src="./assets/logos/lazydoglablogosimple.png" alt="lazydoglab logo" /><span id="rootBrandBadge">by lazydoglab</span></div>
+      <div class="brandBadge"><span id="rootBrandBadge">by lazydoglab</span></div>
       <h1>Drive Sim Web</h1>
       <p class="heroLead" id="rootHeroLead">A browser driving simulator for driving test center course practice, custom map uploads, and fullscreen mobile play.</p>
       <div class="links">
@@ -271,12 +268,15 @@
         <li data-root-bullet>Open Japanese, English, or Chinese landing pages for search and direct sharing.</li>
       </ul>
       <a class="promoLink" href="https://linguabridge.lazydoglab.com/" target="_blank" rel="noopener noreferrer">
-        <img src="./assets/logos/lazydoglablogo.png" alt="lazydoglab" />
         <div>
           <strong id="rootPromoTitle">We also make an extremely useful browser plugin for translation, replies, and language learning.</strong>
           <span id="rootPromoBody">Open Linguabridge</span>
         </div>
       </a>
+    </section>
+
+    <section class="copyCard brandFooter">
+      <img src="./assets/logos/lazydoglablogo.png" alt="lazydoglab" />
     </section>
   </main>
 </body>
