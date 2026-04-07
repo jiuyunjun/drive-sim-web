@@ -1417,7 +1417,7 @@ renderer.domElement.addEventListener('pointermove', (event) => {
   } else if (state.view === 'follow') {
     state.followLookOffset = nextOffset;
     state.followLookPitch = THREE.MathUtils.clamp(
-      state.lookDragStartPitch - deltaY * sensitivity,
+      state.lookDragStartPitch + deltaY * sensitivity,
       -FOLLOW_PITCH_LIMIT,
       FOLLOW_PITCH_LIMIT
     );
