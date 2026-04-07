@@ -5,7 +5,7 @@ import { applyPageTranslations, t } from './i18n.js';
 applyPageTranslations(document);
 
 const canvas = document.getElementById('app');
-const renderer = new THREE.WebGLRenderer({ canvas, antialias: true });
+const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, preserveDrawingBuffer: true });
 renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
 renderer.setSize(window.innerWidth, window.innerHeight);
 renderer.shadowMap.enabled = true;
@@ -1371,7 +1371,7 @@ async function tryEnterFullscreen() {
   if (!requestFullscreen) return;
 
   try {
-    await requestFullscreen.call(root);
+    await requestFullscreen.call(root, { navigationUI: 'hide' });
   } catch (error) {
     console.debug('Fullscreen request unavailable:', error);
   }
