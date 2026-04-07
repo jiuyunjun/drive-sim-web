@@ -440,12 +440,11 @@ p {
   position: fixed;
   left: var(--gap-lg);
   right: var(--gap-lg);
-  bottom: calc(var(--gap-lg) + 108px);
+  bottom: calc(var(--gap-lg) + 58px);
   display: flex;
   flex-wrap: wrap;
   gap: 8px;
   align-items: center;
-  max-width: min(920px, calc(100vw - 32px));
   z-index: calc(var(--z-hud) - 1);
   pointer-events: none;
 }
