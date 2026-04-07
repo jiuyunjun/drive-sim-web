@@ -436,34 +436,6 @@ p {
   border: 1px solid rgba(255, 255, 255, 0.08);
 }
 
-#desktopKeyHints {
-  position: fixed;
-  left: var(--gap-lg);
-  right: var(--gap-lg);
-  bottom: calc(var(--gap-lg) + 58px);
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-  align-items: center;
-  z-index: calc(var(--z-hud) - 1);
-  pointer-events: none;
-}
-
-#desktopKeyHints span {
-  padding: 6px 10px;
-  border-radius: 999px;
-  background: rgba(8, 14, 20, 0.62);
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  color: #d8e6ef;
-  font-size: 12px;
-  line-height: 1.2;
-  backdrop-filter: blur(8px);
-}
-
-#desktopKeyHints strong {
-  color: #f4fbff;
-}
-
 /* ===== Wheel HUD ===== */
 #wheelHud {
   position: fixed;
@@ -1158,7 +1130,6 @@ body.minimap-expanded .mobileClusterRight {
   }
 
   /* Hide desktop HUD status on mobile */
-  #desktopKeyHints,
   #hud .status {
     display: none;
   }
