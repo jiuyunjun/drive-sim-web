@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:xhtml="http://www.w3.org/1999/xhtml">
+  <url>
+    <loc>https://drive-sim-web.web.app/</loc>
+    <xhtml:link rel="alternate" hreflang="en" href="https://drive-sim-web.web.app/en/index.html" />
+    <xhtml:link rel="alternate" hreflang="ja" href="https://drive-sim-web.web.app/ja/index.html" />
+    <xhtml:link rel="alternate" hreflang="zh-CN" href="https://drive-sim-web.web.app/zh/index.html" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://drive-sim-web.web.app/" />
+  </url>
+  <url>
+    <loc>https://drive-sim-web.web.app/en/index.html</loc>
+    <xhtml:link rel="alternate" hreflang="en" href="https://drive-sim-web.web.app/en/index.html" />
+    <xhtml:link rel="alternate" hreflang="ja" href="https://drive-sim-web.web.app/ja/index.html" />
+    <xhtml:link rel="alternate" hreflang="zh-CN" href="https://drive-sim-web.web.app/zh/index.html" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://drive-sim-web.web.app/" />
+  </url>
+  <url>
+    <loc>https://drive-sim-web.web.app/ja/index.html</loc>
+    <xhtml:link rel="alternate" hreflang="en" href="https://drive-sim-web.web.app/en/index.html" />
+    <xhtml:link rel="alternate" hreflang="ja" href="https://drive-sim-web.web.app/ja/index.html" />
+    <xhtml:link rel="alternate" hreflang="zh-CN" href="https://drive-sim-web.web.app/zh/index.html" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://drive-sim-web.web.app/" />
+  </url>
+  <url>
+    <loc>https://drive-sim-web.web.app/zh/index.html</loc>
+    <xhtml:link rel="alternate" hreflang="en" href="https://drive-sim-web.web.app/en/index.html" />
+    <xhtml:link rel="alternate" hreflang="ja" href="https://drive-sim-web.web.app/ja/index.html" />
+    <xhtml:link rel="alternate" hreflang="zh-CN" href="https://drive-sim-web.web.app/zh/index.html" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://drive-sim-web.web.app/" />
+  </url>
+</urlset>

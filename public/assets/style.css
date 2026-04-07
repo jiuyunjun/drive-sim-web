@@ -356,6 +356,26 @@ button:hover,
   background: rgba(255, 255, 255, 0.06);
 }
 
+.seoSummary {
+  margin-top: 16px;
+  padding: 14px 16px;
+  border-radius: 18px;
+  background: rgba(7, 12, 18, 0.52);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.seoSummary h2 {
+  margin: 0 0 8px;
+  font-size: 16px;
+}
+
+.seoSummary p {
+  margin: 0;
+  color: #c7d9e4;
+  line-height: 1.6;
+  font-size: 13px;
+}
+
 .status {
   display: flex;
   flex-wrap: wrap;
