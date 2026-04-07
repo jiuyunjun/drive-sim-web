@@ -790,106 +790,271 @@ car.add(steeringWheel);
 const motorcycleRoot = new THREE.Group();
 car.add(motorcycleRoot);
 
-const bikeFrameMat = new THREE.MeshStandardMaterial({ color: 0x2a2d31, metalness: 0.46, roughness: 0.44 });
+/* --- CB400SF-style materials --- */
+const bikeFrameMat = new THREE.MeshStandardMaterial({ color: 0x1c1e22, metalness: 0.52, roughness: 0.40 });
 const bikeSilverMat = new THREE.MeshStandardMaterial({ color: 0xc9ced3, metalness: 0.78, roughness: 0.28 });
-const bikeSeatMat = new THREE.MeshStandardMaterial({ color: 0x111214, roughness: 0.9, metalness: 0.06 });
+const bikeSeatMat = new THREE.MeshStandardMaterial({ color: 0x0e0f10, roughness: 0.92, metalness: 0.04 });
+const bikeRedMat = new THREE.MeshStandardMaterial({ color: 0xa81520, metalness: 0.36, roughness: 0.34 });
+const bikeExhaustMat = new THREE.MeshStandardMaterial({ color: 0xb8bcc2, metalness: 0.88, roughness: 0.18 });
 
-const bikeFrame = new THREE.Mesh(new THREE.BoxGeometry(0.22, 0.22, 1.78), bikeFrameMat);
-bikeFrame.position.set(0, 0.95, 0);
-motorcycleRoot.add(bikeFrame);
+/* --- Main frame: backbone tube + downtubes --- */
+const bikeBackbone = new THREE.Mesh(new THREE.CylinderGeometry(0.032, 0.032, 1.40, 10), bikeFrameMat);
+bikeBackbone.position.set(0, 1.02, 0.10);
+bikeBackbone.rotation.x = -0.22;
+motorcycleRoot.add(bikeBackbone);
 
-const bikeTank = new THREE.Mesh(new THREE.BoxGeometry(0.5, 0.34, 0.7), bikeSilverMat);
-bikeTank.position.set(0, 1.18, 0.46);
-bikeTank.rotation.x = -0.22;
+const bikeDowntubeL = new THREE.Mesh(new THREE.CylinderGeometry(0.024, 0.024, 0.72, 8), bikeFrameMat);
+bikeDowntubeL.position.set(-0.06, 0.78, 0.42);
+bikeDowntubeL.rotation.x = 0.48;
+const bikeDowntubeR = bikeDowntubeL.clone();
+bikeDowntubeR.position.x = 0.06;
+motorcycleRoot.add(bikeDowntubeL, bikeDowntubeR);
+
+/* --- Tank: CB400SF rounded shape --- */
+const bikeTank = new THREE.Mesh(
+  new THREE.CapsuleGeometry(0.22, 0.46, 8, 16),
+  bikeRedMat
+);
+bikeTank.position.set(0, 1.16, 0.38);
+bikeTank.rotation.x = -0.15;
+bikeTank.rotation.z = Math.PI / 2;
+bikeTank.scale.set(1.0, 0.92, 1.38);
 motorcycleRoot.add(bikeTank);
 
-const bikeSeat = new THREE.Mesh(new THREE.BoxGeometry(0.42, 0.14, 0.74), bikeSeatMat);
-bikeSeat.position.set(0, 1.08, -0.34);
-bikeSeat.rotation.x = 0.08;
+/* Tank stripe (chrome center line) */
+const bikeTankStripe = new THREE.Mesh(
+  new THREE.BoxGeometry(0.04, 0.01, 0.56),
+  chromeMat
+);
+bikeTankStripe.position.set(0, 1.38, 0.38);
+motorcycleRoot.add(bikeTankStripe);
+
+/* --- Seat: rider + pillion --- */
+const bikeSeat = new THREE.Mesh(
+  new THREE.CapsuleGeometry(0.10, 0.52, 6, 12),
+  bikeSeatMat
+);
+bikeSeat.position.set(0, 1.10, -0.30);
+bikeSeat.rotation.x = 0.06;
+bikeSeat.rotation.z = Math.PI / 2;
+bikeSeat.scale.set(0.7, 1.8, 1.1);
 motorcycleRoot.add(bikeSeat);
 
-const bikeTail = new THREE.Mesh(new THREE.BoxGeometry(0.34, 0.16, 0.48), bikeSilverMat);
-bikeTail.position.set(0, 1.12, -0.84);
-bikeTail.rotation.x = 0.18;
-motorcycleRoot.add(bikeTail);
+/* --- Tail cowl / rear fender --- */
+const bikeTailCowl = new THREE.Mesh(
+  new THREE.BoxGeometry(0.30, 0.10, 0.46),
+  bikeRedMat
+);
+bikeTailCowl.position.set(0, 1.06, -0.78);
+bikeTailCowl.rotation.x = 0.22;
+motorcycleRoot.add(bikeTailCowl);
 
-const bikeEngine = new THREE.Mesh(new THREE.BoxGeometry(0.38, 0.36, 0.34), bikeFrameMat);
-bikeEngine.position.set(0, 0.72, -0.02);
-motorcycleRoot.add(bikeEngine);
+const bikeRearFender = new THREE.Mesh(
+  new THREE.BoxGeometry(0.20, 0.04, 0.50),
+  bikeFrameMat
+);
+bikeRearFender.position.set(0, 0.66, -1.08);
+bikeRearFender.rotation.x = 0.28;
+motorcycleRoot.add(bikeRearFender);
 
+/* --- Engine: inline-4 block + cylinder head --- */
+const bikeEngineBlock = new THREE.Mesh(new THREE.BoxGeometry(0.42, 0.30, 0.40), bikeSilverMat);
+bikeEngineBlock.position.set(0, 0.68, 0.08);
+motorcycleRoot.add(bikeEngineBlock);
+
+const bikeCylinderHead = new THREE.Mesh(new THREE.BoxGeometry(0.46, 0.16, 0.34), bikeFrameMat);
+bikeCylinderHead.position.set(0, 0.86, 0.10);
+motorcycleRoot.add(bikeCylinderHead);
+
+/* Exhaust pipes: 4-into-1 collector */
+const bikeExhPipe1 = new THREE.Mesh(new THREE.CylinderGeometry(0.020, 0.020, 0.60, 8), bikeExhaustMat);
+bikeExhPipe1.position.set(0.20, 0.54, 0.10);
+bikeExhPipe1.rotation.x = Math.PI / 2;
+motorcycleRoot.add(bikeExhPipe1);
+
+const bikeExhPipe2 = new THREE.Mesh(new THREE.CylinderGeometry(0.020, 0.020, 0.60, 8), bikeExhaustMat);
+bikeExhPipe2.position.set(0.22, 0.50, -0.20);
+bikeExhPipe2.rotation.x = Math.PI / 2;
+motorcycleRoot.add(bikeExhPipe2);
+
+const bikeExhCollector = new THREE.Mesh(new THREE.CylinderGeometry(0.034, 0.034, 0.70, 10), bikeExhaustMat);
+bikeExhCollector.position.set(0.24, 0.44, -0.68);
+bikeExhCollector.rotation.x = -0.08;
+motorcycleRoot.add(bikeExhCollector);
+
+/* Muffler (right side) */
+const bikeMuffler = new THREE.Mesh(
+  new THREE.CapsuleGeometry(0.054, 0.40, 8, 12),
+  bikeExhaustMat
+);
+bikeMuffler.position.set(0.24, 0.46, -1.06);
+bikeMuffler.rotation.x = Math.PI / 2;
+motorcycleRoot.add(bikeMuffler);
+
+/* --- Front fork (proper rake angle ~27°) --- */
 const bikeFork = new THREE.Group();
-const bikeForkL = new THREE.Mesh(new THREE.CylinderGeometry(0.028, 0.028, 0.72, 10), chromeMat);
-bikeForkL.position.set(-0.08, 0.92, 1.18);
-bikeForkL.rotation.x = 0.12;
+const forkRake = 0.47; // ~27 degrees
+const bikeForkL = new THREE.Mesh(new THREE.CylinderGeometry(0.030, 0.026, 0.82, 10), chromeMat);
+bikeForkL.position.set(-0.16, 0.88, 1.08);
+bikeForkL.rotation.x = forkRake;
 const bikeForkR = bikeForkL.clone();
-bikeForkR.position.x = 0.08;
+bikeForkR.position.x = 0.16;
 bikeFork.add(bikeForkL, bikeForkR);
+
+/* Fork triple clamp */
+const bikeTripleUpper = new THREE.Mesh(new THREE.BoxGeometry(0.38, 0.04, 0.10), bikeFrameMat);
+bikeTripleUpper.position.set(0, 1.26, 1.00);
+const bikeTripleLower = new THREE.Mesh(new THREE.BoxGeometry(0.36, 0.04, 0.08), bikeFrameMat);
+bikeTripleLower.position.set(0, 0.94, 1.14);
+bikeFork.add(bikeTripleUpper, bikeTripleLower);
 motorcycleRoot.add(bikeFork);
 
+/* Front fender */
+const bikeFrontFender = new THREE.Mesh(
+  new THREE.BoxGeometry(0.16, 0.03, 0.40),
+  bikeFrameMat
+);
+bikeFrontFender.position.set(0, 0.72, 1.35);
+motorcycleRoot.add(bikeFrontFender);
+
+/* --- Handlebar --- */
 const bikeHandlebar = new THREE.Group();
-const bikeBar = new THREE.Mesh(new THREE.CylinderGeometry(0.026, 0.026, 0.66, 12), chromeMat);
+const bikeBar = new THREE.Mesh(new THREE.CylinderGeometry(0.018, 0.018, 0.62, 12), chromeMat);
 bikeBar.rotation.z = Math.PI / 2;
-const bikeBarCenter = new THREE.Mesh(new THREE.BoxGeometry(0.12, 0.05, 0.08), bikeFrameMat);
+const bikeBarCenter = new THREE.Mesh(new THREE.BoxGeometry(0.10, 0.04, 0.06), bikeFrameMat);
 bikeHandlebar.add(bikeBar, bikeBarCenter);
-bikeHandlebar.position.set(0, 1.34, 0.84);
+bikeHandlebar.position.set(0, 1.32, 0.92);
 motorcycleRoot.add(bikeHandlebar);
 
+/* --- Headlight: round, mounted between forks --- */
 const bikeHeadlight = new THREE.Mesh(
-  new THREE.CylinderGeometry(0.14, 0.14, 0.18, 18),
-  new THREE.MeshStandardMaterial({ color: 0xf7f4eb, emissive: 0xffffd8, emissiveIntensity: 0.34, metalness: 0.34, roughness: 0.22 })
+  new THREE.SphereGeometry(0.11, 18, 12, 0, Math.PI * 2, 0, Math.PI / 2),
+  new THREE.MeshStandardMaterial({ color: 0xf7f4eb, emissive: 0xffffd8, emissiveIntensity: 0.38, metalness: 0.30, roughness: 0.20 })
 );
-bikeHeadlight.rotation.x = Math.PI / 2;
-bikeHeadlight.position.set(0, 1.18, 1.46);
+bikeHeadlight.rotation.x = -Math.PI / 2;
+bikeHeadlight.position.set(0, 1.06, 1.30);
 motorcycleRoot.add(bikeHeadlight);
 
-const bikeScreen = new THREE.Mesh(
-  new THREE.PlaneGeometry(0.32, 0.24),
-  new THREE.MeshStandardMaterial({ color: 0x88b6d0, transparent: true, opacity: 0.22, metalness: 0.1, roughness: 0.08 })
+/* Headlight chrome bucket */
+const bikeHeadlightBucket = new THREE.Mesh(
+  new THREE.CylinderGeometry(0.12, 0.12, 0.08, 18),
+  chromeMat
 );
-bikeScreen.position.set(0, 1.38, 1.18);
-bikeScreen.rotation.x = 0.32;
-motorcycleRoot.add(bikeScreen);
+bikeHeadlightBucket.rotation.x = Math.PI / 2;
+bikeHeadlightBucket.position.set(0, 1.06, 1.26);
+motorcycleRoot.add(bikeHeadlightBucket);
 
+/* 摩托尾灯在下方作为功能性刹车灯创建 */
+
+/* --- 摩托转向灯/刹车灯占位，实际功能性灯具在下方统一创建 --- */
+
+/* --- Meter cluster (dual round gauges, CB400SF style) --- */
+const bikeMeterL = new THREE.Mesh(
+  new THREE.CylinderGeometry(0.06, 0.06, 0.03, 14),
+  new THREE.MeshStandardMaterial({ color: 0x061015, emissive: 0x14394d, emissiveIntensity: 0.18, roughness: 0.32 })
+);
+bikeMeterL.rotation.x = Math.PI / 2;
+bikeMeterL.position.set(-0.08, 1.30, 0.96);
+const bikeMeterR = bikeMeterL.clone();
+bikeMeterR.position.x = 0.08;
+motorcycleRoot.add(bikeMeterL, bikeMeterR);
+
+/* --- Swingarm --- */
+const bikeSwingarmL = new THREE.Mesh(new THREE.BoxGeometry(0.04, 0.06, 0.80), bikeFrameMat);
+bikeSwingarmL.position.set(-0.10, 0.52, -0.92);
+const bikeSwingarmR = bikeSwingarmL.clone();
+bikeSwingarmR.position.x = 0.10;
+motorcycleRoot.add(bikeSwingarmL, bikeSwingarmR);
+
+/* Rear shock absorbers */
+const bikeShockL = new THREE.Mesh(new THREE.CylinderGeometry(0.018, 0.018, 0.44, 8), chromeMat);
+bikeShockL.position.set(-0.14, 0.82, -0.72);
+bikeShockL.rotation.x = -0.16;
+const bikeShockR = bikeShockL.clone();
+bikeShockR.position.x = 0.14;
+motorcycleRoot.add(bikeShockL, bikeShockR);
+
+/* --- Wheels --- */
 function createBikeWheel() {
+  /* group 整体绕 X 轴旋转来模拟滚动，
+     内部所有部件在 YZ 平面上组装（轮轴沿 X 方向） */
   const group = new THREE.Group();
+
+  /* 轮胎：TorusGeometry 默认在 XY 平面，需要绕 X 转 90° 竖起来 */
   const tire = new THREE.Mesh(
-    new THREE.CylinderGeometry(0.46, 0.46, 0.14, 24),
-    new THREE.MeshStandardMaterial({ color: 0x181818, roughness: 0.94 })
+    new THREE.TorusGeometry(0.32, 0.10, 14, 28),
+    new THREE.MeshStandardMaterial({ color: 0x161616, roughness: 0.94 })
   );
-  tire.rotation.z = Math.PI / 2;
+  tire.rotation.x = Math.PI / 2;
+
+  /* 轮辋：CylinderGeometry 默认沿 Y 轴，需要绕 Z 转 90° 让轴沿 X */
   const rim = new THREE.Mesh(
-    new THREE.CylinderGeometry(0.28, 0.28, 0.16, 18),
-    new THREE.MeshStandardMaterial({ color: 0x9ea7af, metalness: 0.78, roughness: 0.22 })
+    new THREE.CylinderGeometry(0.26, 0.26, 0.10, 20),
+    new THREE.MeshStandardMaterial({ color: 0x9ea7af, metalness: 0.82, roughness: 0.18 })
   );
   rim.rotation.z = Math.PI / 2;
-  group.add(tire, rim);
+
+  /* 辐条：在 YZ 平面上旋转排列 */
+  const spokeMat = new THREE.MeshStandardMaterial({ color: 0xaab2ba, metalness: 0.80, roughness: 0.22 });
+  for (let i = 0; i < 6; i++) {
+    const spoke = new THREE.Mesh(new THREE.BoxGeometry(0.02, 0.44, 0.02), spokeMat);
+    spoke.rotation.x = (Math.PI / 6) * i;
+    group.add(spoke);
+  }
+
+  /* 轮毂 */
+  const hub = new THREE.Mesh(
+    new THREE.CylinderGeometry(0.05, 0.05, 0.14, 12),
+    chromeMat
+  );
+  hub.rotation.z = Math.PI / 2;
+  group.add(tire, rim, hub);
   return { group, tire };
 }
 
+/* 前碟刹盘 */
+const bikeFrontDisc = new THREE.Mesh(
+  new THREE.CylinderGeometry(0.18, 0.18, 0.012, 20),
+  new THREE.MeshStandardMaterial({ color: 0x888888, metalness: 0.70, roughness: 0.30 })
+);
+bikeFrontDisc.rotation.z = Math.PI / 2;
+bikeFrontDisc.position.set(0.07, 0, 0);
+
 const bikeFrontWheelPivot = new THREE.Group();
-bikeFrontWheelPivot.position.set(0, 0.48, 1.35);
+bikeFrontWheelPivot.position.set(0, 0.42, 1.35);
 const bikeFrontWheelAssembly = createBikeWheel();
+bikeFrontWheelAssembly.group.add(bikeFrontDisc);
 bikeFrontWheelPivot.add(bikeFrontWheelAssembly.group);
 motorcycleRoot.add(bikeFrontWheelPivot);
 
 const bikeRearWheelMount = new THREE.Group();
-bikeRearWheelMount.position.set(0, 0.48, -1.35);
+bikeRearWheelMount.position.set(0, 0.42, -1.35);
 const bikeRearWheelAssembly = createBikeWheel();
 bikeRearWheelMount.add(bikeRearWheelAssembly.group);
 motorcycleRoot.add(bikeRearWheelMount);
 
+/* --- Side stand (kickstand) --- */
+const bikeKickstand = new THREE.Mesh(
+  new THREE.CylinderGeometry(0.014, 0.014, 0.50, 6),
+  bikeFrameMat
+);
+bikeKickstand.position.set(-0.18, 0.44, -0.12);
+bikeKickstand.rotation.x = 0.10;
+bikeKickstand.rotation.z = 0.30;
+motorcycleRoot.add(bikeKickstand);
+
+/* --- Cockpit view parts --- */
 const bikeCockpitRoot = new THREE.Group();
 car.add(bikeCockpitRoot);
 const bikeCockpitBar = bikeHandlebar.clone();
 bikeCockpitBar.position.set(0, 1.26, 0.72);
-const bikeCockpitCluster = new THREE.Mesh(
-  new THREE.BoxGeometry(0.2, 0.12, 0.05),
-  new THREE.MeshStandardMaterial({ color: 0x061015, emissive: 0x14394d, emissiveIntensity: 0.18, roughness: 0.32 })
-);
-bikeCockpitCluster.position.set(0, 1.33, 0.61);
-const bikeCockpitScreen = bikeScreen.clone();
-bikeCockpitScreen.position.set(0, 1.42, 0.96);
-bikeCockpitRoot.add(bikeCockpitBar, bikeCockpitCluster, bikeCockpitScreen);
+const bikeCockpitCluster = new THREE.Group();
+const bikeCockpitMeterL = bikeMeterL.clone();
+bikeCockpitMeterL.position.set(-0.08, 1.30, 0.66);
+const bikeCockpitMeterR = bikeMeterR.clone();
+bikeCockpitMeterR.position.set(0.08, 1.30, 0.66);
+bikeCockpitCluster.add(bikeCockpitMeterL, bikeCockpitMeterR);
+bikeCockpitRoot.add(bikeCockpitBar, bikeCockpitCluster);
 
 function createSignalLamp(x, y, z) {
   const mesh = new THREE.Mesh(
@@ -912,7 +1077,8 @@ function createSignalLamp(x, y, z) {
   return { mesh, light };
 }
 
-const turnSignalLamps = {
+/* --- 轿车转向灯 --- */
+const sedanSignalLamps = {
   left: [
     createSignalLamp(1.06, 0.98, 2.16),
     createSignalLamp(1.06, 0.98, -2.16),
@@ -923,6 +1089,42 @@ const turnSignalLamps = {
   ],
 };
 
+/* --- 摩托转向灯（小球形，贴近车身） --- */
+function createBikeSignalLamp(x, y, z) {
+  const mesh = new THREE.Mesh(
+    new THREE.SphereGeometry(0.038, 12, 8),
+    new THREE.MeshStandardMaterial({
+      color: 0x3a2a14,
+      emissive: 0xffb74d,
+      emissiveIntensity: 0.02,
+      roughness: 0.42,
+      metalness: 0.08,
+    })
+  );
+  mesh.position.set(x, y, z);
+  mesh.castShadow = true;
+
+  const light = new THREE.PointLight(0xffb347, 0, 3.5, 2);
+  light.position.copy(mesh.position);
+
+  motorcycleRoot.add(mesh, light);
+  return { mesh, light };
+}
+
+/* 前转向灯：紧贴前叉三角台两侧 */
+/* 后转向灯：紧贴尾壳两侧 */
+const bikeSignalLamps = {
+  left: [
+    createBikeSignalLamp(-0.18, 1.06, 1.12),
+    createBikeSignalLamp(-0.16, 0.96, -0.92),
+  ],
+  right: [
+    createBikeSignalLamp(0.18, 1.06, 1.12),
+    createBikeSignalLamp(0.16, 0.96, -0.92),
+  ],
+};
+
+/* --- 轿车刹车灯 --- */
 function createBrakeLamp(x, y, z) {
   const mesh = new THREE.Mesh(
     new THREE.BoxGeometry(0.38, 0.16, 0.12),
@@ -944,11 +1146,36 @@ function createBrakeLamp(x, y, z) {
   return { mesh, light };
 }
 
-const brakeLamps = [
+const sedanBrakeLamps = [
   createBrakeLamp(-0.5, 0.96, -2.13),
   createBrakeLamp(0.5, 0.96, -2.13),
 ];
 
+/* --- 摩托刹车灯（只有一个，在尾部中央） --- */
+function createBikeBrakeLamp(x, y, z) {
+  const mesh = new THREE.Mesh(
+    new THREE.BoxGeometry(0.14, 0.06, 0.06),
+    new THREE.MeshStandardMaterial({
+      color: 0x661111,
+      emissive: 0xff2020,
+      emissiveIntensity: 0.04,
+      roughness: 0.36,
+      metalness: 0.10,
+    })
+  );
+  mesh.position.set(x, y, z);
+  mesh.castShadow = true;
+
+  const light = new THREE.PointLight(0xff3d3d, 0, 4, 2);
+  light.position.copy(mesh.position);
+
+  motorcycleRoot.add(mesh, light);
+  return { mesh, light };
+}
+
+const bikeBrakeLamp = createBikeBrakeLamp(0, 0.84, -1.22);
+
+/* --- 轿车倒车灯（摩托没有倒车灯） --- */
 function createReverseLamp(x, y, z) {
   const mesh = new THREE.Mesh(
     new THREE.BoxGeometry(0.22, 0.1, 0.08),
@@ -985,8 +1212,17 @@ function updateTurnSignalVisuals() {
   const leftActive = state.turnSignal === 'left' && state.signalBlinkVisible;
   const rightActive = state.turnSignal === 'right' && state.signalBlinkVisible;
 
-  turnSignalLamps.left.forEach((lamp) => setSignalLampState(lamp, leftActive));
-  turnSignalLamps.right.forEach((lamp) => setSignalLampState(lamp, rightActive));
+  const isBike = state.vehicleType === 'motorcycle';
+  const signals = isBike ? bikeSignalLamps : sedanSignalLamps;
+
+  /* 隐藏非当前车型的转向灯 */
+  const hidden = isBike ? sedanSignalLamps : bikeSignalLamps;
+  hidden.left.forEach((lamp) => setSignalLampState(lamp, false));
+  hidden.right.forEach((lamp) => setSignalLampState(lamp, false));
+
+  signals.left.forEach((lamp) => setSignalLampState(lamp, leftActive));
+  signals.right.forEach((lamp) => setSignalLampState(lamp, rightActive));
+
   cockpitSignalLampEls.forEach((lampEl) => {
     const direction = lampEl.dataset.direction;
     const isActive = (direction === 'left' && leftActive) || (direction === 'right' && rightActive);
@@ -995,17 +1231,29 @@ function updateTurnSignalVisuals() {
 }
 
 function updateBrakeLights(isActive) {
-  brakeLamps.forEach((lamp) => {
-    lamp.mesh.material.emissiveIntensity = isActive ? 2.4 : 0.04;
-    lamp.mesh.scale.setScalar(isActive ? 1.04 : 1);
-    lamp.light.intensity = isActive ? 1.6 : 0;
+  const isBike = state.vehicleType === 'motorcycle';
+
+  /* 轿车刹车灯 */
+  sedanBrakeLamps.forEach((lamp) => {
+    const on = !isBike && isActive;
+    lamp.mesh.material.emissiveIntensity = on ? 2.4 : 0.04;
+    lamp.mesh.scale.setScalar(on ? 1.04 : 1);
+    lamp.light.intensity = on ? 1.6 : 0;
   });
+
+  /* 摩托刹车灯（单个） */
+  const bikeOn = isBike && isActive;
+  bikeBrakeLamp.mesh.material.emissiveIntensity = bikeOn ? 2.4 : 0.04;
+  bikeBrakeLamp.mesh.scale.setScalar(bikeOn ? 1.06 : 1);
+  bikeBrakeLamp.light.intensity = bikeOn ? 1.4 : 0;
 }
 
 function updateReverseLights(isActive) {
+  /* 摩托没有倒车灯 */
+  const on = state.vehicleType !== 'motorcycle' && isActive;
   reverseLamps.forEach((lamp) => {
-    lamp.mesh.material.emissiveIntensity = isActive ? 1.8 : 0.02;
-    lamp.light.intensity = isActive ? 1.1 : 0;
+    lamp.mesh.material.emissiveIntensity = on ? 1.8 : 0.02;
+    lamp.light.intensity = on ? 1.1 : 0;
   });
 }
 
