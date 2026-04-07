@@ -1,18 +1,55 @@
+/* ===== CSS Custom Properties ===== */
+:root {
+  /* z-index layers (low → high) */
+  --z-mirror: 9;
+  --z-minimap: 10;
+  --z-hud: 10;
+  --z-ui: 10;
+  --z-mobile-controls: 14;
+  --z-wheel-hud: 13;
+  --z-ui-toggle: 16;
+  --z-rotate-overlay: 20;
+  --z-loading: 40;
+  --z-minimap-expanded: 120;
+
+  /* spacing */
+  --gap-sm: 6px;
+  --gap-md: 10px;
+  --gap-lg: 16px;
+
+  /* surface colors */
+  --surface-dark: rgba(20, 20, 20, 0.82);
+  --surface-overlay: rgba(9, 17, 24, 0.68);
+  --surface-subtle: rgba(255, 255, 255, 0.04);
+  --surface-hover: rgba(255, 255, 255, 0.14);
+  --border-subtle: rgba(255, 255, 255, 0.12);
+  --border-default: rgba(255, 255, 255, 0.18);
+
+  /* accent */
+  --accent-blue: #7cc8ff;
+  --accent-blue-bg: rgba(86, 190, 255, 0.24);
+  --accent-blue-border: rgba(154, 221, 255, 0.72);
+  --accent-signal: rgba(255, 181, 77, 0.22);
+
+  /* panel radius */
+  --radius-sm: 10px;
+  --radius-md: 14px;
+  --radius-lg: 20px;
+  --radius-pill: 999px;
+
+  /* safe area fallbacks */
+  --sat: env(safe-area-inset-top, 0px);
+  --sar: env(safe-area-inset-right, 0px);
+  --sab: env(safe-area-inset-bottom, 0px);
+  --sal: env(safe-area-inset-left, 0px);
+}
+
+/* ===== Reset & Base ===== */
 * {
   box-sizing: border-box;
 }
 
-html {
-  margin: 0;
-  width: 100%;
-  height: 100%;
-  overflow: hidden;
-  font-family: Arial, "Microsoft YaHei", sans-serif;
-  background: #111;
-  color: #fff;
-}
-
-body {
+html, body {
   margin: 0;
   width: 100%;
   height: 100%;
@@ -39,54 +76,75 @@ body {
   -webkit-tap-highlight-color: transparent;
 }
 
-#mobileControls {
+/* ===== Shared: buttons, inputs, labels ===== */
+button,
+.file-label,
+input,
+select {
+  font: inherit;
+}
+
+button,
+.file-label {
+  border: 1px solid var(--border-default);
+  background: rgba(255, 255, 255, 0.08);
+  color: #fff;
+  padding: 10px 14px;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+}
+
+button:hover,
+.file-label:hover {
+  background: var(--surface-hover);
+}
+
+.file-label input {
   display: none;
 }
 
-#rotateOverlay {
-  display: none;
+select {
+  min-width: 132px;
+  padding: 8px 10px;
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-sm);
+  background: rgba(255, 255, 255, 0.08);
+  color: #fff;
 }
 
+input[type="number"] {
+  width: 90px;
+}
+
+input[type="range"] {
+  accent-color: var(--accent-blue);
+}
+
+/* ===== UI Panel (top-left controls) ===== */
 #ui {
   position: fixed;
-  top: 16px;
-  left: 16px;
-  z-index: 10;
+  top: var(--gap-lg);
+  left: var(--gap-lg);
+  z-index: var(--z-ui);
   pointer-events: auto;
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: var(--gap-md);
   align-items: flex-start;
 }
 
-.panel {
-  width: min(560px, calc(100vw - 32px));
-  max-height: calc(100vh - 88px);
-  background: rgba(20, 20, 20, 0.82);
-  backdrop-filter: blur(8px);
-  border: 1px solid rgba(255, 255, 255, 0.12);
-  border-radius: 14px;
-  padding: 16px 18px;
-  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.3);
-  pointer-events: auto;
-  overflow: auto;
-  overscroll-behavior: contain;
-  -webkit-overflow-scrolling: touch;
-}
-
 #uiToggle {
-  border: 1px solid rgba(255, 255, 255, 0.18);
+  border: 1px solid var(--border-default);
   background: rgba(16, 20, 26, 0.8);
   color: #fff;
   padding: 9px 14px;
-  border-radius: 999px;
+  border-radius: var(--radius-pill);
   backdrop-filter: blur(8px);
   box-shadow: 0 10px 24px rgba(0, 0, 0, 0.24);
 }
 
 #uiToggle:hover {
-  background: rgba(255, 255, 255, 0.14);
-  cursor: pointer;
+  background: var(--surface-hover);
 }
 
 #ui.collapsed .panel {
@@ -104,22 +162,38 @@ body {
 }
 
 .quickViewBtn {
-  border: 1px solid rgba(255, 255, 255, 0.18);
+  border: 1px solid var(--border-default);
   background: rgba(16, 20, 26, 0.78);
   color: #fff;
   padding: 8px 12px;
-  border-radius: 999px;
+  border-radius: var(--radius-pill);
   box-shadow: 0 10px 24px rgba(0, 0, 0, 0.24);
   backdrop-filter: blur(8px);
+  cursor: pointer;
 }
 
 .quickViewBtn.is-active {
-  background: rgba(86, 190, 255, 0.24);
-  border-color: rgba(154, 221, 255, 0.72);
+  background: var(--accent-blue-bg);
+  border-color: var(--accent-blue-border);
+}
+
+.panel {
+  width: min(560px, calc(100vw - 32px));
+  max-height: calc(100vh - 88px);
+  background: var(--surface-dark);
+  backdrop-filter: blur(8px);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  padding: var(--gap-lg) 18px;
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.3);
+  pointer-events: auto;
+  overflow: auto;
+  overscroll-behavior: contain;
+  -webkit-overflow-scrolling: touch;
 }
 
 h1 {
-  margin: 0 0 10px;
+  margin: 0 0 var(--gap-md);
   font-size: 22px;
 }
 
@@ -128,10 +202,31 @@ p {
   color: #d5d5d5;
 }
 
+.seoSummary {
+  margin-top: var(--gap-lg);
+  padding: 14px 16px;
+  border-radius: 18px;
+  background: rgba(7, 12, 18, 0.52);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.seoSummary h2 {
+  margin: 0 0 8px;
+  font-size: 16px;
+}
+
+.seoSummary p {
+  margin: 0;
+  color: #c7d9e4;
+  line-height: 1.6;
+  font-size: 13px;
+}
+
+/* ===== Panel Rows ===== */
 .row {
   display: flex;
   flex-wrap: wrap;
-  gap: 10px;
+  gap: var(--gap-md);
   align-items: center;
   margin-bottom: 12px;
 }
@@ -140,33 +235,9 @@ p {
   display: flex;
   align-items: center;
   gap: 8px;
-  background: rgba(255, 255, 255, 0.04);
-  border-radius: 10px;
+  background: var(--surface-subtle);
+  border-radius: var(--radius-sm);
   padding: 8px 10px;
-}
-
-input[type="number"] {
-  width: 90px;
-}
-
-select {
-  min-width: 132px;
-  padding: 8px 10px;
-  border: 1px solid rgba(255, 255, 255, 0.18);
-  border-radius: 10px;
-  background: rgba(255, 255, 255, 0.08);
-  color: #fff;
-}
-
-input[type="range"] {
-  accent-color: #7cc8ff;
-}
-
-button,
-.file-label,
-input,
-select {
-  font: inherit;
 }
 
 .range-card {
@@ -175,9 +246,9 @@ select {
   display: grid;
   grid-template-columns: auto 1fr auto;
   align-items: center;
-  gap: 10px;
-  background: rgba(255, 255, 255, 0.04);
-  border-radius: 10px;
+  gap: var(--gap-md);
+  background: var(--surface-subtle);
+  border-radius: var(--radius-sm);
   padding: 8px 12px;
 }
 
@@ -187,6 +258,7 @@ select {
   color: #bfe7ff;
 }
 
+/* ===== Acceleration Curve Card ===== */
 .curveCard {
   display: flex;
   flex-direction: column;
@@ -204,7 +276,7 @@ select {
   flex-wrap: wrap;
   align-items: flex-start;
   justify-content: space-between;
-  gap: 10px;
+  gap: var(--gap-md);
 }
 
 .curveCardTitle {
@@ -226,7 +298,7 @@ select {
 .curveValue {
   min-width: 66px;
   padding: 7px 12px;
-  border-radius: 999px;
+  border-radius: var(--radius-pill);
   background: rgba(124, 200, 255, 0.18);
   color: #dff3ff;
   text-align: center;
@@ -307,40 +379,22 @@ select {
   display: flex;
   flex-wrap: wrap;
   justify-content: space-between;
-  gap: 10px;
+  gap: var(--gap-md);
   color: #bed7e8;
   font-size: 12px;
 }
 
 .curveMeta span {
   padding: 7px 10px;
-  border-radius: 999px;
-  background: rgba(255, 255, 255, 0.04);
+  border-radius: var(--radius-pill);
+  background: var(--surface-subtle);
 }
 
 .curveMeta strong {
   color: #f3fbff;
 }
 
-button,
-.file-label {
-  border: 1px solid rgba(255, 255, 255, 0.18);
-  background: rgba(255, 255, 255, 0.08);
-  color: #fff;
-  padding: 10px 14px;
-  border-radius: 10px;
-}
-
-button:hover,
-.file-label:hover {
-  background: rgba(255, 255, 255, 0.14);
-  cursor: pointer;
-}
-
-.file-label input {
-  display: none;
-}
-
+/* ===== Tips ===== */
 .tips {
   display: flex;
   flex-wrap: wrap;
@@ -352,43 +406,24 @@ button:hover,
 .tips span,
 .status div {
   padding: 6px 10px;
-  border-radius: 999px;
+  border-radius: var(--radius-pill);
   background: rgba(255, 255, 255, 0.06);
 }
 
-.seoSummary {
-  margin-top: 16px;
-  padding: 14px 16px;
-  border-radius: 18px;
-  background: rgba(7, 12, 18, 0.52);
-  border: 1px solid rgba(255, 255, 255, 0.08);
-}
-
-.seoSummary h2 {
-  margin: 0 0 8px;
-  font-size: 16px;
-}
-
-.seoSummary p {
-  margin: 0;
-  color: #c7d9e4;
-  line-height: 1.6;
-  font-size: 13px;
+/* ===== HUD (bottom status bar) ===== */
+#hud {
+  position: fixed;
+  left: var(--gap-lg);
+  right: var(--gap-lg);
+  bottom: var(--gap-lg);
+  z-index: var(--z-hud);
+  pointer-events: none;
 }
 
 .status {
   display: flex;
   flex-wrap: wrap;
-  gap: 10px;
-}
-
-#hud {
-  position: fixed;
-  left: 16px;
-  right: 16px;
-  bottom: 16px;
-  z-index: 10;
-  pointer-events: none;
+  gap: var(--gap-md);
 }
 
 #hud .status {
@@ -401,6 +436,7 @@ button:hover,
   border: 1px solid rgba(255, 255, 255, 0.08);
 }
 
+/* ===== Wheel HUD ===== */
 #wheelHud {
   position: fixed;
   left: 50%;
@@ -409,7 +445,7 @@ button:hover,
   width: 172px;
   height: 172px;
   pointer-events: none;
-  z-index: 10;
+  z-index: var(--z-hud);
 }
 
 .wheelHudTopMark {
@@ -419,7 +455,7 @@ button:hover,
   width: 8px;
   height: 24px;
   margin-left: -4px;
-  border-radius: 999px;
+  border-radius: var(--radius-pill);
   background: linear-gradient(180deg, #ffd880, #ff9f43);
   box-shadow: 0 0 12px rgba(255, 180, 92, 0.45);
 }
@@ -436,9 +472,10 @@ button:hover,
   filter: drop-shadow(0 6px 14px rgba(0, 0, 0, 0.5));
 }
 
+/* ===== Signal & Audio status ===== */
 #signalStatusBox[data-signal="left"],
 #signalStatusBox[data-signal="right"] {
-  background: rgba(255, 181, 77, 0.18);
+  background: var(--accent-signal);
   color: #ffd89b;
 }
 
@@ -452,16 +489,17 @@ button:hover,
   color: #ffd0d0;
 }
 
+/* ===== Mirrors ===== */
 #mirrorHud {
   position: fixed;
-  top: 16px;
+  top: var(--gap-lg);
   left: 50%;
   transform: translateX(-50%);
   display: none;
   gap: 12px;
   align-items: flex-start;
   pointer-events: none;
-  z-index: 9;
+  z-index: var(--z-mirror);
 }
 
 #mirrorHud.cockpit-layout {
@@ -494,134 +532,6 @@ button:hover,
   right: 14px;
 }
 
-#cockpitSignalHud {
-  position: fixed;
-  top: 108px;
-  left: 50%;
-  transform: translateX(-50%);
-  display: none;
-  gap: 14px;
-  align-items: center;
-  justify-content: center;
-  pointer-events: none;
-  z-index: 11;
-}
-
-#cockpitSignalHud.is-visible {
-  display: flex;
-}
-
-.cockpitSignalLamp {
-  min-width: 88px;
-  padding: 8px 12px;
-  border-radius: 999px;
-  border: 1px solid rgba(255, 255, 255, 0.12);
-  background: rgba(9, 14, 19, 0.56);
-  color: rgba(232, 239, 245, 0.52);
-  text-align: center;
-  font-size: 12px;
-  font-weight: 700;
-  letter-spacing: 0.04em;
-  backdrop-filter: blur(10px);
-  box-shadow: 0 10px 26px rgba(0, 0, 0, 0.24);
-  transition: background 0.12s ease, color 0.12s ease, box-shadow 0.12s ease, transform 0.12s ease;
-}
-
-.cockpitSignalLamp.is-active {
-  background: rgba(255, 181, 77, 0.22);
-  color: #ffe1ad;
-  box-shadow: 0 0 18px rgba(255, 181, 77, 0.28);
-  transform: translateY(-1px);
-}
-
-#miniMap {
-  position: fixed;
-  right: 16px;
-  bottom: 18px;
-  width: min(19vw, 210px);
-  aspect-ratio: 1 / 1;
-  border-radius: 20px;
-  border: 3px solid rgba(214, 236, 255, 0.88);
-  background: linear-gradient(180deg, rgba(14, 22, 28, 0.18), rgba(5, 10, 14, 0.26));
-  box-shadow: 0 20px 34px rgba(0, 0, 0, 0.28);
-  overflow: hidden;
-  pointer-events: auto;
-  z-index: 9;
-  cursor: zoom-in;
-  transition: width 0.18s ease, border-radius 0.18s ease, box-shadow 0.18s ease;
-}
-
-#miniMap.expanded {
-  right: 20px;
-  bottom: 20px;
-  width: min(42vw, 420px);
-  border-radius: 24px;
-  box-shadow: 0 24px 46px rgba(0, 0, 0, 0.34);
-  cursor: crosshair;
-  z-index: 120;
-}
-
-#miniMap::after {
-  content: "";
-  position: absolute;
-  inset: 0;
-  border-radius: inherit;
-  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.16);
-}
-
-.miniMapLabel {
-  position: absolute;
-  left: 12px;
-  top: 10px;
-  padding: 4px 10px;
-  border-radius: 999px;
-  background: rgba(8, 14, 20, 0.54);
-  color: #eef8ff;
-  font-size: 12px;
-  letter-spacing: 0.08em;
-  pointer-events: none;
-}
-
-#miniMapClose {
-  position: absolute;
-  top: 10px;
-  right: 10px;
-  width: 28px;
-  height: 28px;
-  padding: 0;
-  border-radius: 999px;
-  border: 1px solid rgba(255, 255, 255, 0.24);
-  background: rgba(8, 14, 20, 0.72);
-  color: #eef8ff;
-  font-size: 18px;
-  line-height: 1;
-  display: none;
-  align-items: center;
-  justify-content: center;
-  z-index: 2;
-}
-
-#miniMap.expanded #miniMapClose {
-  display: inline-flex;
-}
-
-body.minimap-expanded #mobileControls,
-body.minimap-expanded #wheelHud,
-body.minimap-expanded #mirrorHud,
-body.minimap-expanded #ui {
-  pointer-events: none;
-}
-
-body.minimap-expanded .mobileClusterRight {
-  opacity: 0.18;
-  z-index: 1;
-}
-
-#miniMap.expanded .miniMapLabel::after {
-  content: " 点击地点瞬移 / Esc 或右键收起";
-  letter-spacing: normal;
-}
-
 .mirrorPane {
   position: relative;
   width: min(16vw, 168px);
@@ -652,12 +562,151 @@ body.minimap-expanded .mobileClusterRight {
   left: 14px;
   bottom: 10px;
   padding: 4px 10px;
-  border-radius: 999px;
+  border-radius: var(--radius-pill);
   background: rgba(12, 18, 24, 0.55);
   color: #eef8ff;
   font-size: 12px;
   letter-spacing: 0.08em;
   text-transform: uppercase;
+}
+
+/* ===== Cockpit Signal HUD ===== */
+#cockpitSignalHud {
+  position: fixed;
+  top: 108px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: none;
+  gap: 14px;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+  z-index: 11;
+}
+
+#cockpitSignalHud.is-visible {
+  display: flex;
+}
+
+.cockpitSignalLamp {
+  min-width: 88px;
+  padding: 8px 12px;
+  border-radius: var(--radius-pill);
+  border: 1px solid var(--border-subtle);
+  background: rgba(9, 14, 19, 0.56);
+  color: rgba(232, 239, 245, 0.52);
+  text-align: center;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  backdrop-filter: blur(10px);
+  box-shadow: 0 10px 26px rgba(0, 0, 0, 0.24);
+  transition: background 0.12s ease, color 0.12s ease, box-shadow 0.12s ease, transform 0.12s ease;
+}
+
+.cockpitSignalLamp.is-active {
+  background: var(--accent-signal);
+  color: #ffe1ad;
+  box-shadow: 0 0 18px rgba(255, 181, 77, 0.28);
+  transform: translateY(-1px);
+}
+
+/* ===== Mini Map ===== */
+#miniMap {
+  position: fixed;
+  right: var(--gap-lg);
+  bottom: 18px;
+  width: min(19vw, 210px);
+  aspect-ratio: 1 / 1;
+  border-radius: var(--radius-lg);
+  border: 3px solid rgba(214, 236, 255, 0.88);
+  background: linear-gradient(180deg, rgba(14, 22, 28, 0.18), rgba(5, 10, 14, 0.26));
+  box-shadow: 0 20px 34px rgba(0, 0, 0, 0.28);
+  overflow: hidden;
+  pointer-events: auto;
+  z-index: var(--z-minimap);
+  cursor: zoom-in;
+  transition: width 0.18s ease, border-radius 0.18s ease, box-shadow 0.18s ease;
+}
+
+#miniMap.expanded {
+  right: 20px;
+  bottom: 20px;
+  width: min(42vw, 420px);
+  border-radius: 24px;
+  box-shadow: 0 24px 46px rgba(0, 0, 0, 0.34);
+  cursor: crosshair;
+  z-index: var(--z-minimap-expanded);
+}
+
+#miniMap::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.16);
+}
+
+.miniMapLabel {
+  position: absolute;
+  left: 12px;
+  top: 10px;
+  padding: 4px 10px;
+  border-radius: var(--radius-pill);
+  background: rgba(8, 14, 20, 0.54);
+  color: #eef8ff;
+  font-size: 12px;
+  letter-spacing: 0.08em;
+  pointer-events: none;
+}
+
+#miniMapClose {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  width: 28px;
+  height: 28px;
+  padding: 0;
+  border-radius: var(--radius-pill);
+  border: 1px solid rgba(255, 255, 255, 0.24);
+  background: rgba(8, 14, 20, 0.72);
+  color: #eef8ff;
+  font-size: 18px;
+  line-height: 1;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  z-index: 2;
+}
+
+#miniMap.expanded #miniMapClose {
+  display: inline-flex;
+}
+
+#miniMap.expanded .miniMapLabel::after {
+  content: " 点击地点瞬移 / Esc 或右键收起";
+  letter-spacing: normal;
+}
+
+body.minimap-expanded #mobileControls,
+body.minimap-expanded #wheelHud,
+body.minimap-expanded #mirrorHud,
+body.minimap-expanded #ui {
+  pointer-events: none;
+}
+
+body.minimap-expanded .mobileClusterRight {
+  opacity: 0.18;
+  z-index: 1;
+}
+
+/* ===== Mobile Controls (hidden on desktop) ===== */
+#mobileControls {
+  display: none;
+}
+
+#rotateOverlay {
+  display: none;
 }
 
 .mobileCluster,
@@ -676,9 +725,9 @@ body.minimap-expanded .mobileClusterRight {
   min-width: 50px;
   min-height: 50px;
   padding: 0 12px;
-  border: 1px solid rgba(255, 255, 255, 0.18);
+  border: 1px solid var(--border-default);
   border-radius: 15px;
-  background: rgba(9, 17, 24, 0.68);
+  background: var(--surface-overlay);
   box-shadow: 0 10px 20px rgba(0, 0, 0, 0.22);
   color: #f4fbff;
   backdrop-filter: blur(10px);
@@ -692,7 +741,7 @@ body.minimap-expanded .mobileClusterRight {
 .mobileControl:active,
 .mobileControl.active {
   background: rgba(86, 190, 255, 0.3);
-  border-color: rgba(154, 221, 255, 0.72);
+  border-color: var(--accent-blue-border);
 }
 
 .mobileControlLarge {
@@ -703,18 +752,14 @@ body.minimap-expanded .mobileClusterRight {
   min-height: 72px;
 }
 
-.mobileThrottle,
-.mobileBrake,
-.mobileReverse {
-  min-height: 72px;
-}
-
 .mobileThrottle {
   background: linear-gradient(180deg, rgba(40, 138, 93, 0.82), rgba(22, 78, 56, 0.88));
+  min-height: 72px;
 }
 
 .mobileBrake {
   background: linear-gradient(180deg, rgba(164, 58, 58, 0.84), rgba(100, 24, 24, 0.88));
+  min-height: 72px;
 }
 
 .mobileBrakePrimary {
@@ -723,9 +768,10 @@ body.minimap-expanded .mobileClusterRight {
 
 .mobileReverse {
   background: linear-gradient(180deg, rgba(62, 92, 172, 0.82), rgba(28, 48, 100, 0.88));
+  min-height: 72px;
 }
 
-/* 转向灯拨杆 */
+/* Signal lever */
 .mobileSignalLever {
   width: 64px;
   height: 52px;
@@ -733,9 +779,9 @@ body.minimap-expanded .mobileClusterRight {
   touch-action: none;
   user-select: none;
   -webkit-user-select: none;
-  border: 1px solid rgba(255, 255, 255, 0.18);
-  border-radius: 14px;
-  background: rgba(9, 17, 24, 0.68);
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-md);
+  background: var(--surface-overlay);
   box-shadow: 0 10px 20px rgba(0, 0, 0, 0.22);
   backdrop-filter: blur(10px);
   display: flex;
@@ -751,10 +797,7 @@ body.minimap-expanded .mobileClusterRight {
   background: rgba(255, 190, 50, 0.1);
 }
 
-.mobileSignalLever[data-signal="left"] {
-  border-color: rgba(255, 210, 80, 0.7);
-}
-
+.mobileSignalLever[data-signal="left"],
 .mobileSignalLever[data-signal="right"] {
   border-color: rgba(255, 210, 80, 0.7);
 }
@@ -798,6 +841,7 @@ body.minimap-expanded .mobileClusterRight {
   color: rgba(255, 210, 80, 0.95);
 }
 
+/* Steer zone */
 .mobileSteerZone {
   width: 100%;
   min-height: 110px;
@@ -805,9 +849,9 @@ body.minimap-expanded .mobileClusterRight {
   touch-action: none;
   user-select: none;
   -webkit-user-select: none;
-  border: 1px solid rgba(255, 255, 255, 0.18);
+  border: 1px solid var(--border-default);
   border-radius: 15px;
-  background: rgba(9, 17, 24, 0.68);
+  background: var(--surface-overlay);
   box-shadow: 0 10px 20px rgba(0, 0, 0, 0.22);
   backdrop-filter: blur(10px);
   display: flex;
@@ -818,7 +862,7 @@ body.minimap-expanded .mobileClusterRight {
 
 .mobileSteerZone.active {
   background: rgba(86, 190, 255, 0.18);
-  border-color: rgba(154, 221, 255, 0.72);
+  border-color: var(--accent-blue-border);
 }
 
 .mobileSteerIndicator {
@@ -865,12 +909,13 @@ body.minimap-expanded .mobileClusterRight {
   gap: 8px;
 }
 
+/* Rotate overlay */
 .rotateCard {
   width: min(86vw, 320px);
   padding: 18px 20px;
   border-radius: 22px;
   background: rgba(7, 12, 18, 0.86);
-  border: 1px solid rgba(255, 255, 255, 0.12);
+  border: 1px solid var(--border-subtle);
   box-shadow: 0 18px 40px rgba(0, 0, 0, 0.34);
   backdrop-filter: blur(12px);
   text-align: center;
@@ -891,6 +936,48 @@ body.minimap-expanded .mobileClusterRight {
   line-height: 1.45;
 }
 
+/* ===== Loading Overlay ===== */
+#loadingOverlay {
+  position: fixed;
+  inset: 0;
+  z-index: var(--z-loading);
+  display: none;
+  align-items: center;
+  justify-content: center;
+  background: rgba(4, 8, 14, 0.78);
+  backdrop-filter: blur(6px);
+}
+
+#loadingOverlay.visible {
+  display: flex;
+}
+
+.loadingCard {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--gap-lg);
+  color: rgba(210, 230, 245, 0.9);
+  font-size: 14px;
+  letter-spacing: 0.05em;
+}
+
+.loadingSpinner {
+  width: 36px;
+  height: 36px;
+  border: 3px solid rgba(255, 255, 255, 0.1);
+  border-top-color: rgba(154, 221, 255, 0.85);
+  border-radius: 50%;
+  animation: loadingSpin 0.75s linear infinite;
+}
+
+@keyframes loadingSpin {
+  to { transform: rotate(360deg); }
+}
+
+/* ==========================================================
+   RESPONSIVE: Tablet (max-width: 900px)
+   ========================================================== */
 @media (max-width: 900px) {
   .curveSliderRow {
     gap: 8px;
@@ -927,6 +1014,9 @@ body.minimap-expanded .mobileClusterRight {
   }
 }
 
+/* ==========================================================
+   RESPONSIVE: Small screens (max-width: 700px)
+   ========================================================== */
 @media (max-width: 700px) {
   .range-card {
     min-width: 100%;
@@ -975,14 +1065,14 @@ body.minimap-expanded .mobileClusterRight {
 
   #miniMap {
     right: 10px;
-    top: max(10px, env(safe-area-inset-top));
+    top: max(10px, var(--sat));
     bottom: auto;
     width: min(24vw, 120px);
   }
 
   #miniMap.expanded {
     right: 10px;
-    top: max(10px, env(safe-area-inset-top));
+    top: max(10px, var(--sat));
     bottom: auto;
     width: min(60vw, 300px);
   }
@@ -996,8 +1086,11 @@ body.minimap-expanded .mobileClusterRight {
   }
 }
 
-@media (hover: none), (pointer: coarse), (max-width: 900px) {
-  /* body 固定定位：游戏内容不随文档滚动，但允许 html 被滚动 1px 来隐藏地址栏 */
+/* ==========================================================
+   RESPONSIVE: Touch / Mobile (single consolidated block)
+   ========================================================== */
+@media (hover: none) and (pointer: coarse) {
+  /* Lock body for fullscreen game feel */
   html {
     overflow-y: auto;
     min-height: calc(100% + 2px);
@@ -1013,10 +1106,11 @@ body.minimap-expanded .mobileClusterRight {
     height: 100dvh;
   }
 
+  /* Rotate overlay */
   #rotateOverlay {
     position: fixed;
     inset: 0;
-    z-index: 20;
+    z-index: var(--z-rotate-overlay);
     display: none;
     align-items: center;
     justify-content: center;
@@ -1035,318 +1129,58 @@ body.minimap-expanded .mobileClusterRight {
     display: none !important;
   }
 
-  #mobileControls {
-    position: fixed;
-    left: 12px;
-    right: 12px;
-    bottom: 12px;
-    z-index: 11;
-    display: flex;
-    justify-content: space-between;
-    align-items: flex-end;
-    pointer-events: none;
-  }
-
-  .mobileCluster {
-    flex-direction: column;
-    gap: 10px;
-    pointer-events: auto;
-  }
-
-  .mobilePad {
-    gap: 10px;
-    align-items: center;
-  }
-
-  .mobileDriveStack {
-    flex-direction: column;
-    gap: 10px;
-    align-items: stretch;
-  }
-
-  .mobileAuxRow {
-    gap: 8px;
-    justify-content: center;
-  }
-
-  .mobileAuxRowRight {
-    justify-content: flex-end;
-  }
-
-  .mobileClusterLeft {
-    width: min(40vw, 280px);
-    align-items: stretch;
-  }
-
-  .mobileClusterRight {
-    width: auto;
-    align-items: flex-end;
-  }
-
-  .mobileClusterCenter {
-    width: auto;
-    align-items: center;
-    justify-content: flex-end;
-    gap: 6px;
-    pointer-events: auto;
-    padding-bottom: 64px;
-  }
-
-  .mobileDriveStack {
-    width: 100%;
-    max-width: 72px;
-  }
-
-  /* 右侧：列方向，宽度跟随内容（约一个按钮宽） */
-  .mobileDriveStackRight {
-    max-width: none;
-    flex-direction: row;
-    align-items: flex-end;
-    justify-content: flex-end;
-    gap: 8px;
-  }
-
-  .mobileSignalLever {
-    align-self: flex-end;
-    margin-left: auto;
-  }
-
-  .mobileViewResetStack {
-    justify-content: flex-end;
-    align-items: flex-end;
-  }
-
-  .mobileSteerPad {
-    justify-content: flex-end;
-    flex-direction: row;
-  }
-
-  .mobileAuxRowCenter {
-    width: 100%;
-    justify-content: center;
-  }
-
-  .mobileBottomRow {
-    gap: 8px;
-    align-items: center;
-    justify-content: center;
-  }
-
+  /* Hide desktop HUD status on mobile */
   #hud .status {
     display: none;
   }
 
-  #wheelHud {
-    bottom: max(10px, env(safe-area-inset-bottom));
-    top: auto;
-    left: 50%;
-    transform: translateX(-50%);
-    width: 50px;
-    height: 50px;
-    z-index: 12;
-  }
-
-  #miniMap {
-    right: calc(10px + env(safe-area-inset-right));
-    top: calc(10px + env(safe-area-inset-top));
-    bottom: auto;
-    width: min(19vw, 132px);
-  }
-
-  #miniMap.expanded {
-    top: calc(10px + env(safe-area-inset-top));
-    bottom: auto;
-  }
-
-  #ui {
-    top: calc(10px + env(safe-area-inset-top));
-    left: calc(10px + env(safe-area-inset-left));
-    right: calc(10px + env(safe-area-inset-right));
-    max-width: calc(100vw - 20px - env(safe-area-inset-left) - env(safe-area-inset-right));
-  }
-
-  #uiToggle {
-    display: inline-flex;
-    position: relative;
-    z-index: 16;
-  }
-
-  #collapsedQuickActions {
-    gap: 6px;
-    max-width: min(260px, calc(100vw - 20px));
-  }
-
-  .quickViewBtn {
-    padding: 7px 10px;
-    font-size: 12px;
-  }
-
-  .panel {
-    width: min(440px, calc(100vw - 20px - env(safe-area-inset-left) - env(safe-area-inset-right)));
-    max-height: calc(100vh - 74px - env(safe-area-inset-top) - env(safe-area-inset-bottom));
-    padding: 12px 12px 14px;
-    border-radius: 12px;
-  }
-
-  .row {
-    gap: 8px;
-    margin-bottom: 10px;
-  }
-
-  .row.compact label,
-  .range-card {
-    width: 100%;
-  }
-
-  h1 {
-    font-size: 18px;
-    margin-bottom: 8px;
-  }
-
-  p,
-  .tips,
-  .tips span,
-  .tips strong {
-    font-size: 12px;
-  }
-}
-
-@media (max-width: 700px) {
+  /* Mobile Controls: fixed position layout */
   #mobileControls {
-    left: 8px;
-    right: 8px;
-    bottom: 8px;
-  }
-
-  .mobileControl {
-    min-width: 46px;
-    min-height: 46px;
-    border-radius: 14px;
-    font-size: 12px;
-  }
-
-  .mobileThrottle,
-  .mobileBrake,
-  .mobileReverse {
-    min-height: 58px;
-  }
-
-  .mobileBrakePrimary {
-    min-height: 80px;
-  }
-
-  .mobileSignalLever {
-    width: 58px;
-    height: 44px;
-  }
-
-  .mobileClusterRight {
-    width: auto;
-  }
-
-  #wheelHud {
-    top: max(10px, env(safe-area-inset-top));
-    width: 46px;
-    height: 46px;
-  }
-
-  .mobileSteerZone {
-    min-height: 90px;
-  }
-
-  .mobileWheelSlot {
-    width: 50px;
-    height: 50px;
-    flex-basis: 50px;
-  }
-
-  .mobileSteerRow,
-  .mobileViewResetStack {
-    gap: 6px;
-  }
-
-  #wheelHud {
-    width: 46px;
-    height: 46px;
-    bottom: max(10px, env(safe-area-inset-bottom));
-  }
-
-  #miniMap {
-    top: calc(8px + env(safe-area-inset-top));
-    bottom: auto;
-  }
-
-  #miniMap.expanded {
-    top: calc(8px + env(safe-area-inset-top));
-    bottom: auto;
-  }
-
-  .mobileClusterLeft,
-  .mobileClusterRight {
-    width: auto;
-  }
-
-  .mobileClusterLeft {
-    width: min(46vw, 240px);
-  }
-
-  .mobileClusterCenter {
-    width: auto;
-  }
-}
-
-@media (max-width: 420px) {
-  /* 极小屏：方向盘 HUD 与控制区重叠，直接隐藏 */
-  #wheelHud {
-    display: none !important;
-  }
-
-  .mobileSteerZone {
-    min-height: 76px;
-  }
-
-  .mobileBrakePrimary {
-    min-height: 72px;
-  }
-}
-
-@media (hover: none), (pointer: coarse), (max-width: 900px) {
-  #mobileControls {
+    position: fixed;
     left: 0;
     right: 0;
     bottom: 0;
     height: 0;
     display: block;
-    z-index: 14;
+    z-index: var(--z-mobile-controls);
     pointer-events: none;
-  }
-
-  .mobileClusterLeft,
-  .mobileClusterRight {
-    position: fixed;
-    bottom: calc(10px + env(safe-area-inset-bottom));
-    pointer-events: auto;
-    z-index: 14;
-  }
-
-  .mobileClusterLeft {
-    left: calc(10px + env(safe-area-inset-left));
-    width: min(46vw, 260px);
-    max-width: calc(100vw - 220px);
-    align-items: stretch;
-  }
-
-  .mobileClusterRight {
-    right: calc(10px + env(safe-area-inset-right));
-    width: auto;
-    align-items: flex-end;
-    gap: 8px;
   }
 
   .mobileClusterCenter {
     display: none;
   }
 
+  .mobileCluster {
+    flex-direction: column;
+    gap: var(--gap-md);
+    pointer-events: auto;
+  }
+
+  /* Left cluster: steer + view/reset */
+  .mobileClusterLeft {
+    position: fixed;
+    left: calc(var(--gap-md) + var(--sal));
+    bottom: calc(var(--gap-md) + var(--sab));
+    width: min(44vw, 260px);
+    max-width: calc(100vw - 200px);
+    align-items: stretch;
+    pointer-events: auto;
+    z-index: var(--z-mobile-controls);
+  }
+
+  /* Right cluster: signal + drive buttons */
+  .mobileClusterRight {
+    position: fixed;
+    right: calc(var(--gap-md) + var(--sar));
+    bottom: calc(var(--gap-md) + var(--sab));
+    width: auto;
+    align-items: flex-end;
+    gap: 8px;
+    pointer-events: auto;
+    z-index: var(--z-mobile-controls);
+  }
+
+  /* Steer row: grid layout for steer zone + view/reset buttons */
   .mobileSteerRow {
     display: grid;
     grid-template-columns: minmax(0, 1fr) auto;
@@ -1364,11 +1198,13 @@ body.minimap-expanded .mobileClusterRight {
   }
 
   .mobileViewResetStack .mobileControl {
-    min-width: 58px;
-    min-height: 42px;
+    min-width: 56px;
+    min-height: 40px;
     padding: 0 10px;
+    font-size: 12px;
   }
 
+  /* Drive stack: horizontal row on right side */
   .mobileDriveStack {
     width: auto;
     max-width: none;
@@ -1376,52 +1212,43 @@ body.minimap-expanded .mobileClusterRight {
 
   .mobileDriveStackRight {
     display: flex;
-    flex-direction: row !important;
+    flex-direction: row;
     align-items: flex-end;
     justify-content: flex-end;
-    gap: 10px;
+    gap: var(--gap-md);
   }
 
   .mobileHandbrake {
     display: none;
   }
 
+  .mobileSignalLever {
+    width: 58px;
+    height: 46px;
+    margin-bottom: var(--gap-sm);
+    align-self: flex-end;
+    margin-left: auto;
+  }
+
+  .signalLeverLabel {
+    font-size: 10px;
+    font-weight: 700;
+    color: rgba(255, 255, 255, 0.56);
+  }
+
+  /* Throttle / Brake / Reverse: sized for comfortable touch */
   .mobileControlTall,
   .mobileThrottle,
   .mobileBrake,
   .mobileReverse {
-    min-width: 56px;
-    min-height: 62px;
-  }
-
-  .mobileReverse {
-    min-width: 52px;
-    min-height: 58px;
-    border-radius: 16px;
-    padding: 0 12px;
-  }
-
-  .mobileBrakePrimary {
-    min-width: clamp(80px, 19vw, 96px);
-    min-height: clamp(70px, 15vw, 82px);
-    padding: 0 18px;
-    border-radius: 20px 20px 14px 14px;
-    font-size: 14px;
-    font-weight: 700;
-    letter-spacing: 0.05em;
-    background:
-      linear-gradient(180deg, rgba(214, 88, 88, 0.96), rgba(120, 26, 26, 0.96)),
-      repeating-linear-gradient(90deg, rgba(255, 255, 255, 0.08) 0 6px, rgba(255, 255, 255, 0.02) 6px 12px);
-    box-shadow:
-      inset 0 1px 0 rgba(255, 255, 255, 0.14),
-      inset 0 -3px 0 rgba(0, 0, 0, 0.18),
-      0 10px 18px rgba(0, 0, 0, 0.24);
+    min-width: 54px;
+    min-height: 60px;
   }
 
   .mobileThrottle {
     width: clamp(44px, 10.5vw, 54px);
     min-width: clamp(44px, 10.5vw, 54px);
-    min-height: clamp(86px, 20vw, 104px);
+    min-height: clamp(80px, 18vw, 100px);
     padding: 0 10px;
     border-radius: 20px 20px 14px 14px;
     font-size: 13px;
@@ -1436,45 +1263,59 @@ body.minimap-expanded .mobileClusterRight {
       0 10px 18px rgba(0, 0, 0, 0.24);
   }
 
-  .mobileSignalLever {
-    width: 58px;
-    height: 46px;
-    margin-bottom: 6px;
-  }
-
-  .signalLeverLabel {
-    font-size: 10px;
+  .mobileBrakePrimary {
+    min-width: clamp(76px, 18vw, 92px);
+    min-height: clamp(66px, 14vw, 78px);
+    padding: 0 16px;
+    border-radius: 20px 20px 14px 14px;
+    font-size: 14px;
     font-weight: 700;
-    color: rgba(255, 255, 255, 0.56);
+    letter-spacing: 0.05em;
+    background:
+      linear-gradient(180deg, rgba(214, 88, 88, 0.96), rgba(120, 26, 26, 0.96)),
+      repeating-linear-gradient(90deg, rgba(255, 255, 255, 0.08) 0 6px, rgba(255, 255, 255, 0.02) 6px 12px);
+    box-shadow:
+      inset 0 1px 0 rgba(255, 255, 255, 0.14),
+      inset 0 -3px 0 rgba(0, 0, 0, 0.18),
+      0 10px 18px rgba(0, 0, 0, 0.24);
   }
 
+  .mobileReverse {
+    min-width: 50px;
+    min-height: 56px;
+    border-radius: 16px;
+    padding: 0 12px;
+  }
+
+  /* Wheel HUD: small on mobile */
   #wheelHud {
     left: 50%;
-    bottom: calc(10px + env(safe-area-inset-bottom));
+    bottom: calc(var(--gap-md) + var(--sab));
     top: auto;
     transform: translateX(-50%);
-    width: 54px;
-    height: 54px;
-    z-index: 13;
+    width: 52px;
+    height: 52px;
+    z-index: var(--z-wheel-hud);
   }
 
+  /* Mirrors: top center */
   #mirrorHud {
-    top: calc(8px + env(safe-area-inset-top));
+    top: calc(8px + var(--sat));
     left: 50%;
     bottom: auto;
     transform: translateX(-50%);
-    gap: 6px;
+    gap: var(--gap-sm);
     z-index: 12;
   }
 
   .mirrorPane {
-    width: clamp(76px, 16vw, 94px);
+    width: clamp(72px, 15vw, 90px);
     border-width: 2px;
     border-radius: 12px 12px 16px 16px;
   }
 
   .mirrorCenter {
-    width: clamp(110px, 24vw, 132px);
+    width: clamp(104px, 22vw, 128px);
   }
 
   .mirrorLabel {
@@ -1485,21 +1326,22 @@ body.minimap-expanded .mobileClusterRight {
   }
 
   #mirrorHud.cockpit-layout #mirrorCenter {
-    top: calc(8px + env(safe-area-inset-top));
+    top: calc(8px + var(--sat));
   }
 
   #mirrorHud.cockpit-layout #mirrorLeft {
-    top: calc(60px + env(safe-area-inset-top));
-    left: calc(6px + env(safe-area-inset-left));
+    top: calc(56px + var(--sat));
+    left: calc(6px + var(--sal));
   }
 
   #mirrorHud.cockpit-layout #mirrorRight {
-    top: calc(60px + env(safe-area-inset-top));
-    right: calc(6px + env(safe-area-inset-right));
+    top: calc(56px + var(--sat));
+    right: calc(6px + var(--sar));
   }
 
+  /* Cockpit signal */
   #cockpitSignalHud {
-    top: calc(64px + env(safe-area-inset-top));
+    top: calc(60px + var(--sat));
     gap: 8px;
   }
 
@@ -1509,29 +1351,30 @@ body.minimap-expanded .mobileClusterRight {
     font-size: 10px;
   }
 
+  /* Mini map: top-right on mobile, below mirrors */
   #miniMap {
-    right: calc(10px + env(safe-area-inset-right));
-    top: calc(76px + env(safe-area-inset-top));
+    right: calc(var(--gap-md) + var(--sar));
+    top: calc(72px + var(--sat));
     bottom: auto;
-    width: min(22vw, 112px);
+    width: min(20vw, 108px);
     border-width: 2px;
     border-radius: 16px;
     z-index: 12;
   }
 
   #miniMap.expanded {
-    right: calc(10px + env(safe-area-inset-right));
-    top: calc(76px + env(safe-area-inset-top));
+    right: calc(var(--gap-md) + var(--sar));
+    top: calc(72px + var(--sat));
     bottom: auto;
-    width: min(56vw, 320px);
+    width: min(52vw, 300px);
   }
 
   #mirrorHud.cockpit-layout ~ #miniMap {
-    top: calc(120px + env(safe-area-inset-top));
+    top: calc(110px + var(--sat));
   }
 
   #mirrorHud.cockpit-layout ~ #miniMap.expanded {
-    top: calc(120px + env(safe-area-inset-top));
+    top: calc(110px + var(--sat));
   }
 
   .miniMapLabel {
@@ -1548,43 +1391,79 @@ body.minimap-expanded .mobileClusterRight {
     height: 24px;
     font-size: 16px;
   }
+
+  /* UI panel: respect safe areas */
+  #ui {
+    top: calc(var(--gap-md) + var(--sat));
+    left: calc(var(--gap-md) + var(--sal));
+    right: calc(var(--gap-md) + var(--sar));
+    max-width: calc(100vw - 20px - var(--sal) - var(--sar));
+  }
+
+  #uiToggle {
+    display: inline-flex;
+    position: relative;
+    z-index: var(--z-ui-toggle);
+  }
+
+  #collapsedQuickActions {
+    gap: var(--gap-sm);
+    max-width: min(260px, calc(100vw - 20px));
+  }
+
+  .quickViewBtn {
+    padding: 7px 10px;
+    font-size: 12px;
+  }
+
+  .panel {
+    width: min(420px, calc(100vw - 20px - var(--sal) - var(--sar)));
+    max-height: calc(100vh - 74px - var(--sat) - var(--sab));
+    padding: 12px;
+    border-radius: 12px;
+  }
+
+  .row {
+    gap: 8px;
+    margin-bottom: 10px;
+  }
+
+  .row.compact label,
+  .range-card {
+    width: 100%;
+  }
+
+  h1 {
+    font-size: 17px;
+    margin-bottom: 8px;
+  }
+
+  p,
+  .tips,
+  .tips span,
+  .tips strong {
+    font-size: 12px;
+  }
 }
 
-/* Loading overlay */
-#loadingOverlay {
-  position: fixed;
-  inset: 0;
-  z-index: 40;
-  display: none;
-  align-items: center;
-  justify-content: center;
-  background: rgba(4, 8, 14, 0.78);
-  backdrop-filter: blur(6px);
-}
+/* ==========================================================
+   RESPONSIVE: Very small mobile (max-width: 420px)
+   ========================================================== */
+@media (hover: none) and (pointer: coarse) and (max-width: 420px) {
+  #wheelHud {
+    display: none !important;
+  }
 
-#loadingOverlay.visible {
-  display: flex;
-}
+  .mobileSteerZone {
+    min-height: 72px;
+  }
 
-.loadingCard {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 16px;
-  color: rgba(210, 230, 245, 0.9);
-  font-size: 14px;
-  letter-spacing: 0.05em;
-}
+  .mobileBrakePrimary {
+    min-height: 64px;
+  }
 
-.loadingSpinner {
-  width: 36px;
-  height: 36px;
-  border: 3px solid rgba(255, 255, 255, 0.1);
-  border-top-color: rgba(154, 221, 255, 0.85);
-  border-radius: 50%;
-  animation: loadingSpin 0.75s linear infinite;
-}
-
-@keyframes loadingSpin {
-  to { transform: rotate(360deg); }
+  .mobileClusterLeft {
+    width: min(42vw, 200px);
+    max-width: calc(100vw - 180px);
+  }
 }
