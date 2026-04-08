@@ -1,0 +1,618 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>车模预览</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { background: #111; color: #eee; font-family: 'Segoe UI', sans-serif; overflow: hidden; }
+    #canvas-container { width: 100vw; height: 100vh; }
+    canvas { display: block; }
+
+    /* 右侧控制面板 */
+    #panel {
+      position: fixed; top: 12px; right: 12px;
+      background: rgba(20,20,30,0.92); border: 1px solid #333; border-radius: 8px;
+      padding: 14px 16px; width: 260px; font-size: 13px;
+      backdrop-filter: blur(8px); z-index: 10;
+      max-height: calc(100vh - 24px); overflow-y: auto;
+    }
+    #panel::-webkit-scrollbar { width: 4px; }
+    #panel::-webkit-scrollbar-thumb { background: #555; border-radius: 2px; }
+    #panel h3 { margin-bottom: 8px; font-size: 14px; color: #8cf; }
+    #panel label { display: block; margin: 6px 0 2px; color: #aaa; font-size: 12px; }
+    #panel select, #panel button {
+      width: 100%; padding: 5px 8px; border-radius: 4px; border: 1px solid #444;
+      background: #222; color: #eee; font-size: 13px; cursor: pointer;
+    }
+    #panel button { margin-top: 6px; background: #2a6; border-color: #2a6; font-weight: bold; }
+    #panel button:hover { background: #3b7; }
+    #panel button.secondary { background: #446; border-color: #446; }
+    #panel button.secondary:hover { background: #557; }
+    #panel button.warn { background: #a54; border-color: #a54; }
+    #panel button.warn:hover { background: #b65; }
+    #panel .info { margin-top: 8px; color: #888; font-size: 11px; line-height: 1.5; }
+    #panel .status { color: #6d6; font-size: 11px; margin-top: 4px; }
+    .sep { border-top: 1px solid #333; margin: 10px 0; }
+
+    /* 部件属性编辑区 */
+    #partEditor { display: none; }
+    #partEditor.active { display: block; }
+    #partName { color: #fc6; font-size: 13px; font-weight: bold; margin: 4px 0 8px; word-break: break-all; }
+    .prop-row { display: flex; align-items: center; gap: 4px; margin: 3px 0; }
+    .prop-row span { width: 14px; font-size: 12px; font-weight: bold; text-align: center; flex-shrink: 0; }
+    .prop-row span.x { color: #f66; }
+    .prop-row span.y { color: #6f6; }
+    .prop-row span.z { color: #68f; }
+    .prop-row input {
+      flex: 1; padding: 3px 6px; border-radius: 3px; border: 1px solid #444;
+      background: #1a1a2a; color: #eee; font-size: 12px; font-family: monospace;
+    }
+    .prop-row input:focus { border-color: #68f; outline: none; }
+    .prop-section { color: #aaa; font-size: 11px; margin: 8px 0 2px; text-transform: uppercase; letter-spacing: 1px; }
+
+    /* 部件列表 */
+    #partList {
+      max-height: 180px; overflow-y: auto; border: 1px solid #333; border-radius: 4px;
+      background: #1a1a22; margin-top: 4px;
+    }
+    #partList::-webkit-scrollbar { width: 4px; }
+    #partList::-webkit-scrollbar-thumb { background: #555; border-radius: 2px; }
+    .part-item {
+      padding: 4px 8px; font-size: 11px; cursor: pointer; border-bottom: 1px solid #222;
+      color: #bbb; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    }
+    .part-item:hover { background: #2a2a3a; color: #fff; }
+    .part-item.selected { background: #2a4a6a; color: #fff; }
+
+    /* TransformControls 模式按钮 */
+    .mode-btns { display: flex; gap: 4px; margin: 6px 0; }
+    .mode-btns button {
+      flex: 1; margin: 0; padding: 4px; font-size: 11px; background: #333; border-color: #444;
+      font-weight: normal;
+    }
+    .mode-btns button.active { background: #2a6; border-color: #2a6; }
+
+    /* 底部提示 */
+    #hint {
+      position: fixed; bottom: 12px; left: 12px;
+      background: rgba(20,20,30,0.85); border-radius: 6px; padding: 8px 12px;
+      font-size: 11px; color: #888; line-height: 1.6; z-index: 10;
+    }
+    #hint kbd {
+      background: #333; border: 1px solid #555; border-radius: 3px;
+      padding: 1px 5px; font-size: 11px; color: #ccc;
+    }
+
+    /* 代码导出弹窗 */
+    #exportModal {
+      display: none; position: fixed; inset: 0; z-index: 100;
+      background: rgba(0,0,0,0.7); align-items: center; justify-content: center;
+    }
+    #exportModal.active { display: flex; }
+    #exportModal .modal-body {
+      background: #1a1a2a; border: 1px solid #444; border-radius: 8px;
+      padding: 16px; width: 600px; max-width: 90vw; max-height: 80vh; overflow-y: auto;
+    }
+    #exportModal h3 { color: #8cf; margin-bottom: 8px; }
+    #exportModal textarea {
+      width: 100%; height: 400px; background: #111; color: #cfc; border: 1px solid #333;
+      border-radius: 4px; padding: 10px; font-family: 'Consolas', monospace; font-size: 12px;
+      resize: vertical;
+    }
+    #exportModal .modal-actions { display: flex; gap: 8px; margin-top: 8px; }
+    #exportModal .modal-actions button { flex: 1; }
+  </style>
+  <script type="importmap">
+    {
+      "imports": {
+        "three": "https://unpkg.com/three@0.180.0/build/three.module.js",
+        "three/addons/": "https://unpkg.com/three@0.180.0/examples/jsm/"
+      }
+    }
+  </script>
+</head>
+<body>
+  <div id="canvas-container"></div>
+
+  <div id="panel">
+    <h3>车模预览</h3>
+    <label>车型</label>
+    <select id="vehicleType">
+      <option value="sedan">轿车 (Sedan)</option>
+      <option value="motorcycle">摩托车 (Motorcycle)</option>
+    </select>
+    <label>背景</label>
+    <select id="bgColor">
+      <option value="#111111">深色</option>
+      <option value="#2a2a3a">蓝灰</option>
+      <option value="#f0f0f0">浅色</option>
+      <option value="#1a3020">深绿</option>
+    </select>
+
+    <div class="sep"></div>
+
+    <!-- 变换模式 -->
+    <label>变换模式</label>
+    <div class="mode-btns">
+      <button id="modeTranslate" class="active">移动 (G)</button>
+      <button id="modeRotate">旋转 (R)</button>
+      <button id="modeScale">缩放 (S)</button>
+    </div>
+
+    <!-- 部件列表 -->
+    <label>部件列表 <span id="partCount" style="color:#666"></span></label>
+    <div id="partList"></div>
+
+    <!-- 选中部件属性 -->
+    <div id="partEditor">
+      <div class="sep"></div>
+      <div id="partName">-</div>
+
+      <div class="prop-section">位置 Position</div>
+      <div class="prop-row"><span class="x">X</span><input type="number" step="0.01" id="posX" /></div>
+      <div class="prop-row"><span class="y">Y</span><input type="number" step="0.01" id="posY" /></div>
+      <div class="prop-row"><span class="z">Z</span><input type="number" step="0.01" id="posZ" /></div>
+
+      <div class="prop-section">旋转 Rotation (rad)</div>
+      <div class="prop-row"><span class="x">X</span><input type="number" step="0.01" id="rotX" /></div>
+      <div class="prop-row"><span class="y">Y</span><input type="number" step="0.01" id="rotY" /></div>
+      <div class="prop-row"><span class="z">Z</span><input type="number" step="0.01" id="rotZ" /></div>
+
+      <div class="prop-section">缩放 Scale</div>
+      <div class="prop-row"><span class="x">X</span><input type="number" step="0.01" id="sclX" /></div>
+      <div class="prop-row"><span class="y">Y</span><input type="number" step="0.01" id="sclY" /></div>
+      <div class="prop-row"><span class="z">Z</span><input type="number" step="0.01" id="sclZ" /></div>
+
+      <button class="secondary" id="deselectBtn">取消选择 (Esc)</button>
+    </div>
+
+    <div class="sep"></div>
+    <button class="secondary" id="exportBtn">📋 导出修改后的代码</button>
+    <button id="reloadBtn">🔄 重新加载车模</button>
+    <label style="margin-top:6px">
+      <input type="checkbox" id="autoReload" /> 自动刷新 (每2秒检测)
+    </label>
+    <div class="status" id="statusText">就绪</div>
+  </div>
+
+  <div id="hint">
+    <kbd>点击</kbd> 选中部件 &nbsp;
+    <kbd>G</kbd> 移动 &nbsp;
+    <kbd>R</kbd> 旋转 &nbsp;
+    <kbd>S</kbd> 缩放 &nbsp;
+    <kbd>Esc</kbd> 取消选择 &nbsp;
+    <kbd>鼠标右键</kbd> 视角平移
+  </div>
+
+  <!-- 代码导出弹窗 -->
+  <div id="exportModal">
+    <div class="modal-body">
+      <h3>导出部件位置代码</h3>
+      <p style="color:#888; font-size:12px; margin-bottom:8px;">复制下方代码，替换到 car-model.js 中对应位置</p>
+      <textarea id="exportCode" readonly></textarea>
+      <div class="modal-actions">
+        <button id="copyCodeBtn">📋 复制到剪贴板</button>
+        <button class="warn" id="closeModalBtn">关闭</button>
+      </div>
+    </div>
+  </div>
+
+  <script type="module">
+    import * as THREE from 'three';
+    import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+    import { TransformControls } from 'three/addons/controls/TransformControls.js';
+
+    /* ══ 场景基础 ══ */
+    const container = document.getElementById('canvas-container');
+    const renderer = new THREE.WebGLRenderer({ antialias: true });
+    renderer.setSize(window.innerWidth, window.innerHeight);
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+    renderer.shadowMap.enabled = true;
+    renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+    renderer.toneMapping = THREE.ACESFilmicToneMapping;
+    renderer.toneMappingExposure = 1.2;
+    container.appendChild(renderer.domElement);
+
+    const scene = new THREE.Scene();
+    scene.background = new THREE.Color('#111111');
+
+    const camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 100);
+    camera.position.set(4, 3, 6);
+
+    const orbitControls = new OrbitControls(camera, renderer.domElement);
+    orbitControls.target.set(0, 1, 0);
+    orbitControls.enableDamping = true;
+    orbitControls.dampingFactor = 0.08;
+    orbitControls.update();
+
+    /* ══ TransformControls ══ */
+    const transformControls = new TransformControls(camera, renderer.domElement);
+    transformControls.setSize(0.6);
+    scene.add(transformControls.getHelper());
+
+    // 拖拽时禁用 OrbitControls
+    transformControls.addEventListener('dragging-changed', (e) => {
+      orbitControls.enabled = !e.value;
+    });
+    // 拖拽时实时更新属性面板
+    transformControls.addEventListener('objectChange', () => {
+      if (selectedObj) syncEditorFromObject(selectedObj);
+    });
+
+    /* ══ 灯光 ══ */
+    scene.add(new THREE.AmbientLight(0xffffff, 0.5));
+    const dirLight = new THREE.DirectionalLight(0xffffff, 1.8);
+    dirLight.position.set(5, 8, 4);
+    dirLight.castShadow = true;
+    dirLight.shadow.mapSize.set(1024, 1024);
+    scene.add(dirLight);
+    const fillLight = new THREE.DirectionalLight(0x8899bb, 0.6);
+    fillLight.position.set(-4, 3, -3);
+    scene.add(fillLight);
+    const rimLight = new THREE.DirectionalLight(0xffeedd, 0.4);
+    rimLight.position.set(0, 2, -6);
+    scene.add(rimLight);
+
+    /* ══ 地面 ══ */
+    const ground = new THREE.Mesh(
+      new THREE.PlaneGeometry(30, 30),
+      new THREE.MeshStandardMaterial({ color: 0x222222, roughness: 0.9 })
+    );
+    ground.rotation.x = -Math.PI / 2;
+    ground.receiveShadow = true;
+    ground.userData._isGround = true;
+    scene.add(ground);
+
+    const gridHelper = new THREE.GridHelper(20, 40, 0x333333, 0x222222);
+    gridHelper.position.y = 0.001;
+    scene.add(gridHelper);
+
+    /* ══ 车模容器与部件注册 ══ */
+    let carGroup = null;
+    let carPartsRef = null;
+    let currentVehicleType = 'sedan';
+
+    function applyVehicleTypeVisibility() {
+      if (!carPartsRef) return;
+      const isBike = currentVehicleType === 'motorcycle';
+      // 轿车专属部件
+      const sedanKeys = [
+        'body','shoulderShell','hood','trunk','frontBumper','rearBumper','grille',
+        'cabin','roofPanel','aPillarL','aPillarR','cPillarL','cPillarR',
+        'windshield','rearWindow','sideWindowL','sideWindowR',
+        'headlightL','headlightR','taillightL','taillightR',
+        'sideMirrorL','sideMirrorR','roofRailL','roofRailR',
+        'dashboard','instrumentCluster','centerScreen',
+        'driverSeat','passengerSeat','steeringWheel',
+      ];
+      sedanKeys.forEach(k => { if (carPartsRef[k]) carPartsRef[k].visible = !isBike; });
+      if (carPartsRef.wheelAssemblies) {
+        carPartsRef.wheelAssemblies.forEach(a => { a.pivot.visible = !isBike; });
+      }
+      ['sedanSignalLamps','sedanBrakeLamps','reverseLamps'].forEach(k => {
+        const v = carPartsRef[k];
+        if (!v) return;
+        if (v.left) { v.left.forEach(l => { l.mesh.visible = !isBike; l.light.visible = !isBike; }); v.right.forEach(l => { l.mesh.visible = !isBike; l.light.visible = !isBike; }); }
+        else if (Array.isArray(v)) v.forEach(l => { l.mesh.visible = !isBike; l.light.visible = !isBike; });
+      });
+      // 摩托专属部件
+      if (carPartsRef.motorcycleRoot) carPartsRef.motorcycleRoot.visible = isBike;
+      if (carPartsRef.bikeCockpitRoot) carPartsRef.bikeCockpitRoot.visible = false;
+      if (carPartsRef.bikeFrontWheelPivot) carPartsRef.bikeFrontWheelPivot.visible = isBike;
+      if (carPartsRef.bikeRearWheelMount) carPartsRef.bikeRearWheelMount.visible = isBike;
+      if (carPartsRef.bikeSignalLamps) {
+        carPartsRef.bikeSignalLamps.left.forEach(l => { l.mesh.visible = isBike; l.light.visible = isBike; });
+        carPartsRef.bikeSignalLamps.right.forEach(l => { l.mesh.visible = isBike; l.light.visible = isBike; });
+      }
+      if (carPartsRef.bikeBrakeLamp) { carPartsRef.bikeBrakeLamp.mesh.visible = isBike; carPartsRef.bikeBrakeLamp.light.visible = isBike; }
+      if (carPartsRef.arrow) carPartsRef.arrow.visible = true;
+    }
+    let partRegistry = [];  // { name, obj }
+    let selectedObj = null;
+    let originalMaterials = new Map(); // 保存原始材质用于高亮恢复
+    const highlightMat = new THREE.MeshStandardMaterial({ color: 0x44aaff, emissive: 0x2266ff, emissiveIntensity: 0.3, wireframe: false, transparent: true, opacity: 0.7 });
+
+    async function loadCarModel() {
+      const statusEl = document.getElementById('statusText');
+      statusEl.textContent = '加载中...';
+      statusEl.style.color = '#fd6';
+
+      deselectPart();
+
+      if (carGroup) {
+        scene.remove(carGroup);
+        carGroup.traverse((child) => {
+          if (child.geometry) child.geometry.dispose();
+          if (child.material) {
+            if (Array.isArray(child.material)) child.material.forEach(m => m.dispose());
+            else child.material.dispose();
+          }
+        });
+      }
+      originalMaterials.clear();
+
+      try {
+        const moduleURL = `./assets/car-model.js?t=${Date.now()}`;
+        const module = await import(moduleURL);
+        const result = module.buildCar(THREE);
+        carGroup = result.group;
+        carPartsRef = result.parts;
+        scene.add(carGroup);
+
+        applyVehicleTypeVisibility();
+
+        // 收集所有可选部件
+        partRegistry = [];
+        carGroup.traverse((child) => {
+          if (child === carGroup) return;
+          const name = child.userData.partName || child.name || `${child.type}_${child.id}`;
+          child.userData._partLabel = name;
+          partRegistry.push({ name, obj: child });
+        });
+
+        buildPartList();
+        document.getElementById('partCount').textContent = `(${partRegistry.length})`;
+        statusEl.textContent = `✅ 已加载`;
+        statusEl.style.color = '#6d6';
+      } catch (err) {
+        console.error('加载车模失败:', err);
+        statusEl.textContent = `❌ ${err.message}`;
+        statusEl.style.color = '#f66';
+      }
+    }
+
+    /* ══ 部件列表 UI ══ */
+    function buildPartList() {
+      const listEl = document.getElementById('partList');
+      listEl.innerHTML = '';
+      partRegistry.forEach(({ name, obj }) => {
+        const div = document.createElement('div');
+        div.className = 'part-item';
+        div.textContent = name;
+        div.addEventListener('click', () => selectPart(obj));
+        obj.userData._listEl = div;
+        listEl.appendChild(div);
+      });
+    }
+
+    /* ══ 选择 / 取消选择 ══ */
+    function selectPart(obj) {
+      if (selectedObj === obj) return;
+      deselectPart();
+
+      selectedObj = obj;
+
+      // 高亮：保存原材质
+      if (obj.isMesh && obj.material) {
+        originalMaterials.set(obj, obj.material);
+        obj.material = highlightMat;
+      }
+
+      // 列表高亮
+      if (obj.userData._listEl) {
+        obj.userData._listEl.classList.add('selected');
+        obj.userData._listEl.scrollIntoView({ block: 'nearest' });
+      }
+
+      // 挂载 TransformControls
+      transformControls.attach(obj);
+
+      // 显示属性面板
+      document.getElementById('partEditor').classList.add('active');
+      document.getElementById('partName').textContent = obj.userData._partLabel;
+      syncEditorFromObject(obj);
+    }
+
+    function deselectPart() {
+      if (!selectedObj) return;
+
+      // 恢复材质
+      if (originalMaterials.has(selectedObj)) {
+        selectedObj.material = originalMaterials.get(selectedObj);
+        originalMaterials.delete(selectedObj);
+      }
+      if (selectedObj.userData._listEl) {
+        selectedObj.userData._listEl.classList.remove('selected');
+      }
+
+      transformControls.detach();
+      document.getElementById('partEditor').classList.remove('active');
+      selectedObj = null;
+    }
+
+    /* ══ 属性面板同步 ══ */
+    function syncEditorFromObject(obj) {
+      document.getElementById('posX').value = round(obj.position.x);
+      document.getElementById('posY').value = round(obj.position.y);
+      document.getElementById('posZ').value = round(obj.position.z);
+      document.getElementById('rotX').value = round(obj.rotation.x);
+      document.getElementById('rotY').value = round(obj.rotation.y);
+      document.getElementById('rotZ').value = round(obj.rotation.z);
+      document.getElementById('sclX').value = round(obj.scale.x);
+      document.getElementById('sclY').value = round(obj.scale.y);
+      document.getElementById('sclZ').value = round(obj.scale.z);
+    }
+
+    function syncObjectFromEditor() {
+      if (!selectedObj) return;
+      selectedObj.position.set(+posX.value, +posY.value, +posZ.value);
+      selectedObj.rotation.set(+rotX.value, +rotY.value, +rotZ.value);
+      selectedObj.scale.set(+sclX.value, +sclY.value, +sclZ.value);
+    }
+
+    function round(v) { return Math.round(v * 1000) / 1000; }
+
+    // 属性输入框事件
+    const propInputs = ['posX','posY','posZ','rotX','rotY','rotZ','sclX','sclY','sclZ'];
+    propInputs.forEach(id => {
+      document.getElementById(id).addEventListener('input', syncObjectFromEditor);
+    });
+
+    /* ══ Raycasting 点击选择 ══ */
+    const raycaster = new THREE.Raycaster();
+    const pointer = new THREE.Vector2();
+    let pointerDownPos = new THREE.Vector2();
+
+    renderer.domElement.addEventListener('pointerdown', (e) => {
+      if (e.button !== 0) return;
+      pointerDownPos.set(e.clientX, e.clientY);
+    });
+
+    renderer.domElement.addEventListener('pointerup', (e) => {
+      if (e.button !== 0) return;
+      // 只在非拖拽时触发选择（移动 <5px 视为点击）
+      const dx = e.clientX - pointerDownPos.x;
+      const dy = e.clientY - pointerDownPos.y;
+      if (Math.sqrt(dx*dx + dy*dy) > 5) return;
+      // 如果 TransformControls 正在拖拽，不处理
+      if (transformControls.dragging) return;
+
+      pointer.x = (e.clientX / window.innerWidth) * 2 - 1;
+      pointer.y = -(e.clientY / window.innerHeight) * 2 + 1;
+      raycaster.setFromCamera(pointer, camera);
+
+      if (!carGroup) return;
+      const intersects = raycaster.intersectObjects(carGroup.children, true);
+      if (intersects.length > 0) {
+        // 找到最顶层属于 carGroup 直接子级的对象
+        let target = intersects[0].object;
+        while (target.parent && target.parent !== carGroup) {
+          target = target.parent;
+        }
+        selectPart(target);
+      } else {
+        deselectPart();
+      }
+    });
+
+    /* ══ 变换模式切换 ══ */
+    const modeBtns = {
+      translate: document.getElementById('modeTranslate'),
+      rotate: document.getElementById('modeRotate'),
+      scale: document.getElementById('modeScale'),
+    };
+
+    function setTransformMode(mode) {
+      transformControls.setMode(mode);
+      Object.entries(modeBtns).forEach(([m, btn]) => {
+        btn.classList.toggle('active', m === mode);
+      });
+    }
+
+    modeBtns.translate.addEventListener('click', () => setTransformMode('translate'));
+    modeBtns.rotate.addEventListener('click', () => setTransformMode('rotate'));
+    modeBtns.scale.addEventListener('click', () => setTransformMode('scale'));
+
+    /* ══ 键盘快捷键 ══ */
+    window.addEventListener('keydown', (e) => {
+      // 输入框中不处理快捷键
+      if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
+
+      switch (e.key.toLowerCase()) {
+        case 'g': setTransformMode('translate'); break;
+        case 'r': setTransformMode('rotate'); break;
+        case 's': setTransformMode('scale'); break;
+        case 'escape': deselectPart(); break;
+      }
+    });
+
+    /* ══ 导出代码 ══ */
+    document.getElementById('exportBtn').addEventListener('click', () => {
+      if (!carGroup) return;
+      let code = `// 部件位置导出 — ${new Date().toLocaleString()}\n`;
+      code += `// 车型: ${currentVehicleType}\n\n`;
+
+      carGroup.traverse((child) => {
+        if (child === carGroup) return;
+        const label = child.userData._partLabel || child.name || child.type;
+        const p = child.position;
+        const r = child.rotation;
+        const s = child.scale;
+
+        code += `// ${label}\n`;
+        if (p.x !== 0 || p.y !== 0 || p.z !== 0) {
+          code += `${varName(label)}.position.set(${round(p.x)}, ${round(p.y)}, ${round(p.z)});\n`;
+        }
+        if (r.x !== 0 || r.y !== 0 || r.z !== 0) {
+          code += `${varName(label)}.rotation.set(${round(r.x)}, ${round(r.y)}, ${round(r.z)});\n`;
+        }
+        if (s.x !== 1 || s.y !== 1 || s.z !== 1) {
+          code += `${varName(label)}.scale.set(${round(s.x)}, ${round(s.y)}, ${round(s.z)});\n`;
+        }
+        code += '\n';
+      });
+
+      document.getElementById('exportCode').value = code;
+      document.getElementById('exportModal').classList.add('active');
+    });
+
+    function varName(label) {
+      return label.replace(/[^a-zA-Z0-9_]/g, '_').replace(/^_+|_+$/g, '') || 'obj';
+    }
+
+    document.getElementById('copyCodeBtn').addEventListener('click', () => {
+      const textarea = document.getElementById('exportCode');
+      textarea.select();
+      navigator.clipboard.writeText(textarea.value).then(() => {
+        document.getElementById('copyCodeBtn').textContent = '✅ 已复制!';
+        setTimeout(() => { document.getElementById('copyCodeBtn').textContent = '📋 复制到剪贴板'; }, 1500);
+      });
+    });
+
+    document.getElementById('closeModalBtn').addEventListener('click', () => {
+      document.getElementById('exportModal').classList.remove('active');
+    });
+
+    /* ══ 其他控制 ══ */
+    document.getElementById('reloadBtn').addEventListener('click', loadCarModel);
+    document.getElementById('vehicleType').addEventListener('change', (e) => {
+      currentVehicleType = e.target.value;
+      applyVehicleTypeVisibility();
+    });
+    document.getElementById('bgColor').addEventListener('change', (e) => {
+      scene.background = new THREE.Color(e.target.value);
+    });
+    document.getElementById('deselectBtn').addEventListener('click', deselectPart);
+
+    // 自动刷新
+    let autoReloadTimer = null;
+    let lastModuleText = '';
+    document.getElementById('autoReload').addEventListener('change', (e) => {
+      if (e.target.checked) {
+        autoReloadTimer = setInterval(async () => {
+          try {
+            const resp = await fetch(`./assets/car-model.js?t=${Date.now()}`);
+            const text = await resp.text();
+            if (lastModuleText && text !== lastModuleText) {
+              console.log('检测到车模文件变化，自动刷新');
+              loadCarModel();
+            }
+            lastModuleText = text;
+          } catch (_) {}
+        }, 2000);
+      } else {
+        clearInterval(autoReloadTimer);
+        autoReloadTimer = null;
+      }
+    });
+
+    /* ══ 渲染循环 ══ */
+    function animate() {
+      requestAnimationFrame(animate);
+      orbitControls.update();
+      renderer.render(scene, camera);
+    }
+    animate();
+
+    window.addEventListener('resize', () => {
+      camera.aspect = window.innerWidth / window.innerHeight;
+      camera.updateProjectionMatrix();
+      renderer.setSize(window.innerWidth, window.innerHeight);
+    });
+
+    loadCarModel();
+  </script>
+</body>
+</html>
