@@ -426,32 +426,32 @@ function buildMotorcycle(THREE, car, chromeMat) {
   const bikeExhaustMat = new THREE.MeshStandardMaterial({ color: 0xb8bcc2, metalness: 0.88, roughness: 0.18 });
 
   /* --- Main frame --- */
-  const bikeBackbone = n(new THREE.Mesh(new THREE.CylinderGeometry(0.032, 0.032, 1.40, 10), bikeFrameMat), 'bikeBackbone');
+  const bikeBackbone = new THREE.Mesh(new THREE.CylinderGeometry(0.032, 0.032, 1.40, 10), bikeFrameMat);
   bikeBackbone.position.set(0, 1.02, 0.10);
   bikeBackbone.rotation.x = -0.22;
   motorcycleRoot.add(bikeBackbone);
 
-  const bikeDowntubeL = n(new THREE.Mesh(new THREE.CylinderGeometry(0.024, 0.024, 0.72, 8), bikeFrameMat), 'bikeDowntubeL');
+  const bikeDowntubeL = new THREE.Mesh(new THREE.CylinderGeometry(0.024, 0.024, 0.72, 8), bikeFrameMat);
   bikeDowntubeL.position.set(-0.06, 0.78, 0.42);
   bikeDowntubeL.rotation.x = 0.48;
-  const bikeDowntubeR = n(bikeDowntubeL.clone(), 'bikeDowntubeR');
+  const bikeDowntubeR = bikeDowntubeL.clone();
   bikeDowntubeR.position.x = 0.06;
   motorcycleRoot.add(bikeDowntubeL, bikeDowntubeR);
 
   /* --- Tank --- */
-  const bikeTank = n(new THREE.Mesh(new THREE.CapsuleGeometry(0.22, 0.46, 8, 16), bikeRedMat), 'bikeTank');
+  const bikeTank = new THREE.Mesh(new THREE.CapsuleGeometry(0.22, 0.46, 8, 16), bikeRedMat);
   bikeTank.position.set(0, 1.16, 0.38);
   bikeTank.rotation.x = -0.15;
   bikeTank.rotation.z = Math.PI / 2;
   bikeTank.scale.set(1.0, 0.92, 1.38);
   motorcycleRoot.add(bikeTank);
 
-  const bikeTankStripe = n(new THREE.Mesh(new THREE.BoxGeometry(0.04, 0.01, 0.56), chromeMat), 'bikeTankStripe');
+  const bikeTankStripe = new THREE.Mesh(new THREE.BoxGeometry(0.04, 0.01, 0.56), chromeMat);
   bikeTankStripe.position.set(0, 1.38, 0.38);
   motorcycleRoot.add(bikeTankStripe);
 
   /* --- Seat --- */
-  const bikeSeat = n(new THREE.Mesh(new THREE.CapsuleGeometry(0.10, 0.52, 6, 12), bikeSeatMat), 'bikeSeat');
+  const bikeSeat = new THREE.Mesh(new THREE.CapsuleGeometry(0.10, 0.52, 6, 12), bikeSeatMat);
   bikeSeat.position.set(0, 1.10, -0.30);
   bikeSeat.rotation.x = 0.06;
   bikeSeat.rotation.z = Math.PI / 2;
@@ -459,110 +459,110 @@ function buildMotorcycle(THREE, car, chromeMat) {
   motorcycleRoot.add(bikeSeat);
 
   /* --- Tail cowl --- */
-  const bikeTailCowl = n(new THREE.Mesh(new THREE.BoxGeometry(0.30, 0.10, 0.46), bikeRedMat), 'bikeTailCowl');
+  const bikeTailCowl = new THREE.Mesh(new THREE.BoxGeometry(0.30, 0.10, 0.46), bikeRedMat);
   bikeTailCowl.position.set(0, 1.06, -0.78);
   bikeTailCowl.rotation.x = 0.22;
   motorcycleRoot.add(bikeTailCowl);
 
-  const bikeRearFender = n(new THREE.Mesh(new THREE.BoxGeometry(0.20, 0.04, 0.50), bikeFrameMat), 'bikeRearFender');
+  const bikeRearFender = new THREE.Mesh(new THREE.BoxGeometry(0.20, 0.04, 0.50), bikeFrameMat);
   bikeRearFender.position.set(0, 0.66, -1.08);
   bikeRearFender.rotation.x = 0.28;
   motorcycleRoot.add(bikeRearFender);
 
   /* --- Engine --- */
-  const bikeEngineBlock = n(new THREE.Mesh(new THREE.BoxGeometry(0.42, 0.30, 0.40), bikeSilverMat), 'bikeEngineBlock');
+  const bikeEngineBlock = new THREE.Mesh(new THREE.BoxGeometry(0.42, 0.30, 0.40), bikeSilverMat);
   bikeEngineBlock.position.set(0, 0.68, 0.08);
   motorcycleRoot.add(bikeEngineBlock);
 
-  const bikeCylinderHead = n(new THREE.Mesh(new THREE.BoxGeometry(0.46, 0.16, 0.34), bikeFrameMat), 'bikeCylinderHead');
+  const bikeCylinderHead = new THREE.Mesh(new THREE.BoxGeometry(0.46, 0.16, 0.34), bikeFrameMat);
   bikeCylinderHead.position.set(0, 0.86, 0.10);
   motorcycleRoot.add(bikeCylinderHead);
 
   /* --- Exhaust --- */
-  const bikeExhPipe1 = n(new THREE.Mesh(new THREE.CylinderGeometry(0.020, 0.020, 0.60, 8), bikeExhaustMat), 'bikeExhPipe1');
+  const bikeExhPipe1 = new THREE.Mesh(new THREE.CylinderGeometry(0.020, 0.020, 0.60, 8), bikeExhaustMat);
   bikeExhPipe1.position.set(0.20, 0.54, 0.10);
   bikeExhPipe1.rotation.x = Math.PI / 2;
   motorcycleRoot.add(bikeExhPipe1);
 
-  const bikeExhPipe2 = n(new THREE.Mesh(new THREE.CylinderGeometry(0.020, 0.020, 0.60, 8), bikeExhaustMat), 'bikeExhPipe2');
+  const bikeExhPipe2 = new THREE.Mesh(new THREE.CylinderGeometry(0.020, 0.020, 0.60, 8), bikeExhaustMat);
   bikeExhPipe2.position.set(0.22, 0.50, -0.20);
   bikeExhPipe2.rotation.x = Math.PI / 2;
   motorcycleRoot.add(bikeExhPipe2);
 
-  const bikeExhCollector = n(new THREE.Mesh(new THREE.CylinderGeometry(0.034, 0.034, 0.70, 10), bikeExhaustMat), 'bikeExhCollector');
+  const bikeExhCollector = new THREE.Mesh(new THREE.CylinderGeometry(0.034, 0.034, 0.70, 10), bikeExhaustMat);
   bikeExhCollector.position.set(0.24, 0.44, -0.68);
   bikeExhCollector.rotation.x = -0.08;
   motorcycleRoot.add(bikeExhCollector);
 
-  const bikeMuffler = n(new THREE.Mesh(new THREE.CapsuleGeometry(0.054, 0.40, 8, 12), bikeExhaustMat), 'bikeMuffler');
+  const bikeMuffler = new THREE.Mesh(new THREE.CapsuleGeometry(0.054, 0.40, 8, 12), bikeExhaustMat);
   bikeMuffler.position.set(0.24, 0.46, -1.06);
   bikeMuffler.rotation.x = Math.PI / 2;
   motorcycleRoot.add(bikeMuffler);
 
   /* --- Front fork --- */
   const forkRake = 0.47;
-  const bikeForkL = n(new THREE.Mesh(new THREE.CylinderGeometry(0.030, 0.026, 0.82, 10), chromeMat), 'bikeForkL');
+  const bikeForkL = new THREE.Mesh(new THREE.CylinderGeometry(0.030, 0.026, 0.82, 10), chromeMat);
   bikeForkL.position.set(-0.16, 0.88, 1.08);
   bikeForkL.rotation.x = forkRake;
-  const bikeForkR = n(bikeForkL.clone(), 'bikeForkR');
+  const bikeForkR = bikeForkL.clone();
   bikeForkR.position.x = 0.16;
   motorcycleRoot.add(bikeForkL, bikeForkR);
 
-  const bikeTripleUpper = n(new THREE.Mesh(new THREE.BoxGeometry(0.38, 0.04, 0.10), bikeFrameMat), 'bikeTripleUpper');
+  const bikeTripleUpper = new THREE.Mesh(new THREE.BoxGeometry(0.38, 0.04, 0.10), bikeFrameMat);
   bikeTripleUpper.position.set(0, 1.26, 1.00);
-  const bikeTripleLower = n(new THREE.Mesh(new THREE.BoxGeometry(0.36, 0.04, 0.08), bikeFrameMat), 'bikeTripleLower');
+  const bikeTripleLower = new THREE.Mesh(new THREE.BoxGeometry(0.36, 0.04, 0.08), bikeFrameMat);
   bikeTripleLower.position.set(0, 0.94, 1.14);
   motorcycleRoot.add(bikeTripleUpper, bikeTripleLower);
 
   /* --- Front fender --- */
-  const bikeFrontFender = n(new THREE.Mesh(new THREE.BoxGeometry(0.16, 0.03, 0.40), bikeFrameMat), 'bikeFrontFender');
+  const bikeFrontFender = new THREE.Mesh(new THREE.BoxGeometry(0.16, 0.03, 0.40), bikeFrameMat);
   bikeFrontFender.position.set(0, 0.72, 1.35);
   motorcycleRoot.add(bikeFrontFender);
 
   /* --- Handlebar --- */
   const bikeHandlebar = n(new THREE.Group(), 'bikeHandlebar');
-  const bikeBar = n(new THREE.Mesh(new THREE.CylinderGeometry(0.018, 0.018, 0.62, 12), chromeMat), 'bikeBar');
+  const bikeBar = new THREE.Mesh(new THREE.CylinderGeometry(0.018, 0.018, 0.62, 12), chromeMat);
   bikeBar.rotation.z = Math.PI / 2;
-  const bikeBarCenter = n(new THREE.Mesh(new THREE.BoxGeometry(0.10, 0.04, 0.06), bikeFrameMat), 'bikeBarCenter');
+  const bikeBarCenter = new THREE.Mesh(new THREE.BoxGeometry(0.10, 0.04, 0.06), bikeFrameMat);
   bikeHandlebar.add(bikeBar, bikeBarCenter);
   bikeHandlebar.position.set(0, 1.32, 0.92);
   motorcycleRoot.add(bikeHandlebar);
 
   /* --- Headlight --- */
-  const bikeHeadlight = n(new THREE.Mesh(
+  const bikeHeadlight = new THREE.Mesh(
     new THREE.SphereGeometry(0.11, 18, 12, 0, Math.PI * 2, 0, Math.PI / 2),
     new THREE.MeshStandardMaterial({ color: 0xf7f4eb, emissive: 0xffffd8, emissiveIntensity: 0.38, metalness: 0.30, roughness: 0.20 })
-  ), 'bikeHeadlight');
+  );
   bikeHeadlight.rotation.x = -Math.PI / 2;
   bikeHeadlight.position.set(0, 1.06, 1.30);
   motorcycleRoot.add(bikeHeadlight);
 
-  const bikeHeadlightBucket = n(new THREE.Mesh(new THREE.CylinderGeometry(0.12, 0.12, 0.08, 18), chromeMat), 'bikeHeadlightBucket');
+  const bikeHeadlightBucket = new THREE.Mesh(new THREE.CylinderGeometry(0.12, 0.12, 0.08, 18), chromeMat);
   bikeHeadlightBucket.rotation.x = Math.PI / 2;
   bikeHeadlightBucket.position.set(0, 1.06, 1.26);
   motorcycleRoot.add(bikeHeadlightBucket);
 
   /* --- Meters --- */
   const meterMat = new THREE.MeshStandardMaterial({ color: 0x061015, emissive: 0x14394d, emissiveIntensity: 0.18, roughness: 0.32 });
-  const bikeMeterL = n(new THREE.Mesh(new THREE.CylinderGeometry(0.06, 0.06, 0.03, 14), meterMat), 'bikeMeterL');
+  const bikeMeterL = new THREE.Mesh(new THREE.CylinderGeometry(0.06, 0.06, 0.03, 14), meterMat);
   bikeMeterL.rotation.x = Math.PI / 2;
   bikeMeterL.position.set(-0.08, 1.30, 0.96);
-  const bikeMeterR = n(bikeMeterL.clone(), 'bikeMeterR');
+  const bikeMeterR = bikeMeterL.clone();
   bikeMeterR.position.x = 0.08;
   motorcycleRoot.add(bikeMeterL, bikeMeterR);
 
   /* --- Swingarm --- */
-  const bikeSwingarmL = n(new THREE.Mesh(new THREE.BoxGeometry(0.04, 0.06, 0.80), bikeFrameMat), 'bikeSwingarmL');
+  const bikeSwingarmL = new THREE.Mesh(new THREE.BoxGeometry(0.04, 0.06, 0.80), bikeFrameMat);
   bikeSwingarmL.position.set(-0.10, 0.52, -0.92);
-  const bikeSwingarmR = n(bikeSwingarmL.clone(), 'bikeSwingarmR');
+  const bikeSwingarmR = bikeSwingarmL.clone();
   bikeSwingarmR.position.x = 0.10;
   motorcycleRoot.add(bikeSwingarmL, bikeSwingarmR);
 
   /* --- Rear shocks --- */
-  const bikeShockL = n(new THREE.Mesh(new THREE.CylinderGeometry(0.018, 0.018, 0.44, 8), chromeMat), 'bikeShockL');
+  const bikeShockL = new THREE.Mesh(new THREE.CylinderGeometry(0.018, 0.018, 0.44, 8), chromeMat);
   bikeShockL.position.set(-0.14, 0.82, -0.72);
   bikeShockL.rotation.x = -0.16;
-  const bikeShockR = n(bikeShockL.clone(), 'bikeShockR');
+  const bikeShockR = bikeShockL.clone();
   bikeShockR.position.x = 0.14;
   motorcycleRoot.add(bikeShockL, bikeShockR);
 
@@ -572,29 +572,29 @@ function buildMotorcycle(THREE, car, chromeMat) {
     const orient = new THREE.Group();
     orient.rotation.z = Math.PI / 2;
     group.add(orient);
-    const tire = n(new THREE.Mesh(
+    const tire = new THREE.Mesh(
       new THREE.CylinderGeometry(0.42, 0.42, 0.14, 28),
       new THREE.MeshStandardMaterial({ color: 0x161616, roughness: 0.94 })
-    ), 'tire');
+    );
     orient.add(tire);
-    const rim = n(new THREE.Mesh(
+    const rim = new THREE.Mesh(
       new THREE.CylinderGeometry(0.28, 0.28, 0.10, 20),
       new THREE.MeshStandardMaterial({ color: 0x9ea7af, metalness: 0.82, roughness: 0.18 })
-    ), 'rim');
+    );
     orient.add(rim);
-    const hub = n(new THREE.Mesh(
+    const hub = new THREE.Mesh(
       new THREE.CylinderGeometry(0.06, 0.06, 0.16, 12),
       chromeMat
-    ), 'hub');
+    );
     orient.add(hub);
-    return { group, tire, rim, hub };
+    return { group, tire };
   }
 
   /* Front disc brake */
-  const bikeFrontDisc = n(new THREE.Mesh(
+  const bikeFrontDisc = new THREE.Mesh(
     new THREE.CylinderGeometry(0.18, 0.18, 0.012, 20),
     new THREE.MeshStandardMaterial({ color: 0x888888, metalness: 0.70, roughness: 0.30 })
-  ), 'bikeFrontDisc');
+  );
   bikeFrontDisc.rotation.z = Math.PI / 2;
   bikeFrontDisc.position.set(0.07, 0, 0);
 
@@ -621,22 +621,22 @@ function buildMotorcycle(THREE, car, chromeMat) {
   /* --- Cockpit view parts --- */
   const bikeCockpitRoot = n(new THREE.Group(), 'bikeCockpitRoot');
   car.add(bikeCockpitRoot);
-  const bikeCockpitBar = n(bikeHandlebar.clone(), 'bikeCockpitBar');
+  const bikeCockpitBar = bikeHandlebar.clone();
   bikeCockpitBar.position.set(0, 1.26, 0.72);
-  const bikeCockpitCluster = n(new THREE.Group(), 'bikeCockpitCluster');
-  const bikeCockpitMeterL = n(bikeMeterL.clone(), 'bikeCockpitMeterL');
+  const bikeCockpitCluster = new THREE.Group();
+  const bikeCockpitMeterL = bikeMeterL.clone();
   bikeCockpitMeterL.position.set(-0.08, 1.30, 0.66);
-  const bikeCockpitMeterR = n(bikeMeterR.clone(), 'bikeCockpitMeterR');
+  const bikeCockpitMeterR = bikeMeterR.clone();
   bikeCockpitMeterR.position.set(0.08, 1.30, 0.66);
   bikeCockpitCluster.add(bikeCockpitMeterL, bikeCockpitMeterR);
   bikeCockpitRoot.add(bikeCockpitBar, bikeCockpitCluster);
 
   /* --- Bike signal lamps --- */
-  function createBikeSignalLamp(name, x, y, z) {
-    const mesh = n(new THREE.Mesh(
+  function createBikeSignalLamp(x, y, z) {
+    const mesh = new THREE.Mesh(
       new THREE.SphereGeometry(0.038, 12, 8),
       new THREE.MeshStandardMaterial({ color: 0x3a2a14, emissive: 0xffb74d, emissiveIntensity: 0.02, roughness: 0.42, metalness: 0.08 })
-    ), name);
+    );
     mesh.position.set(x, y, z);
     mesh.castShadow = true;
     const light = new THREE.PointLight(0xffb347, 0, 3.5, 2);
@@ -646,22 +646,16 @@ function buildMotorcycle(THREE, car, chromeMat) {
   }
 
   const bikeSignalLamps = {
-    left: [
-      createBikeSignalLamp('bikeSignalFrontL', 0.18, 1.06, 1.12),
-      createBikeSignalLamp('bikeSignalRearL', 0.16, 0.96, -0.92),
-    ],
-    right: [
-      createBikeSignalLamp('bikeSignalFrontR', -0.18, 1.06, 1.12),
-      createBikeSignalLamp('bikeSignalRearR', -0.16, 0.96, -0.92),
-    ],
+    left: [createBikeSignalLamp(0.18, 1.06, 1.12), createBikeSignalLamp(0.16, 0.96, -0.92)],
+    right: [createBikeSignalLamp(-0.18, 1.06, 1.12), createBikeSignalLamp(-0.16, 0.96, -0.92)],
   };
 
   /* --- Bike brake lamp --- */
   function createBikeBrakeLamp(x, y, z) {
-    const mesh = n(new THREE.Mesh(
+    const mesh = new THREE.Mesh(
       new THREE.BoxGeometry(0.14, 0.06, 0.06),
       new THREE.MeshStandardMaterial({ color: 0x661111, emissive: 0xff2020, emissiveIntensity: 0.04, roughness: 0.36, metalness: 0.10 })
-    ), 'bikeBrakeLampMesh');
+    );
     mesh.position.set(x, y, z);
     mesh.castShadow = true;
     const light = new THREE.PointLight(0xff3d3d, 0, 4, 2);
