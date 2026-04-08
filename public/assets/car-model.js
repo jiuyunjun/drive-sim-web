@@ -11,7 +11,2677 @@
  */
 
 /* PREVIEW_OVERRIDES_START */
-const PREVIEW_OVERRIDES = {};
+const PREVIEW_OVERRIDES = {
+  "body": {
+    "position": [
+      0,
+      0.8,
+      0
+    ],
+    "rotation": [
+      0,
+      0,
+      0
+    ],
+    "scale": [
+      1,
+      1,
+      1
+    ]
+  },
+  "shoulderShell": {
+    "position": [
+      0,
+      1.02,
+      -0.04
+    ],
+    "rotation": [
+      0,
+      0,
+      0
+    ],
+    "scale": [
+      1,
+      1,
+      1
+    ]
+  },
+  "hood": {
+    "position": [
+      0,
+      1.18,
+      1.34
+    ],
+    "rotation": [
+      0.128,
+      0,
+      0
+    ],
+    "scale": [
+      1,
+      1,
+      1
+    ]
+  },
+  "trunk": {
+    "position": [
+      0,
+      1.166,
+      -1.66
+    ],
+    "rotation": [
+      -0.124,
+      0,
+      0
+    ],
+    "scale": [
+      1,
+      1,
+      1
+    ]
+  },
+  "frontBumper": {
+    "position": [
+      0,
+      0.7,
+      2.2
+    ],
+    "rotation": [
+      0,
+      0,
+      0
+    ],
+    "scale": [
+      1,
+      1,
+      1
+    ]
+  },
+  "frontBumper/Mesh_173": {
+    "position": [
+      0,
+      -0.16,
+      0.06
+    ],
+    "rotation": [
+      0,
+      0,
+      0
+    ],
+    "scale": [
+      1,
+      1,
+      1
+    ]
+  },
+  "frontBumper/Mesh_174": {
+    "position": [
+      -0.74,
+      -0.08,
+      0.04
+    ],
+    "rotation": [
+      0,
+      0,
+      0
+    ],
+    "scale": [
+      1,
+      1,
+      1
+    ]
+  },
+  "frontBumper/Mesh_175": {
+    "position": [
+      0.74,
+      -0.08,
+      0.04
+    ],
+    "rotation": [
+      0,
+      0,
+      0
+    ],
+    "scale": [
+      1,
+      1,
+      1
+    ]
+  },
+  "rearBumper": {
+    "position": [
+      0,
+      0.69,
+      -2.22
+    ],
+    "rotation": [
+      0,
+      0,
+      0
+    ],
+    "scale": [
+      1,
+      1,
+      1
+    ]
+  },
+  "rearBumper/Mesh_177": {
+    "position": [
+      0,
+      -0.12,
+      -0.03
+    ],
+    "rotation": [
+      0,
+      0,
+      0
+    ],
+    "scale": [
+      1,
+      1,
+      1
+    ]
+  },
+  "grille": {
+    "position": [
+      0,
+      0.8,
+      2.29
+    ],
+    "rotation": [
+      0,
+      0,
+      0
+    ],
+    "scale": [
+      1,
+      1,
+      1
+    ]
+  },
+  "grille/Mesh_179": {
+    "position": [
+      0,
+      0.17,
+      0
+    ],
+    "rotation": [
+      0,
+      0,
+      0
+    ],
+    "scale": [
+      1,
+      1,
+      1
+    ]
+  },
+  "grille/Mesh_180": {
+    "position": [
+      -0.27,
+      0.2,
+      0.01
+    ],
+    "rotation": [
+      0,
+      0,
+      0.22
+    ],
+    "scale": [
+      1,
+      1,
+      1
+    ]
+  },
+  "grille/Mesh_181": {
+    "position": [
+      0.27,
+      0.2,
+      0.01
+    ],
+    "rotation": [
+      0,
+      0,
+      -0.22
+    ],
+    "scale": [
+      1,
+      1,
+      1
+    ]
+  },
+  "grille/Mesh_182": {
+    "position": [
+      0,
+      0.17,
+      0.04
+    ],
+    "rotation": [
+      0,
+      0,
+      0
+    ],
+    "scale": [
+      1,
+      1,
+      1
+    ]
+  },
+  "cabin": {
+    "position": [
+      0,
+      1.418,
+      -0.08
+    ],
+    "rotation": [
+      0,
+      0,
+      0
+    ],
+    "scale": [
+      1,
+      1,
+      1
+    ]
+  },
+  "roofPanel": {
+    "position": [
+      0,
+      1.741,
+      -0.08
+    ],
+    "rotation": [
+      0,
+      0,
+      0
+    ],
+    "scale": [
+      1,
+      1,
+      1
+    ]
+  },
+  "aPillarL": {
+    "position": [
+      -0.76,
+      1.403,
+      0.83
+    ],
+    "rotation": [
+      0,
+      0,
+      -0.18
+    ],
+    "scale": [
+      1,
+      1,
+      1
+    ]
+  },
+  "aPillarR": {
+    "position": [
+      0.76,
+      1.392,
+      0.83
+    ],
+    "rotation": [
+      0,
+      0,
+      0.18
+    ],
+    "scale": [
+      1,
+      1,
+      1
+    ]
+  },
+  "cPillarL": {
+    "position": [
+      -0.74,
+      1.44,
+      -0.98
+    ],
+    "rotation": [
+      0,
+      0,
+      -0.12
+    ],
+    "scale": [
+      1,
+      1,
+      1
+    ]
+  },
+  "cPillarR": {
+    "position": [
+      0.74,
+      1.402,
+      -0.98
+    ],
+    "rotation": [
+      0,
+      0,
+      0.12
+    ],
+    "scale": [
+      1,
+      1,
+      1
+    ]
+  },
+  "windshield": {
+    "position": [
+      0,
+      1.456,
+      1.047
+    ],
+    "rotation": [
+      -0.562,
+      0,
+      0
+    ],
+    "scale": [
+      1,
+      1,
+      1
+    ]
+  },
+  "rearWindow": {
+    "position": [
+      0,
+      1.482,
+      -1.12
+    ],
+    "rotation": [
+      -2.882,
+      0,
+      3.142
+    ],
+    "scale": [
+      1,
+      1,
+      1
+    ]
+  },
+  "sideWindowL": {
+    "position": [
+      -0.82,
+      1.363,
+      -0.08
+    ],
+    "rotation": [
+      0,
+      -1.571,
+      0
+    ],
+    "scale": [
+      1,
+      1,
+      1
+    ]
+  },
+  "sideWindowR": {
+    "position": [
+      0.82,
+      1.36,
+      -0.08
+    ],
+    "rotation": [
+      0,
+      1.571,
+      0
+    ],
+    "scale": [
+      1,
+      1,
+      1
+    ]
+  },
+  "headlightL": {
+    "position": [
+      -0.72,
+      0.93,
+      2.18
+    ],
+    "rotation": [
+      0,
+      -0.34,
+      -0.1
+    ],
+    "scale": [
+      1,
+      1,
+      1
+    ]
+  },
+  "headlightL/Mesh_194": {
+    "position": [
+      -0.18,
+      -0.02,
+      -0.06
+    ],
+    "rotation": [
+      0,
+      -0.2,
+      0
+    ],
+    "scale": [
+      1,
+      1,
+      1
+    ]
+  },
+  "headlightR": {
+    "position": [
+      0.72,
+      0.93,
+      2.18
+    ],
+    "rotation": [
+      0,
+      0.34,
+      0.1
+    ],
+    "scale": [
+      1,
+      1,
+      1
+    ]
+  },
+  "headlightR/Mesh_196": {
+    "position": [
+      0.18,
+      -0.02,
+      -0.06
+    ],
+    "rotation": [
+      0,
+      0.2,
+      0
+    ],
+    "scale": [
+      1,
+      1,
+      1
+    ]
+  },
+  "taillightL": {
+    "position": [
+      -0.72,
+      0.9,
+      -2.18
+    ],
+    "rotation": [
+      0,
+      -0.18,
+      0
+    ],
+    "scale": [
+      1,
+      1,
+      1
+    ]
+  },
+  "taillightL/Mesh_198": {
+    "position": [
+      0.22,
+      0,
+      0.02
+    ],
+    "rotation": [
+      0,
+      0,
+      0
+    ],
+    "scale": [
+      1,
+      1,
+      1
+    ]
+  },
+  "taillightR": {
+    "position": [
+      0.72,
+      0.9,
+      -2.18
+    ],
+    "rotation": [
+      0,
+      0.18,
+      0
+    ],
+    "scale": [
+      1,
+      1,
+      1
+    ]
+  },
+  "taillightR/Mesh_200": {
+    "position": [
+      -0.22,
+      0,
+      0.02
+    ],
+    "rotation": [
+      0,
+      0,
+      0
+    ],
+    "scale": [
+      1,
+      1,
+      1
+    ]
+  },
+  "sideMirrorL": {
+    "position": [
+      -1.04,
+      1.3,
+      0.75
+    ],
+    "rotation": [
+      0,
+      0,
+      0
+    ],
+    "scale": [
+      1,
+      1,
+      1
+    ]
+  },
+  "sideMirrorL/Mesh_202": {
+    "position": [
+      0,
+      0,
+      0
+    ],
+    "rotation": [
+      0,
+      0,
+      0
+    ],
+    "scale": [
+      1,
+      1,
+      1
+    ]
+  },
+  "sideMirrorL/Mesh_203": {
+    "position": [
+      -0.13,
+      0.01,
+      0.05
+    ],
+    "rotation": [
+      0,
+      0.868,
+      0
+    ],
+    "scale": [
+      1,
+      1,
+      1
+    ]
+  },
+  "sideMirrorL/Mesh_204": {
+    "position": [
+      -0.18,
+      0.01,
+      0.05
+    ],
+    "rotation": [
+      0,
+      -1.571,
+      0
+    ],
+    "scale": [
+      1,
+      1,
+      1
+    ]
+  },
+  "sideMirrorR": {
+    "position": [
+      1.04,
+      1.3,
+      0.75
+    ],
+    "rotation": [
+      0,
+      0,
+      0
+    ],
+    "scale": [
+      1,
+      1,
+      1
+    ]
+  },
+  "sideMirrorR/Mesh_206": {
+    "position": [
+      0,
+      0,
+      0
+    ],
+    "rotation": [
+      0,
+      0,
+      0
+    ],
+    "scale": [
+      1,
+      1,
+      1
+    ]
+  },
+  "sideMirrorR/Mesh_207": {
+    "position": [
+      0.13,
+      0.01,
+      0.05
+    ],
+    "rotation": [
+      -3.142,
+      1.059,
+      -3.142
+    ],
+    "scale": [
+      1,
+      1,
+      1
+    ]
+  },
+  "sideMirrorR/Mesh_208": {
+    "position": [
+      0.18,
+      0.01,
+      0.05
+    ],
+    "rotation": [
+      0,
+      1.571,
+      0
+    ],
+    "scale": [
+      1,
+      1,
+      1
+    ]
+  },
+  "roofRailL": {
+    "position": [
+      -0.72,
+      1.86,
+      -0.08
+    ],
+    "rotation": [
+      0,
+      0,
+      0
+    ],
+    "scale": [
+      1,
+      1,
+      1
+    ]
+  },
+  "roofRailR": {
+    "position": [
+      0.72,
+      1.86,
+      -0.08
+    ],
+    "rotation": [
+      0,
+      0,
+      0
+    ],
+    "scale": [
+      1,
+      1,
+      1
+    ]
+  },
+  "dashboard": {
+    "position": [
+      0,
+      1.29,
+      0.65
+    ],
+    "rotation": [
+      0,
+      0,
+      0
+    ],
+    "scale": [
+      1,
+      1,
+      1
+    ]
+  },
+  "instrumentCluster": {
+    "position": [
+      -0.32,
+      1.42,
+      0.32
+    ],
+    "rotation": [
+      -0.4,
+      0,
+      0
+    ],
+    "scale": [
+      1,
+      1,
+      1
+    ]
+  },
+  "centerScreen": {
+    "position": [
+      0.1,
+      1.42,
+      0.36
+    ],
+    "rotation": [
+      -0.35,
+      0,
+      0
+    ],
+    "scale": [
+      1,
+      1,
+      1
+    ]
+  },
+  "driverSeat": {
+    "position": [
+      -0.38,
+      1.08,
+      0.05
+    ],
+    "rotation": [
+      0,
+      0,
+      0
+    ],
+    "scale": [
+      1,
+      1,
+      1
+    ]
+  },
+  "driverSeat/Mesh_215": {
+    "position": [
+      0,
+      0,
+      0
+    ],
+    "rotation": [
+      0,
+      0,
+      0
+    ],
+    "scale": [
+      1,
+      1,
+      1
+    ]
+  },
+  "driverSeat/Mesh_216": {
+    "position": [
+      0,
+      0.32,
+      -0.22
+    ],
+    "rotation": [
+      -0.15,
+      0,
+      0
+    ],
+    "scale": [
+      1,
+      1,
+      1
+    ]
+  },
+  "driverSeat/Mesh_217": {
+    "position": [
+      0,
+      0.513,
+      -0.24
+    ],
+    "rotation": [
+      0,
+      0,
+      0
+    ],
+    "scale": [
+      1,
+      1,
+      1
+    ]
+  },
+  "passengerSeat": {
+    "position": [
+      0.38,
+      1.08,
+      0.05
+    ],
+    "rotation": [
+      0,
+      0,
+      0
+    ],
+    "scale": [
+      1,
+      1,
+      1
+    ]
+  },
+  "passengerSeat/Mesh_219": {
+    "position": [
+      0,
+      0,
+      0
+    ],
+    "rotation": [
+      0,
+      0,
+      0
+    ],
+    "scale": [
+      1,
+      1,
+      1
+    ]
+  },
+  "passengerSeat/Mesh_220": {
+    "position": [
+      0,
+      0.32,
+      -0.22
+    ],
+    "rotation": [
+      -0.15,
+      0,
+      0
+    ],
+    "scale": [
+      1,
+      1,
+      1
+    ]
+  },
+  "passengerSeat/Mesh_221": {
+    "position": [
+      0,
+      0.578,
+      -0.24
+    ],
+    "rotation": [
+      0,
+      0,
+      0
+    ],
+    "scale": [
+      1,
+      1,
+      1
+    ]
+  },
+  "steeringWheel": {
+    "position": [
+      -0.36,
+      1.38,
+      0.42
+    ],
+    "rotation": [
+      1.1,
+      0,
+      0
+    ],
+    "scale": [
+      1,
+      1,
+      1
+    ]
+  },
+  "steeringWheel/Mesh_223": {
+    "position": [
+      0,
+      0,
+      0
+    ],
+    "rotation": [
+      0,
+      0,
+      0
+    ],
+    "scale": [
+      1,
+      1,
+      1
+    ]
+  },
+  "steeringWheel/Mesh_224": {
+    "position": [
+      0,
+      0,
+      0
+    ],
+    "rotation": [
+      1.571,
+      0,
+      0
+    ],
+    "scale": [
+      1,
+      1,
+      1
+    ]
+  },
+  "steeringWheel/Mesh_225": {
+    "position": [
+      0.1,
+      0,
+      0
+    ],
+    "rotation": [
+      0,
+      0,
+      0
+    ],
+    "scale": [
+      1,
+      1,
+      1
+    ]
+  },
+  "steeringWheel/Mesh_226": {
+    "position": [
+      -0.05,
+      0.087,
+      0
+    ],
+    "rotation": [
+      0,
+      0,
+      2.094
+    ],
+    "scale": [
+      1,
+      1,
+      1
+    ]
+  },
+  "steeringWheel/Mesh_227": {
+    "position": [
+      -0.05,
+      -0.087,
+      0
+    ],
+    "rotation": [
+      0,
+      0,
+      4.189
+    ],
+    "scale": [
+      1,
+      1,
+      1
+    ]
+  },
+  "wheelFL": {
+    "position": [
+      -1.05,
+      0.48,
+      1.35
+    ],
+    "rotation": [
+      0,
+      0,
+      0
+    ],
+    "scale": [
+      1,
+      1,
+      1
+    ]
+  },
+  "wheelFL/Mesh_229": {
+    "position": [
+      0,
+      0,
+      0
+    ],
+    "rotation": [
+      0,
+      0,
+      1.571
+    ],
+    "scale": [
+      1,
+      1,
+      1
+    ]
+  },
+  "wheelFL/Mesh_230": {
+    "position": [
+      0,
+      0,
+      0
+    ],
+    "rotation": [
+      0,
+      0,
+      1.571
+    ],
+    "scale": [
+      1,
+      1,
+      1
+    ]
+  },
+  "wheelFL/Mesh_231": {
+    "position": [
+      0,
+      0,
+      0
+    ],
+    "rotation": [
+      0,
+      0,
+      1.571
+    ],
+    "scale": [
+      1,
+      1,
+      1
+    ]
+  },
+  "wheelFR": {
+    "position": [
+      1.05,
+      0.48,
+      1.35
+    ],
+    "rotation": [
+      0,
+      0,
+      0
+    ],
+    "scale": [
+      1,
+      1,
+      1
+    ]
+  },
+  "wheelFR/Mesh_233": {
+    "position": [
+      0,
+      0,
+      0
+    ],
+    "rotation": [
+      0,
+      0,
+      1.571
+    ],
+    "scale": [
+      1,
+      1,
+      1
+    ]
+  },
+  "wheelFR/Mesh_234": {
+    "position": [
+      0,
+      0,
+      0
+    ],
+    "rotation": [
+      0,
+      0,
+      1.571
+    ],
+    "scale": [
+      1,
+      1,
+      1
+    ]
+  },
+  "wheelFR/Mesh_235": {
+    "position": [
+      0,
+      0,
+      0
+    ],
+    "rotation": [
+      0,
+      0,
+      1.571
+    ],
+    "scale": [
+      1,
+      1,
+      1
+    ]
+  },
+  "wheelRL": {
+    "position": [
+      -1.05,
+      0.48,
+      -1.35
+    ],
+    "rotation": [
+      0,
+      0,
+      0
+    ],
+    "scale": [
+      1,
+      1,
+      1
+    ]
+  },
+  "wheelRL/Mesh_237": {
+    "position": [
+      0,
+      0,
+      0
+    ],
+    "rotation": [
+      0,
+      0,
+      1.571
+    ],
+    "scale": [
+      1,
+      1,
+      1
+    ]
+  },
+  "wheelRL/Mesh_238": {
+    "position": [
+      0,
+      0,
+      0
+    ],
+    "rotation": [
+      0,
+      0,
+      1.571
+    ],
+    "scale": [
+      1,
+      1,
+      1
+    ]
+  },
+  "wheelRL/Mesh_239": {
+    "position": [
+      0,
+      0,
+      0
+    ],
+    "rotation": [
+      0,
+      0,
+      1.571
+    ],
+    "scale": [
+      1,
+      1,
+      1
+    ]
+  },
+  "wheelRR": {
+    "position": [
+      1.05,
+      0.48,
+      -1.35
+    ],
+    "rotation": [
+      0,
+      0,
+      0
+    ],
+    "scale": [
+      1,
+      1,
+      1
+    ]
+  },
+  "wheelRR/Mesh_241": {
+    "position": [
+      0,
+      0,
+      0
+    ],
+    "rotation": [
+      0,
+      0,
+      1.571
+    ],
+    "scale": [
+      1,
+      1,
+      1
+    ]
+  },
+  "wheelRR/Mesh_242": {
+    "position": [
+      0,
+      0,
+      0
+    ],
+    "rotation": [
+      0,
+      0,
+      1.571
+    ],
+    "scale": [
+      1,
+      1,
+      1
+    ]
+  },
+  "wheelRR/Mesh_243": {
+    "position": [
+      0,
+      0,
+      0
+    ],
+    "rotation": [
+      0,
+      0,
+      1.571
+    ],
+    "scale": [
+      1,
+      1,
+      1
+    ]
+  },
+  "Mesh_244": {
+    "position": [
+      1.06,
+      0.98,
+      2.16
+    ],
+    "rotation": [
+      0,
+      0,
+      0
+    ],
+    "scale": [
+      1,
+      1,
+      1
+    ]
+  },
+  "PointLight_245": {
+    "position": [
+      1.06,
+      0.98,
+      2.16
+    ],
+    "rotation": [
+      0,
+      0,
+      0
+    ],
+    "scale": [
+      1,
+      1,
+      1
+    ]
+  },
+  "Mesh_247": {
+    "position": [
+      0.845,
+      0.98,
+      -2.381
+    ],
+    "rotation": [
+      0,
+      0,
+      0
+    ],
+    "scale": [
+      1,
+      1,
+      1
+    ]
+  },
+  "PointLight_248": {
+    "position": [
+      1.06,
+      0.98,
+      -2.16
+    ],
+    "rotation": [
+      0,
+      0,
+      0
+    ],
+    "scale": [
+      1,
+      1,
+      1
+    ]
+  },
+  "Mesh_250": {
+    "position": [
+      -1.06,
+      0.98,
+      2.16
+    ],
+    "rotation": [
+      0,
+      0,
+      0
+    ],
+    "scale": [
+      1,
+      1,
+      1
+    ]
+  },
+  "PointLight_251": {
+    "position": [
+      -1.06,
+      0.98,
+      2.16
+    ],
+    "rotation": [
+      0,
+      0,
+      0
+    ],
+    "scale": [
+      1,
+      1,
+      1
+    ]
+  },
+  "Mesh_253": {
+    "position": [
+      -0.834,
+      0.98,
+      -2.372
+    ],
+    "rotation": [
+      0,
+      0,
+      0
+    ],
+    "scale": [
+      1,
+      1,
+      1
+    ]
+  },
+  "PointLight_254": {
+    "position": [
+      -1.06,
+      0.98,
+      -2.16
+    ],
+    "rotation": [
+      0,
+      0,
+      0
+    ],
+    "scale": [
+      1,
+      1,
+      1
+    ]
+  },
+  "Mesh_256": {
+    "position": [
+      -0.5,
+      0.96,
+      -2.13
+    ],
+    "rotation": [
+      0,
+      0,
+      0
+    ],
+    "scale": [
+      1,
+      1,
+      1
+    ]
+  },
+  "PointLight_257": {
+    "position": [
+      -0.5,
+      0.96,
+      -2.13
+    ],
+    "rotation": [
+      0,
+      0,
+      0
+    ],
+    "scale": [
+      1,
+      1,
+      1
+    ]
+  },
+  "Mesh_259": {
+    "position": [
+      0.5,
+      0.96,
+      -2.13
+    ],
+    "rotation": [
+      0,
+      0,
+      0
+    ],
+    "scale": [
+      1,
+      1,
+      1
+    ]
+  },
+  "PointLight_260": {
+    "position": [
+      0.5,
+      0.96,
+      -2.13
+    ],
+    "rotation": [
+      0,
+      0,
+      0
+    ],
+    "scale": [
+      1,
+      1,
+      1
+    ]
+  },
+  "Mesh_262": {
+    "position": [
+      -0.2,
+      0.88,
+      -2.16
+    ],
+    "rotation": [
+      0,
+      0,
+      0
+    ],
+    "scale": [
+      1,
+      1,
+      1
+    ]
+  },
+  "PointLight_263": {
+    "position": [
+      -0.2,
+      0.88,
+      -2.16
+    ],
+    "rotation": [
+      0,
+      0,
+      0
+    ],
+    "scale": [
+      1,
+      1,
+      1
+    ]
+  },
+  "Mesh_265": {
+    "position": [
+      0.2,
+      0.88,
+      -2.16
+    ],
+    "rotation": [
+      0,
+      0,
+      0
+    ],
+    "scale": [
+      1,
+      1,
+      1
+    ]
+  },
+  "PointLight_266": {
+    "position": [
+      0.2,
+      0.88,
+      -2.16
+    ],
+    "rotation": [
+      0,
+      0,
+      0
+    ],
+    "scale": [
+      1,
+      1,
+      1
+    ]
+  },
+  "motorcycleRoot": {
+    "position": [
+      0,
+      0,
+      0
+    ],
+    "rotation": [
+      0,
+      0,
+      0
+    ],
+    "scale": [
+      1,
+      1,
+      1
+    ]
+  },
+  "motorcycleRoot/bikeBackbone": {
+    "position": [
+      0,
+      1.02,
+      0.1
+    ],
+    "rotation": [
+      -0.22,
+      0,
+      0
+    ],
+    "scale": [
+      1,
+      -0.072,
+      1
+    ]
+  },
+  "motorcycleRoot/bikeDowntubeL": {
+    "position": [
+      -0.06,
+      0.78,
+      0.42
+    ],
+    "rotation": [
+      0.48,
+      0,
+      0
+    ],
+    "scale": [
+      1,
+      1,
+      1
+    ]
+  },
+  "motorcycleRoot/bikeDowntubeR": {
+    "position": [
+      0.06,
+      0.78,
+      0.42
+    ],
+    "rotation": [
+      0.48,
+      0,
+      0
+    ],
+    "scale": [
+      1,
+      1,
+      1
+    ]
+  },
+  "motorcycleRoot/bikeTank": {
+    "position": [
+      0,
+      1.16,
+      0.38
+    ],
+    "rotation": [
+      -0.15,
+      0,
+      1.571
+    ],
+    "scale": [
+      1,
+      0.661,
+      2.308
+    ]
+  },
+  "motorcycleRoot/bikeTankStripe": {
+    "position": [
+      0,
+      1.38,
+      0.38
+    ],
+    "rotation": [
+      -0.189,
+      0,
+      0
+    ],
+    "scale": [
+      1,
+      1,
+      1
+    ]
+  },
+  "motorcycleRoot/bikeSeat": {
+    "position": [
+      0,
+      1.128,
+      -0.4
+    ],
+    "rotation": [
+      0.06,
+      0,
+      1.571
+    ],
+    "scale": [
+      0.7,
+      0.58,
+      4.349
+    ]
+  },
+  "motorcycleRoot/bikeTailCowl": {
+    "position": [
+      0,
+      1.06,
+      -0.78
+    ],
+    "rotation": [
+      0.22,
+      0,
+      0
+    ],
+    "scale": [
+      1,
+      1,
+      1
+    ]
+  },
+  "motorcycleRoot/bikeRearFender": {
+    "position": [
+      0,
+      0.66,
+      -1.08
+    ],
+    "rotation": [
+      0.28,
+      0,
+      0
+    ],
+    "scale": [
+      1,
+      1,
+      1
+    ]
+  },
+  "motorcycleRoot/bikeEngineBlock": {
+    "position": [
+      0,
+      0.68,
+      0.08
+    ],
+    "rotation": [
+      0,
+      0,
+      0
+    ],
+    "scale": [
+      1,
+      1,
+      1
+    ]
+  },
+  "motorcycleRoot/bikeCylinderHead": {
+    "position": [
+      0,
+      0.86,
+      0.1
+    ],
+    "rotation": [
+      0,
+      0,
+      0
+    ],
+    "scale": [
+      1,
+      1,
+      1
+    ]
+  },
+  "motorcycleRoot/bikeExhPipe1": {
+    "position": [
+      0.2,
+      0.54,
+      0.1
+    ],
+    "rotation": [
+      1.571,
+      0,
+      0
+    ],
+    "scale": [
+      1,
+      1,
+      1
+    ]
+  },
+  "motorcycleRoot/bikeExhPipe2": {
+    "position": [
+      0.22,
+      0.5,
+      -0.2
+    ],
+    "rotation": [
+      1.571,
+      0,
+      0
+    ],
+    "scale": [
+      1,
+      1,
+      1
+    ]
+  },
+  "motorcycleRoot/bikeExhCollector": {
+    "position": [
+      0.24,
+      0.44,
+      -0.586
+    ],
+    "rotation": [
+      1.627,
+      0,
+      0
+    ],
+    "scale": [
+      1,
+      0.684,
+      1
+    ]
+  },
+  "motorcycleRoot/bikeMuffler": {
+    "position": [
+      0.24,
+      0.53,
+      -1.092
+    ],
+    "rotation": [
+      1.875,
+      0,
+      0
+    ],
+    "scale": [
+      1.573,
+      1.175,
+      1.449
+    ]
+  },
+  "motorcycleRoot/bikeForkL": {
+    "position": [
+      -0.16,
+      0.861,
+      1.206
+    ],
+    "rotation": [
+      -0.364,
+      0,
+      0
+    ],
+    "scale": [
+      1,
+      1,
+      1
+    ]
+  },
+  "motorcycleRoot/bikeForkR": {
+    "position": [
+      0.16,
+      0.841,
+      1.186
+    ],
+    "rotation": [
+      -0.346,
+      -0.169,
+      0.005
+    ],
+    "scale": [
+      1,
+      1,
+      1
+    ]
+  },
+  "motorcycleRoot/bikeTripleUpper": {
+    "position": [
+      0,
+      1.26,
+      1
+    ],
+    "rotation": [
+      0,
+      0,
+      0
+    ],
+    "scale": [
+      1,
+      1,
+      1
+    ]
+  },
+  "motorcycleRoot/bikeTripleLower": {
+    "position": [
+      0,
+      0.94,
+      1.14
+    ],
+    "rotation": [
+      0,
+      0,
+      0
+    ],
+    "scale": [
+      1,
+      1,
+      1
+    ]
+  },
+  "motorcycleRoot/bikeFrontFender": {
+    "position": [
+      0,
+      0.72,
+      1.35
+    ],
+    "rotation": [
+      0,
+      0,
+      0
+    ],
+    "scale": [
+      1,
+      1,
+      1
+    ]
+  },
+  "motorcycleRoot/bikeHandlebar": {
+    "position": [
+      0,
+      1.32,
+      0.92
+    ],
+    "rotation": [
+      0,
+      0,
+      0
+    ],
+    "scale": [
+      1,
+      1,
+      1
+    ]
+  },
+  "motorcycleRoot/bikeHandlebar/bikeBar": {
+    "position": [
+      0,
+      0,
+      0
+    ],
+    "rotation": [
+      0,
+      0,
+      1.571
+    ],
+    "scale": [
+      1,
+      1.645,
+      1
+    ]
+  },
+  "motorcycleRoot/bikeHandlebar/bikeBarCenter": {
+    "position": [
+      0,
+      0,
+      0
+    ],
+    "rotation": [
+      0,
+      0,
+      0
+    ],
+    "scale": [
+      1,
+      1,
+      1
+    ]
+  },
+  "motorcycleRoot/bikeHeadlight": {
+    "position": [
+      0,
+      1.06,
+      1.3
+    ],
+    "rotation": [
+      1.586,
+      0,
+      0
+    ],
+    "scale": [
+      1,
+      1,
+      1
+    ]
+  },
+  "motorcycleRoot/bikeHeadlightBucket": {
+    "position": [
+      0,
+      1.06,
+      1.26
+    ],
+    "rotation": [
+      1.571,
+      0,
+      0
+    ],
+    "scale": [
+      1,
+      1,
+      1
+    ]
+  },
+  "motorcycleRoot/bikeMeterL": {
+    "position": [
+      -0.08,
+      1.403,
+      0.96
+    ],
+    "rotation": [
+      1.885,
+      0,
+      0
+    ],
+    "scale": [
+      1,
+      1,
+      1
+    ]
+  },
+  "motorcycleRoot/bikeMeterR": {
+    "position": [
+      0.08,
+      1.4,
+      0.96
+    ],
+    "rotation": [
+      1.883,
+      0,
+      0
+    ],
+    "scale": [
+      1,
+      1,
+      1.018
+    ]
+  },
+  "motorcycleRoot/bikeSwingarmL": {
+    "position": [
+      -0.1,
+      0.52,
+      -0.92
+    ],
+    "rotation": [
+      0,
+      0,
+      0
+    ],
+    "scale": [
+      1,
+      1,
+      1
+    ]
+  },
+  "motorcycleRoot/bikeSwingarmR": {
+    "position": [
+      0.1,
+      0.52,
+      -0.92
+    ],
+    "rotation": [
+      0,
+      0,
+      0
+    ],
+    "scale": [
+      1,
+      1,
+      1
+    ]
+  },
+  "motorcycleRoot/bikeShockL": {
+    "position": [
+      -0.14,
+      0.82,
+      -0.72
+    ],
+    "rotation": [
+      -0.16,
+      0,
+      0
+    ],
+    "scale": [
+      1,
+      1,
+      1
+    ]
+  },
+  "motorcycleRoot/bikeShockR": {
+    "position": [
+      0.14,
+      0.82,
+      -0.72
+    ],
+    "rotation": [
+      -0.16,
+      0,
+      0
+    ],
+    "scale": [
+      1,
+      1,
+      1
+    ]
+  },
+  "motorcycleRoot/bikeFrontWheelPivot": {
+    "position": [
+      0,
+      0.42,
+      1.35
+    ],
+    "rotation": [
+      0,
+      0,
+      0
+    ],
+    "scale": [
+      1,
+      1,
+      1
+    ]
+  },
+  "motorcycleRoot/bikeFrontWheelPivot/Group_301": {
+    "position": [
+      0,
+      0,
+      0
+    ],
+    "rotation": [
+      0,
+      0,
+      0
+    ],
+    "scale": [
+      1,
+      1,
+      1
+    ]
+  },
+  "motorcycleRoot/bikeFrontWheelPivot/Group_301/Group_302": {
+    "position": [
+      0,
+      0,
+      0
+    ],
+    "rotation": [
+      0,
+      0,
+      1.571
+    ],
+    "scale": [
+      1,
+      1,
+      1
+    ]
+  },
+  "motorcycleRoot/bikeFrontWheelPivot/Group_301/Group_302/tire": {
+    "position": [
+      0,
+      0,
+      0
+    ],
+    "rotation": [
+      0,
+      0,
+      0
+    ],
+    "scale": [
+      1,
+      1,
+      1
+    ]
+  },
+  "motorcycleRoot/bikeFrontWheelPivot/Group_301/Group_302/rim": {
+    "position": [
+      0,
+      0,
+      0
+    ],
+    "rotation": [
+      0,
+      0,
+      0
+    ],
+    "scale": [
+      1,
+      1,
+      1
+    ]
+  },
+  "motorcycleRoot/bikeFrontWheelPivot/Group_301/Group_302/hub": {
+    "position": [
+      0,
+      0,
+      0
+    ],
+    "rotation": [
+      0,
+      0,
+      0
+    ],
+    "scale": [
+      1,
+      1,
+      1
+    ]
+  },
+  "motorcycleRoot/bikeFrontWheelPivot/Group_301/bikeFrontDisc": {
+    "position": [
+      0.07,
+      0,
+      0
+    ],
+    "rotation": [
+      0,
+      0,
+      1.571
+    ],
+    "scale": [
+      1,
+      1,
+      1
+    ]
+  },
+  "motorcycleRoot/bikeRearWheelMount": {
+    "position": [
+      0,
+      0.42,
+      -1.35
+    ],
+    "rotation": [
+      0,
+      0,
+      0
+    ],
+    "scale": [
+      1,
+      1,
+      1
+    ]
+  },
+  "motorcycleRoot/bikeRearWheelMount/Group_307": {
+    "position": [
+      0,
+      0,
+      0
+    ],
+    "rotation": [
+      0,
+      0,
+      0
+    ],
+    "scale": [
+      1,
+      1,
+      1
+    ]
+  },
+  "motorcycleRoot/bikeRearWheelMount/Group_307/Group_308": {
+    "position": [
+      0,
+      0,
+      0
+    ],
+    "rotation": [
+      0,
+      0,
+      1.571
+    ],
+    "scale": [
+      1,
+      1,
+      1
+    ]
+  },
+  "motorcycleRoot/bikeRearWheelMount/Group_307/Group_308/tire": {
+    "position": [
+      0,
+      0,
+      0
+    ],
+    "rotation": [
+      0,
+      0,
+      0
+    ],
+    "scale": [
+      1,
+      1,
+      1
+    ]
+  },
+  "motorcycleRoot/bikeRearWheelMount/Group_307/Group_308/rim": {
+    "position": [
+      0,
+      0,
+      0
+    ],
+    "rotation": [
+      0,
+      0,
+      0
+    ],
+    "scale": [
+      1,
+      1,
+      1
+    ]
+  },
+  "motorcycleRoot/bikeRearWheelMount/Group_307/Group_308/hub": {
+    "position": [
+      0,
+      0,
+      0
+    ],
+    "rotation": [
+      0,
+      0,
+      0
+    ],
+    "scale": [
+      1,
+      1,
+      1
+    ]
+  },
+  "motorcycleRoot/Mesh_312": {
+    "position": [
+      -0.29,
+      0.56,
+      -0.12
+    ],
+    "rotation": [
+      1.574,
+      -0.056,
+      -0.134
+    ],
+    "scale": [
+      1,
+      1,
+      1
+    ]
+  },
+  "motorcycleRoot/bikeSignalFrontL": {
+    "position": [
+      0.18,
+      1.06,
+      1.12
+    ],
+    "rotation": [
+      0,
+      0,
+      0
+    ],
+    "scale": [
+      1,
+      1,
+      1
+    ]
+  },
+  "motorcycleRoot/PointLight_321": {
+    "position": [
+      0.18,
+      1.06,
+      1.12
+    ],
+    "rotation": [
+      0,
+      0,
+      0
+    ],
+    "scale": [
+      1,
+      1,
+      1
+    ]
+  },
+  "motorcycleRoot/bikeSignalRearL": {
+    "position": [
+      0.119,
+      1.103,
+      -1.039
+    ],
+    "rotation": [
+      0,
+      0,
+      0
+    ],
+    "scale": [
+      1,
+      1,
+      1
+    ]
+  },
+  "motorcycleRoot/PointLight_324": {
+    "position": [
+      0.16,
+      0.96,
+      -0.92
+    ],
+    "rotation": [
+      0,
+      0,
+      0
+    ],
+    "scale": [
+      1,
+      1,
+      1
+    ]
+  },
+  "motorcycleRoot/bikeSignalFrontR": {
+    "position": [
+      -0.18,
+      1.06,
+      1.12
+    ],
+    "rotation": [
+      0,
+      0,
+      0
+    ],
+    "scale": [
+      1,
+      1,
+      1
+    ]
+  },
+  "motorcycleRoot/PointLight_327": {
+    "position": [
+      -0.18,
+      1.06,
+      1.12
+    ],
+    "rotation": [
+      0,
+      0,
+      0
+    ],
+    "scale": [
+      1,
+      1,
+      1
+    ]
+  },
+  "motorcycleRoot/bikeSignalRearR": {
+    "position": [
+      -0.119,
+      1.102,
+      -1.045
+    ],
+    "rotation": [
+      0,
+      0,
+      0
+    ],
+    "scale": [
+      1,
+      1,
+      1
+    ]
+  },
+  "motorcycleRoot/PointLight_330": {
+    "position": [
+      -0.16,
+      0.96,
+      -0.92
+    ],
+    "rotation": [
+      0,
+      0,
+      0
+    ],
+    "scale": [
+      1,
+      1,
+      1
+    ]
+  },
+  "motorcycleRoot/bikeBrakeLampMesh": {
+    "position": [
+      0,
+      1.105,
+      -1.047
+    ],
+    "rotation": [
+      0,
+      0,
+      0
+    ],
+    "scale": [
+      1,
+      1,
+      1
+    ]
+  },
+  "motorcycleRoot/PointLight_333": {
+    "position": [
+      0,
+      0.84,
+      -1.22
+    ],
+    "rotation": [
+      0,
+      0,
+      0
+    ],
+    "scale": [
+      1,
+      1,
+      1
+    ]
+  },
+  "bikeCockpitRoot": {
+    "position": [
+      0,
+      0,
+      0
+    ],
+    "rotation": [
+      0,
+      0,
+      0
+    ],
+    "scale": [
+      1,
+      1,
+      1
+    ]
+  },
+  "bikeCockpitRoot/bikeCockpitBar": {
+    "position": [
+      0,
+      1.26,
+      0.72
+    ],
+    "rotation": [
+      0,
+      0,
+      0
+    ],
+    "scale": [
+      1,
+      1,
+      1
+    ]
+  },
+  "bikeCockpitRoot/bikeCockpitBar/bikeBar": {
+    "position": [
+      0,
+      0,
+      0
+    ],
+    "rotation": [
+      0,
+      0,
+      1.571
+    ],
+    "scale": [
+      1,
+      1,
+      1
+    ]
+  },
+  "bikeCockpitRoot/bikeCockpitBar/bikeBarCenter": {
+    "position": [
+      0,
+      0,
+      0
+    ],
+    "rotation": [
+      0,
+      0,
+      0
+    ],
+    "scale": [
+      1,
+      1,
+      1
+    ]
+  },
+  "bikeCockpitRoot/bikeCockpitCluster": {
+    "position": [
+      0,
+      0,
+      0
+    ],
+    "rotation": [
+      0,
+      0,
+      0
+    ],
+    "scale": [
+      1,
+      1,
+      1
+    ]
+  },
+  "bikeCockpitRoot/bikeCockpitCluster/bikeCockpitMeterL": {
+    "position": [
+      -0.08,
+      1.3,
+      0.66
+    ],
+    "rotation": [
+      1.571,
+      0,
+      0
+    ],
+    "scale": [
+      1,
+      1,
+      1
+    ]
+  },
+  "bikeCockpitRoot/bikeCockpitCluster/bikeCockpitMeterR": {
+    "position": [
+      0.08,
+      1.3,
+      0.66
+    ],
+    "rotation": [
+      1.571,
+      0,
+      0
+    ],
+    "scale": [
+      1,
+      1,
+      1
+    ]
+  },
+  "ArrowHelper_335": {
+    "position": [
+      0,
+      2.2,
+      0
+    ],
+    "rotation": [
+      1.571,
+      0,
+      0
+    ],
+    "scale": [
+      1,
+      1,
+      1
+    ]
+  },
+  "ArrowHelper_335/Line_336": {
+    "position": [
+      0,
+      -1.606,
+      0
+    ],
+    "rotation": [
+      0,
+      0,
+      0
+    ],
+    "scale": [
+      1,
+      2.8,
+      1
+    ]
+  },
+  "ArrowHelper_335/Mesh_337": {
+    "position": [
+      0,
+      3.6,
+      0
+    ],
+    "rotation": [
+      0,
+      0,
+      0
+    ],
+    "scale": [
+      0.5,
+      0.8,
+      0.5
+    ]
+  }
+};
 /* PREVIEW_OVERRIDES_END */
 
 export function buildCar(THREE) {
@@ -47,7 +2717,37 @@ export function buildCar(THREE) {
 
   return {
     group: car,
-    parts: { ...sedanParts, ...bikeParts, arrow },
+    parts: {
+      ...sedanParts,
+      ...bikeParts,
+      arrow,
+      vehicles: {
+        sedan: {
+          root: sedanParts.sedanRoot,
+          parts: {
+            steeringWheel: sedanParts.steeringWheel,
+            wheelAssemblies: sedanParts.wheelAssemblies,
+            signalLamps: sedanParts.sedanSignalLamps,
+            brakeLamps: sedanParts.sedanBrakeLamps,
+            reverseLamps: sedanParts.reverseLamps,
+            dashboard: sedanParts.dashboard,
+            instrumentCluster: sedanParts.instrumentCluster,
+            centerScreen: sedanParts.centerScreen,
+          },
+        },
+        motorcycle: {
+          root: bikeParts.motorcycleRoot,
+          parts: {
+            handlebar: bikeParts.bikeHandlebar,
+            frontWheelPivot: bikeParts.bikeFrontWheelPivot,
+            rearWheelMount: bikeParts.bikeRearWheelMount,
+            signalLamps: bikeParts.bikeSignalLamps,
+            brakeLamp: bikeParts.bikeBrakeLamp,
+            cockpitRoot: bikeParts.bikeCockpitRoot,
+          },
+        },
+      },
+    },
   };
 }
 
@@ -55,32 +2755,36 @@ export function buildCar(THREE) {
  *  轿车
  * ══════════════════════════════════════════════════════════════ */
 function buildSedan(THREE, car, bodyMat, chromeMat, trimBlackMat) {
+  const sedanRoot = new THREE.Group();
+  sedanRoot.name = 'sedanRoot';
+  sedanRoot.userData.previewPathAlias = '';
+  car.add(sedanRoot);
 
   // Lower body shell
   const body = n(new THREE.Mesh(new THREE.BoxGeometry(1.98, 0.64, 4.56), bodyMat), 'body');
   body.position.y = 0.8;
   body.castShadow = true;
   body.receiveShadow = true;
-  car.add(body);
+  sedanRoot.add(body);
 
   const shoulderShell = n(new THREE.Mesh(new THREE.BoxGeometry(1.84, 0.2, 3.44), bodyMat), 'shoulderShell');
   shoulderShell.position.set(0, 1.02, -0.04);
   shoulderShell.castShadow = true;
-  car.add(shoulderShell);
+  sedanRoot.add(shoulderShell);
 
   // Hood
   const hood = n(new THREE.Mesh(new THREE.BoxGeometry(1.84, 0.12, 1.5), bodyMat), 'hood');
   hood.position.set(0, 1.18, 1.34);
   hood.rotation.x = -0.08;
   hood.castShadow = true;
-  car.add(hood);
+  sedanRoot.add(hood);
 
   // Trunk lid
   const trunk = n(new THREE.Mesh(new THREE.BoxGeometry(1.8, 0.12, 0.96), bodyMat), 'trunk');
   trunk.position.set(0, 1.19, -1.66);
   trunk.rotation.x = 0.04;
   trunk.castShadow = true;
-  car.add(trunk);
+  sedanRoot.add(trunk);
 
   // Front bumper
   const frontBumper = n(new THREE.Mesh(new THREE.BoxGeometry(2.0, 0.36, 0.34), bodyMat), 'frontBumper');
@@ -93,7 +2797,7 @@ function buildSedan(THREE, car, bodyMat, chromeMat, trimBlackMat) {
   const fogPocketR = fogPocketL.clone();
   fogPocketR.position.x = 0.74;
   frontBumper.add(frontLowerIntake, fogPocketL, fogPocketR);
-  car.add(frontBumper);
+  sedanRoot.add(frontBumper);
 
   // Rear bumper
   const rearBumper = n(new THREE.Mesh(new THREE.BoxGeometry(2.02, 0.32, 0.28), bodyMat), 'rearBumper');
@@ -102,7 +2806,7 @@ function buildSedan(THREE, car, bodyMat, chromeMat, trimBlackMat) {
   const rearDiffuser = new THREE.Mesh(new THREE.BoxGeometry(1.46, 0.12, 0.1), trimBlackMat);
   rearDiffuser.position.set(0, -0.12, -0.03);
   rearBumper.add(rearDiffuser);
-  car.add(rearBumper);
+  sedanRoot.add(rearBumper);
 
   // Front grille
   const grille = n(new THREE.Mesh(new THREE.BoxGeometry(1.06, 0.22, 0.04), trimBlackMat), 'grille');
@@ -118,19 +2822,19 @@ function buildSedan(THREE, car, bodyMat, chromeMat, trimBlackMat) {
   const grilleBadge = new THREE.Mesh(new THREE.TorusGeometry(0.08, 0.015, 8, 22), chromeMat);
   grilleBadge.position.set(0, 0.17, 0.04);
   grille.add(upperGrille, chromeWingL, chromeWingR, grilleBadge);
-  car.add(grille);
+  sedanRoot.add(grille);
 
   /* ── Cabin ── */
   const cabinMat = new THREE.MeshStandardMaterial({ color: 0x111315, metalness: 0.16, roughness: 0.44 });
   const cabin = n(new THREE.Mesh(new THREE.BoxGeometry(1.62, 0.56, 2.16), cabinMat), 'cabin');
   cabin.position.set(0, 1.57, -0.08);
   cabin.castShadow = true;
-  car.add(cabin);
+  sedanRoot.add(cabin);
 
   const roofPanel = n(new THREE.Mesh(new THREE.BoxGeometry(1.52, 0.08, 1.42), bodyMat), 'roofPanel');
   roofPanel.position.set(0, 1.9, -0.08);
   roofPanel.castShadow = true;
-  car.add(roofPanel);
+  sedanRoot.add(roofPanel);
 
   // Pillars
   const pillarMat = new THREE.MeshStandardMaterial({ color: 0x1a1a1a, roughness: 0.7 });
@@ -138,20 +2842,20 @@ function buildSedan(THREE, car, bodyMat, chromeMat, trimBlackMat) {
   const aPillarL = n(new THREE.Mesh(aPillarGeo, pillarMat), 'aPillarL');
   aPillarL.position.set(-0.76, 1.58, 0.83);
   aPillarL.rotation.z = -0.18;
-  car.add(aPillarL);
+  sedanRoot.add(aPillarL);
   const aPillarR = n(new THREE.Mesh(aPillarGeo, pillarMat), 'aPillarR');
   aPillarR.position.set(0.76, 1.58, 0.83);
   aPillarR.rotation.z = 0.18;
-  car.add(aPillarR);
+  sedanRoot.add(aPillarR);
 
   const cPillarL = n(new THREE.Mesh(aPillarGeo, pillarMat), 'cPillarL');
   cPillarL.position.set(-0.74, 1.59, -0.98);
   cPillarL.rotation.z = -0.12;
-  car.add(cPillarL);
+  sedanRoot.add(cPillarL);
   const cPillarR = n(new THREE.Mesh(aPillarGeo, pillarMat), 'cPillarR');
   cPillarR.position.set(0.74, 1.59, -0.98);
   cPillarR.rotation.z = 0.12;
-  car.add(cPillarR);
+  sedanRoot.add(cPillarR);
 
   /* ── Windows ── */
   const glassMat = new THREE.MeshStandardMaterial({
@@ -161,23 +2865,23 @@ function buildSedan(THREE, car, bodyMat, chromeMat, trimBlackMat) {
   const windshield = n(new THREE.Mesh(new THREE.PlaneGeometry(1.48, 0.7), glassMat), 'windshield');
   windshield.position.set(0, 1.57, 0.97);
   windshield.rotation.x = 0.26;
-  car.add(windshield);
+  sedanRoot.add(windshield);
 
   const rearWindow = n(new THREE.Mesh(new THREE.PlaneGeometry(1.38, 0.54), glassMat), 'rearWindow');
   rearWindow.position.set(0, 1.59, -1.12);
   rearWindow.rotation.x = -0.33;
   rearWindow.rotation.y = Math.PI;
-  car.add(rearWindow);
+  sedanRoot.add(rearWindow);
 
   const sideWindowGeo = new THREE.PlaneGeometry(1.42, 0.46);
   const sideWindowL = n(new THREE.Mesh(sideWindowGeo, glassMat), 'sideWindowL');
   sideWindowL.position.set(-0.82, 1.58, -0.08);
   sideWindowL.rotation.y = -Math.PI / 2;
-  car.add(sideWindowL);
+  sedanRoot.add(sideWindowL);
   const sideWindowR = n(new THREE.Mesh(sideWindowGeo, glassMat), 'sideWindowR');
   sideWindowR.position.set(0.82, 1.58, -0.08);
   sideWindowR.rotation.y = Math.PI / 2;
-  car.add(sideWindowR);
+  sedanRoot.add(sideWindowR);
 
   /* ── Headlights ── */
   const headlightMat = new THREE.MeshStandardMaterial({
@@ -192,7 +2896,7 @@ function buildSedan(THREE, car, bodyMat, chromeMat, trimBlackMat) {
   headlightLTip.position.set(-0.18, -0.02, -0.06);
   headlightLTip.rotation.y = -0.2;
   headlightL.add(headlightLTip);
-  car.add(headlightL);
+  sedanRoot.add(headlightL);
   const headlightR = n(new THREE.Mesh(headlightGeo, headlightMat), 'headlightR');
   headlightR.position.set(0.72, 0.93, 2.18);
   headlightR.rotation.y = 0.34;
@@ -201,7 +2905,7 @@ function buildSedan(THREE, car, bodyMat, chromeMat, trimBlackMat) {
   headlightRTip.position.set(0.18, -0.02, -0.06);
   headlightRTip.rotation.y = 0.2;
   headlightR.add(headlightRTip);
-  car.add(headlightR);
+  sedanRoot.add(headlightR);
 
   /* ── Tail lights ── */
   const taillightMat = new THREE.MeshStandardMaterial({
@@ -214,14 +2918,14 @@ function buildSedan(THREE, car, bodyMat, chromeMat, trimBlackMat) {
   const taillightLInner = new THREE.Mesh(new THREE.BoxGeometry(0.18, 0.1, 0.07), taillightMat);
   taillightLInner.position.set(0.22, 0, 0.02);
   taillightL.add(taillightLInner);
-  car.add(taillightL);
+  sedanRoot.add(taillightL);
   const taillightR = n(new THREE.Mesh(taillightGeo, taillightMat), 'taillightR');
   taillightR.position.set(0.72, 0.9, -2.18);
   taillightR.rotation.y = 0.18;
   const taillightRInner = new THREE.Mesh(new THREE.BoxGeometry(0.18, 0.1, 0.07), taillightMat);
   taillightRInner.position.set(-0.22, 0, 0.02);
   taillightR.add(taillightRInner);
-  car.add(taillightR);
+  sedanRoot.add(taillightR);
 
   /* ── Side mirrors ── */
   const mirrorBodyMat = new THREE.MeshStandardMaterial({ color: 0xc5ccd2, metalness: 0.68, roughness: 0.3 });
@@ -236,7 +2940,7 @@ function buildSedan(THREE, car, bodyMat, chromeMat, trimBlackMat) {
     glass.rotation.y = side > 0 ? Math.PI / 2 : -Math.PI / 2;
     g.add(arm, housing, glass);
     g.position.set(side * 1.04, 1.3, 0.75);
-    car.add(g);
+    sedanRoot.add(g);
     return g;
   }
   const sideMirrorL = createSideMirror(-1, 'sideMirrorL');
@@ -246,10 +2950,10 @@ function buildSedan(THREE, car, bodyMat, chromeMat, trimBlackMat) {
   const roofRailGeo = new THREE.BoxGeometry(0.02, 0.02, 1.46);
   const roofRailL = n(new THREE.Mesh(roofRailGeo, chromeMat), 'roofRailL');
   roofRailL.position.set(-0.72, 1.86, -0.08);
-  car.add(roofRailL);
+  sedanRoot.add(roofRailL);
   const roofRailR = n(new THREE.Mesh(roofRailGeo, chromeMat), 'roofRailR');
   roofRailR.position.set(0.72, 1.86, -0.08);
-  car.add(roofRailR);
+  sedanRoot.add(roofRailR);
 
   /* ── Dashboard ── */
   const dashboard = n(new THREE.Mesh(
@@ -257,7 +2961,7 @@ function buildSedan(THREE, car, bodyMat, chromeMat, trimBlackMat) {
     new THREE.MeshStandardMaterial({ color: 0x0e0e0e, roughness: 0.9 })
   ), 'dashboard');
   dashboard.position.set(0, 1.32, 0.65);
-  car.add(dashboard);
+  sedanRoot.add(dashboard);
 
   /* ── Instrument cluster ── */
   const instrumentCluster = n(new THREE.Mesh(
@@ -266,7 +2970,7 @@ function buildSedan(THREE, car, bodyMat, chromeMat, trimBlackMat) {
   ), 'instrumentCluster');
   instrumentCluster.position.set(-0.32, 1.42, 0.32);
   instrumentCluster.rotation.x = -0.4;
-  car.add(instrumentCluster);
+  sedanRoot.add(instrumentCluster);
 
   /* ── Center screen ── */
   const centerScreen = n(new THREE.Mesh(
@@ -275,7 +2979,7 @@ function buildSedan(THREE, car, bodyMat, chromeMat, trimBlackMat) {
   ), 'centerScreen');
   centerScreen.position.set(0.1, 1.42, 0.36);
   centerScreen.rotation.x = -0.35;
-  car.add(centerScreen);
+  sedanRoot.add(centerScreen);
 
   /* ── Seats ── */
   const seatMat = new THREE.MeshStandardMaterial({ color: 0x1a1a1a, roughness: 0.85 });
@@ -290,7 +2994,7 @@ function buildSedan(THREE, car, bodyMat, chromeMat, trimBlackMat) {
     headrest.position.set(0, 0.64, -0.24);
     seatGroup.add(cushion, backrest, headrest);
     seatGroup.position.set(x, 1.08, 0.05);
-    car.add(seatGroup);
+    sedanRoot.add(seatGroup);
     return seatGroup;
   }
   const driverSeat = createSeat(-0.38, 'driverSeat');
@@ -319,7 +3023,7 @@ function buildSedan(THREE, car, bodyMat, chromeMat, trimBlackMat) {
     spoke.rotation.z = angle;
     steeringWheel.add(spoke);
   }
-  car.add(steeringWheel);
+  sedanRoot.add(steeringWheel);
 
   /* ── Wheels ── */
   function createWheelAssembly(x, z, steerable, name) {
@@ -344,7 +3048,7 @@ function buildSedan(THREE, car, bodyMat, chromeMat, trimBlackMat) {
     );
     hubCap.rotation.z = Math.PI / 2;
     pivot.add(hubCap);
-    car.add(pivot);
+    sedanRoot.add(pivot);
     return { pivot, wheel, steerable };
   }
 
@@ -365,7 +3069,7 @@ function buildSedan(THREE, car, bodyMat, chromeMat, trimBlackMat) {
     mesh.castShadow = true;
     const light = new THREE.PointLight(0xffb347, 0, 5.2, 2);
     light.position.copy(mesh.position);
-    car.add(mesh, light);
+    sedanRoot.add(mesh, light);
     return { mesh, light };
   }
 
@@ -384,7 +3088,7 @@ function buildSedan(THREE, car, bodyMat, chromeMat, trimBlackMat) {
     mesh.castShadow = true;
     const light = new THREE.PointLight(0xff3d3d, 0, 6, 2);
     light.position.copy(mesh.position);
-    car.add(mesh, light);
+    sedanRoot.add(mesh, light);
     return { mesh, light };
   }
 
@@ -400,13 +3104,14 @@ function buildSedan(THREE, car, bodyMat, chromeMat, trimBlackMat) {
     mesh.castShadow = true;
     const light = new THREE.PointLight(0xeef6ff, 0, 4.5, 2);
     light.position.copy(mesh.position);
-    car.add(mesh, light);
+    sedanRoot.add(mesh, light);
     return { mesh, light };
   }
 
   const reverseLamps = [createReverseLamp(-0.2, 0.88, -2.16), createReverseLamp(0.2, 0.88, -2.16)];
 
   return {
+    sedanRoot,
     body, shoulderShell, hood, trunk, frontBumper, rearBumper, grille,
     cabin, roofPanel, aPillarL, aPillarR, cPillarL, cPillarR,
     windshield, rearWindow, sideWindowL, sideWindowR,
@@ -697,9 +3402,11 @@ function n(obj, name) {
 function assignPreviewKeys(root) {
   const walk = (node, parentKey) => {
     node.children.forEach((child, index) => {
-      const segment = child.userData.partName || child.name || `${child.type}:${index}`;
+      const segment = Object.prototype.hasOwnProperty.call(child.userData, 'previewPathAlias')
+        ? child.userData.previewPathAlias
+        : (child.userData.partName || child.name || `${child.type}:${index}`);
       const key = parentKey ? `${parentKey}/${segment}` : segment;
-      child.userData.previewKey = key;
+      child.userData.previewKey = key || parentKey;
       walk(child, key);
     });
   };
