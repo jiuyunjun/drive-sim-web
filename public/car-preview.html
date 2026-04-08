@@ -348,7 +348,8 @@
         partRegistry = [];
         carGroup.traverse((child) => {
           if (child === carGroup) return;
-          const name = child.userData.partName || child.name || `${child.type}_${child.id}`;
+          if (!child.userData.partName) return;
+          const name = child.userData.partName;
           child.userData._partLabel = name;
           partRegistry.push({ name, obj: child });
         });
@@ -381,7 +382,7 @@
     function resolveSelectableTarget(obj) {
       let current = obj;
       while (current && current !== carGroup) {
-        if (current.userData.previewKey) return current;
+        if (current.userData.partName) return current;
         current = current.parent;
       }
       return null;
@@ -615,6 +616,7 @@
 
       carGroup.traverse((child) => {
         if (child === carGroup) return;
+        if (!child.userData.partName) return;
         const key = child.userData.previewKey;
         if (!key) return;
         overrides[key] = {
