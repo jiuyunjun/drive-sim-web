@@ -169,6 +169,7 @@
     </div>
 
     <div class="sep"></div>
+    <button id="saveBtn">💾 直接保存到 car-model.js</button>
     <button class="secondary" id="exportBtn">📋 导出修改后的代码</button>
     <button id="reloadBtn">🔄 重新加载车模</button>
     <label style="margin-top:6px">
@@ -634,6 +635,7 @@
     // 自动刷新
     let autoReloadTimer = null;
     let lastModuleText = '';
+    let carModelFileHandle = null;
     document.getElementById('autoReload').addEventListener('change', (e) => {
       if (e.target.checked) {
         autoReloadTimer = setInterval(async () => {
@@ -652,6 +654,95 @@
         autoReloadTimer = null;
       }
     });
+
+    function buildPreviewOverrides() {
+      const overrides = {};
+      if (!carGroup) return overrides;
+
+      carGroup.traverse((child) => {
+        if (child === carGroup) return;
+        if (!child.userData.partName) return;
+        const key = child.userData.previewKey;
+        if (!key) return;
+        overrides[key] = {
+          position: [round(child.position.x), round(child.position.y), round(child.position.z)],
+          rotation: [round(child.rotation.x), round(child.rotation.y), round(child.rotation.z)],
+          scale: [round(child.scale.x), round(child.scale.y), round(child.scale.z)],
+        };
+      });
+
+      return overrides;
+    }
+
+    function buildPreviewOverrideBlock() {
+      const json = JSON.stringify(buildPreviewOverrides(), null, 2);
+      return `/* PREVIEW_OVERRIDES_START */\nconst PREVIEW_OVERRIDES = ${json};\n/* PREVIEW_OVERRIDES_END */`;
+    }
+
+    async function ensureCarModelHandle() {
+      if (!window.showOpenFilePicker) {
+        throw new Error('当前浏览器不支持本地直写文件，请使用 Chrome / Edge');
+      }
+
+      if (!carModelFileHandle) {
+        const [handle] = await window.showOpenFilePicker({
+          multiple: false,
+          types: [{
+            description: 'JavaScript Module',
+            accept: { 'text/javascript': ['.js'] },
+          }],
+        });
+        carModelFileHandle = handle;
+      }
+
+      const permission = await carModelFileHandle.requestPermission({ mode: 'readwrite' });
+      if (permission !== 'granted') {
+        throw new Error('没有获得 car-model.js 的写入权限');
+      }
+
+      const file = await carModelFileHandle.getFile();
+      if (file.name !== 'car-model.js') {
+        throw new Error('请选择 public/assets/car-model.js');
+      }
+
+      return carModelFileHandle;
+    }
+
+    async function saveCarModelFile() {
+      const statusEl = document.getElementById('statusText');
+      const saveBtn = document.getElementById('saveBtn');
+      saveBtn.disabled = true;
+      statusEl.textContent = '保存中...';
+      statusEl.style.color = '#fd6';
+
+      try {
+        const handle = await ensureCarModelHandle();
+        const file = await handle.getFile();
+        const sourceText = await file.text();
+        const blockPattern = /\/\* PREVIEW_OVERRIDES_START \*\/[\s\S]*?\/\* PREVIEW_OVERRIDES_END \*\//;
+
+        if (!blockPattern.test(sourceText)) {
+          throw new Error('car-model.js 里没有找到 PREVIEW_OVERRIDES 标记块');
+        }
+
+        const nextText = sourceText.replace(blockPattern, buildPreviewOverrideBlock());
+        const writable = await handle.createWritable();
+        await writable.write(nextText);
+        await writable.close();
+
+        lastModuleText = nextText;
+        statusEl.textContent = '✅ 已直接保存到 car-model.js';
+        statusEl.style.color = '#6d6';
+      } catch (err) {
+        console.error('保存 car-model.js 失败:', err);
+        statusEl.textContent = `❌ ${err.message}`;
+        statusEl.style.color = '#f66';
+      } finally {
+        saveBtn.disabled = false;
+      }
+    }
+
+    document.getElementById('saveBtn').addEventListener('click', saveCarModelFile);
 
     /* ══ 渲染循环 ══ */
     function animate() {
