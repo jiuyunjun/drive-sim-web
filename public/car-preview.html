@@ -387,6 +387,14 @@
       return null;
     }
 
+    function collectHighlightMeshes(obj) {
+      const meshes = [];
+      obj.traverse((child) => {
+        if (child.isMesh && child.material) meshes.push(child);
+      });
+      return meshes;
+    }
+
     /* ══ 选择 / 取消选择 ══ */
     function selectPart(obj) {
       if (selectedObj === obj) return;
@@ -394,11 +402,11 @@
 
       selectedObj = obj;
 
-      // 高亮：保存原材质
-      if (obj.isMesh && obj.material) {
-        originalMaterials.set(obj, obj.material);
-        obj.material = highlightMat;
-      }
+      // 高亮：命名 Group 需要把其下所有 Mesh 一起高亮
+      collectHighlightMeshes(obj).forEach((mesh) => {
+        originalMaterials.set(mesh, mesh.material);
+        mesh.material = highlightMat;
+      });
 
       // 列表高亮
       if (obj.userData._listEl) {
@@ -419,10 +427,11 @@
       if (!selectedObj) return;
 
       // 恢复材质
-      if (originalMaterials.has(selectedObj)) {
-        selectedObj.material = originalMaterials.get(selectedObj);
-        originalMaterials.delete(selectedObj);
-      }
+      collectHighlightMeshes(selectedObj).forEach((mesh) => {
+        if (!originalMaterials.has(mesh)) return;
+        mesh.material = originalMaterials.get(mesh);
+        originalMaterials.delete(mesh);
+      });
       if (selectedObj.userData._listEl) {
         selectedObj.userData._listEl.classList.remove('selected');
       }
