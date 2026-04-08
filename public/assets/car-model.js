@@ -10,6 +10,10 @@
  *   parts: 所有运行时需要引用的部件
  */
 
+/* PREVIEW_OVERRIDES_START */
+const PREVIEW_OVERRIDES = {};
+/* PREVIEW_OVERRIDES_END */
+
 export function buildCar(THREE) {
   const car = new THREE.Group();
 
@@ -31,13 +35,8 @@ export function buildCar(THREE) {
   );
   car.add(arrow);
 
-  /* 自动命名（供预览页面部件列表使用） */
-  car.traverse((child) => {
-    if (child === car) return;
-    if (!child.userData.partName) {
-      child.userData.partName = child.name || child.type + '_' + child.id;
-    }
-  });
+  assignPreviewKeys(car);
+  applyPreviewOverrides(car, PREVIEW_OVERRIDES);
 
   return {
     group: car,
@@ -682,3 +681,27 @@ function n(obj, name) {
   return obj;
 }
 
+function assignPreviewKeys(root) {
+  const walk = (node, parentKey) => {
+    node.children.forEach((child, index) => {
+      const segment = child.userData.partName || child.name || `${child.type}:${index}`;
+      const key = parentKey ? `${parentKey}/${segment}` : segment;
+      child.userData.previewKey = key;
+      walk(child, key);
+    });
+  };
+  walk(root, '');
+}
+
+function applyPreviewOverrides(root, overrides) {
+  if (!overrides || typeof overrides !== 'object') return;
+
+  root.traverse((child) => {
+    if (child === root) return;
+    const override = overrides[child.userData.previewKey];
+    if (!override) return;
+    if (override.position) child.position.set(...override.position);
+    if (override.rotation) child.rotation.set(...override.rotation);
+    if (override.scale) child.scale.set(...override.scale);
+  });
+}
