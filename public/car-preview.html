@@ -378,15 +378,6 @@
       });
     }
 
-    function resolveSelectableTarget(obj) {
-      let current = obj;
-      while (current && current !== carGroup) {
-        if (current.userData.previewKey) return current;
-        current = current.parent;
-      }
-      return null;
-    }
-
     /* ══ 选择 / 取消选择 ══ */
     function selectPart(obj) {
       if (selectedObj === obj) return;
@@ -486,10 +477,10 @@
       if (!carGroup) return;
       const intersects = raycaster.intersectObjects(carGroup.children, true);
       if (intersects.length > 0) {
-        const target = resolveSelectableTarget(intersects[0].object);
-        if (!target) {
-          deselectPart();
-          return;
+        // 找到最顶层属于 carGroup 直接子级的对象
+        let target = intersects[0].object;
+        while (target.parent && target.parent !== carGroup) {
+          target = target.parent;
         }
         selectPart(target);
       } else {
