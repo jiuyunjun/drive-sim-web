@@ -354,7 +354,7 @@
         });
 
         buildPartList();
-        document.getElementById('partCount').textContent = `(${partRegistry.filter(({ obj }) => isSelectableVisible(obj)).length})`;
+        document.getElementById('partCount').textContent = `(${partRegistry.filter(({ obj }) => isSelectableVisible(obj) && belongsToActiveVehicle(obj)).length})`;
         statusEl.textContent = `✅ 已加载`;
         statusEl.style.color = '#6d6';
       } catch (err) {
@@ -369,7 +369,7 @@
       const listEl = document.getElementById('partList');
       listEl.innerHTML = '';
       partRegistry.forEach(({ name, obj }) => {
-        if (!isSelectableVisible(obj)) return;
+        if (!isSelectableVisible(obj) || !belongsToActiveVehicle(obj)) return;
         const div = document.createElement('div');
         div.className = 'part-item';
         div.textContent = name;
@@ -388,10 +388,28 @@
       return true;
     }
 
+    function isDescendantOf(obj, ancestor) {
+      if (!obj || !ancestor) return false;
+      let current = obj;
+      while (current) {
+        if (current === ancestor) return true;
+        current = current.parent;
+      }
+      return false;
+    }
+
+    function belongsToActiveVehicle(obj) {
+      if (!obj || !carGroup) return false;
+      if (currentVehicleType === 'motorcycle') {
+        return isDescendantOf(obj, carPartsRef?.motorcycleRoot);
+      }
+      return !isDescendantOf(obj, carPartsRef?.motorcycleRoot) && !isDescendantOf(obj, carPartsRef?.bikeCockpitRoot);
+    }
+
     function resolveSelectableTarget(obj) {
       let current = obj;
       while (current && current !== carGroup) {
-        if (current.userData.partName && isSelectableVisible(current)) return current;
+        if (current.userData.partName && isSelectableVisible(current) && belongsToActiveVehicle(current)) return current;
         current = current.parent;
       }
       return null;
@@ -503,7 +521,10 @@
       raycaster.setFromCamera(pointer, camera);
 
       if (!carGroup) return;
-      const intersects = raycaster.intersectObjects(carGroup.children, true);
+      const raycastRoots = currentVehicleType === 'motorcycle'
+        ? [carPartsRef?.motorcycleRoot].filter(Boolean)
+        : carGroup.children.filter((child) => child !== carPartsRef?.motorcycleRoot && child !== carPartsRef?.bikeCockpitRoot);
+      const intersects = raycaster.intersectObjects(raycastRoots, true);
       if (intersects.length > 0) {
         const target = resolveSelectableTarget(intersects[0].object);
         if (!target) {
@@ -600,8 +621,8 @@
       currentVehicleType = e.target.value;
       applyVehicleTypeVisibility();
       buildPartList();
-      document.getElementById('partCount').textContent = `(${partRegistry.filter(({ obj }) => isSelectableVisible(obj)).length})`;
-      if (selectedObj && !isSelectableVisible(selectedObj)) {
+      document.getElementById('partCount').textContent = `(${partRegistry.filter(({ obj }) => isSelectableVisible(obj) && belongsToActiveVehicle(obj)).length})`;
+      if (selectedObj && (!isSelectableVisible(selectedObj) || !belongsToActiveVehicle(selectedObj))) {
         deselectPart();
       }
     });
