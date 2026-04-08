@@ -97,11 +97,11 @@ const PREVIEW_OVERRIDES = {
       1
     ]
   },
-  "frontBumper/Mesh_173": {
+  "frontBumper/Mesh_174": {
     "position": [
-      0,
-      -0.16,
-      0.06
+      0.006,
+      -0.08,
+      0.232
     ],
     "rotation": [
       0,
@@ -109,14 +109,14 @@ const PREVIEW_OVERRIDES = {
       0
     ],
     "scale": [
-      1,
+      0.758,
       1,
       1
     ]
   },
-  "frontBumper/Mesh_174": {
+  "frontBumper/Mesh_175": {
     "position": [
-      -0.74,
+      0.74,
       -0.08,
       0.04
     ],
@@ -131,7 +131,7 @@ const PREVIEW_OVERRIDES = {
       1
     ]
   },
-  "frontBumper/Mesh_175": {
+  "frontBumper/Mesh_176": {
     "position": [
       0.74,
       -0.08,
@@ -165,7 +165,7 @@ const PREVIEW_OVERRIDES = {
       1
     ]
   },
-  "rearBumper/Mesh_177": {
+  "rearBumper/Mesh_178": {
     "position": [
       0,
       -0.12,
@@ -199,23 +199,6 @@ const PREVIEW_OVERRIDES = {
       1
     ]
   },
-  "grille/Mesh_179": {
-    "position": [
-      0,
-      0.17,
-      0
-    ],
-    "rotation": [
-      0,
-      0,
-      0
-    ],
-    "scale": [
-      1,
-      1,
-      1
-    ]
-  },
   "grille/Mesh_180": {
     "position": [
       -0.27,
@@ -228,7 +211,7 @@ const PREVIEW_OVERRIDES = {
       0.22
     ],
     "scale": [
-      1,
+      0.691,
       1,
       1
     ]
@@ -245,12 +228,29 @@ const PREVIEW_OVERRIDES = {
       -0.22
     ],
     "scale": [
+      1.772,
+      3.501,
+      1
+    ]
+  },
+  "grille/Mesh_182": {
+    "position": [
+      0,
+      0.17,
+      0.04
+    ],
+    "rotation": [
+      0,
+      0,
+      0
+    ],
+    "scale": [
       1,
       1,
       1
     ]
   },
-  "grille/Mesh_182": {
+  "grille/Mesh_183": {
     "position": [
       0,
       0.17,
@@ -297,7 +297,7 @@ const PREVIEW_OVERRIDES = {
     ],
     "scale": [
       1,
-      1,
+      0.759,
       1
     ]
   },
@@ -454,7 +454,7 @@ const PREVIEW_OVERRIDES = {
       1
     ]
   },
-  "headlightL/Mesh_194": {
+  "headlightL/Mesh_195": {
     "position": [
       -0.18,
       -0.02,
@@ -488,7 +488,7 @@ const PREVIEW_OVERRIDES = {
       1
     ]
   },
-  "headlightR/Mesh_196": {
+  "headlightR/Mesh_197": {
     "position": [
       0.18,
       -0.02,
@@ -522,7 +522,7 @@ const PREVIEW_OVERRIDES = {
       1
     ]
   },
-  "taillightL/Mesh_198": {
+  "taillightL/Mesh_199": {
     "position": [
       0.22,
       0,
@@ -556,7 +556,7 @@ const PREVIEW_OVERRIDES = {
       1
     ]
   },
-  "taillightR/Mesh_200": {
+  "taillightR/Mesh_201": {
     "position": [
       -0.22,
       0,
@@ -578,23 +578,6 @@ const PREVIEW_OVERRIDES = {
       -1.04,
       1.3,
       0.75
-    ],
-    "rotation": [
-      0,
-      0,
-      0
-    ],
-    "scale": [
-      1,
-      1,
-      1
-    ]
-  },
-  "sideMirrorL/Mesh_202": {
-    "position": [
-      0,
-      0,
-      0
     ],
     "rotation": [
       0,
@@ -631,6 +614,23 @@ const PREVIEW_OVERRIDES = {
       0.05
     ],
     "rotation": [
+      3.142,
+      -1.071,
+      3.142
+    ],
+    "scale": [
+      1,
+      1,
+      1
+    ]
+  },
+  "sideMirrorL/Mesh_205": {
+    "position": [
+      -0.18,
+      0.01,
+      0.05
+    ],
+    "rotation": [
       0,
       -1.571,
       0
@@ -646,23 +646,6 @@ const PREVIEW_OVERRIDES = {
       1.04,
       1.3,
       0.75
-    ],
-    "rotation": [
-      0,
-      0,
-      0
-    ],
-    "scale": [
-      1,
-      1,
-      1
-    ]
-  },
-  "sideMirrorR/Mesh_206": {
-    "position": [
-      0,
-      0,
-      0
     ],
     "rotation": [
       0,
@@ -693,6 +676,23 @@ const PREVIEW_OVERRIDES = {
     ]
   },
   "sideMirrorR/Mesh_208": {
+    "position": [
+      0.18,
+      0.01,
+      0.05
+    ],
+    "rotation": [
+      -3.142,
+      1.169,
+      -3.142
+    ],
+    "scale": [
+      1,
+      1,
+      1
+    ]
+  },
+  "sideMirrorR/Mesh_209": {
     "position": [
       0.18,
       0.01,
@@ -811,23 +811,6 @@ const PREVIEW_OVERRIDES = {
       1
     ]
   },
-  "driverSeat/Mesh_215": {
-    "position": [
-      0,
-      0,
-      0
-    ],
-    "rotation": [
-      0,
-      0,
-      0
-    ],
-    "scale": [
-      1,
-      1,
-      1
-    ]
-  },
   "driverSeat/Mesh_216": {
     "position": [
       0,
@@ -858,15 +841,15 @@ const PREVIEW_OVERRIDES = {
     ],
     "scale": [
       1,
-      1,
+      0.202,
       1
     ]
   },
-  "passengerSeat": {
+  "driverSeat/Mesh_218": {
     "position": [
-      0.38,
-      1.08,
-      0.05
+      0,
+      0.64,
+      -0.24
     ],
     "rotation": [
       0,
@@ -875,15 +858,15 @@ const PREVIEW_OVERRIDES = {
     ],
     "scale": [
       1,
-      1,
+      0.203,
       1
     ]
   },
-  "passengerSeat/Mesh_219": {
+  "passengerSeat": {
     "position": [
-      0,
-      0,
-      0
+      0.38,
+      1.08,
+      0.05
     ],
     "rotation": [
       0,
@@ -926,7 +909,24 @@ const PREVIEW_OVERRIDES = {
     ],
     "scale": [
       1,
+      0.256,
+      1
+    ]
+  },
+  "passengerSeat/Mesh_222": {
+    "position": [
+      0,
+      0.64,
+      -0.24
+    ],
+    "rotation": [
+      0,
+      0,
+      0
+    ],
+    "scale": [
       1,
+      -0.017,
       1
     ]
   },
@@ -938,23 +938,6 @@ const PREVIEW_OVERRIDES = {
     ],
     "rotation": [
       1.1,
-      0,
-      0
-    ],
-    "scale": [
-      1,
-      1,
-      1
-    ]
-  },
-  "steeringWheel/Mesh_223": {
-    "position": [
-      0,
-      0,
-      0
-    ],
-    "rotation": [
-      0,
       0,
       0
     ],
@@ -1032,6 +1015,23 @@ const PREVIEW_OVERRIDES = {
       1
     ]
   },
+  "steeringWheel/Mesh_228": {
+    "position": [
+      -0.05,
+      -0.087,
+      0
+    ],
+    "rotation": [
+      0,
+      0,
+      4.189
+    ],
+    "scale": [
+      1,
+      1,
+      1
+    ]
+  },
   "wheelFL": {
     "position": [
       -1.05,
@@ -1042,23 +1042,6 @@ const PREVIEW_OVERRIDES = {
       0,
       0,
       0
-    ],
-    "scale": [
-      1,
-      1,
-      1
-    ]
-  },
-  "wheelFL/Mesh_229": {
-    "position": [
-      0,
-      0,
-      0
-    ],
-    "rotation": [
-      0,
-      0,
-      1.571
     ],
     "scale": [
       1,
@@ -1100,6 +1083,23 @@ const PREVIEW_OVERRIDES = {
       1
     ]
   },
+  "wheelFL/Mesh_232": {
+    "position": [
+      0,
+      0,
+      0
+    ],
+    "rotation": [
+      0,
+      0,
+      1.571
+    ],
+    "scale": [
+      1,
+      1,
+      1
+    ]
+  },
   "wheelFR": {
     "position": [
       1.05,
@@ -1110,23 +1110,6 @@ const PREVIEW_OVERRIDES = {
       0,
       0,
       0
-    ],
-    "scale": [
-      1,
-      1,
-      1
-    ]
-  },
-  "wheelFR/Mesh_233": {
-    "position": [
-      0,
-      0,
-      0
-    ],
-    "rotation": [
-      0,
-      0,
-      1.571
     ],
     "scale": [
       1,
@@ -1168,6 +1151,23 @@ const PREVIEW_OVERRIDES = {
       1
     ]
   },
+  "wheelFR/Mesh_236": {
+    "position": [
+      0,
+      0,
+      0
+    ],
+    "rotation": [
+      0,
+      0,
+      1.571
+    ],
+    "scale": [
+      1,
+      1,
+      1
+    ]
+  },
   "wheelRL": {
     "position": [
       -1.05,
@@ -1178,23 +1178,6 @@ const PREVIEW_OVERRIDES = {
       0,
       0,
       0
-    ],
-    "scale": [
-      1,
-      1,
-      1
-    ]
-  },
-  "wheelRL/Mesh_237": {
-    "position": [
-      0,
-      0,
-      0
-    ],
-    "rotation": [
-      0,
-      0,
-      1.571
     ],
     "scale": [
       1,
@@ -1236,6 +1219,23 @@ const PREVIEW_OVERRIDES = {
       1
     ]
   },
+  "wheelRL/Mesh_240": {
+    "position": [
+      0,
+      0,
+      0
+    ],
+    "rotation": [
+      0,
+      0,
+      1.571
+    ],
+    "scale": [
+      1,
+      1,
+      1
+    ]
+  },
   "wheelRR": {
     "position": [
       1.05,
@@ -1246,23 +1246,6 @@ const PREVIEW_OVERRIDES = {
       0,
       0,
       0
-    ],
-    "scale": [
-      1,
-      1,
-      1
-    ]
-  },
-  "wheelRR/Mesh_241": {
-    "position": [
-      0,
-      0,
-      0
-    ],
-    "rotation": [
-      0,
-      0,
-      1.571
     ],
     "scale": [
       1,
@@ -1304,7 +1287,24 @@ const PREVIEW_OVERRIDES = {
       1
     ]
   },
-  "Mesh_244": {
+  "wheelRR/Mesh_244": {
+    "position": [
+      0,
+      0,
+      0
+    ],
+    "rotation": [
+      0,
+      0,
+      1.571
+    ],
+    "scale": [
+      1,
+      1,
+      1
+    ]
+  },
+  "Mesh_245": {
     "position": [
       1.06,
       0.98,
@@ -1321,7 +1321,7 @@ const PREVIEW_OVERRIDES = {
       1
     ]
   },
-  "PointLight_245": {
+  "PointLight_246": {
     "position": [
       1.06,
       0.98,
@@ -1338,11 +1338,11 @@ const PREVIEW_OVERRIDES = {
       1
     ]
   },
-  "Mesh_247": {
+  "Mesh_248": {
     "position": [
       0.845,
       0.98,
-      -2.381
+      -2.377
     ],
     "rotation": [
       0,
@@ -1355,7 +1355,7 @@ const PREVIEW_OVERRIDES = {
       1
     ]
   },
-  "PointLight_248": {
+  "PointLight_249": {
     "position": [
       1.06,
       0.98,
@@ -1372,7 +1372,7 @@ const PREVIEW_OVERRIDES = {
       1
     ]
   },
-  "Mesh_250": {
+  "Mesh_251": {
     "position": [
       -1.06,
       0.98,
@@ -1389,7 +1389,7 @@ const PREVIEW_OVERRIDES = {
       1
     ]
   },
-  "PointLight_251": {
+  "PointLight_252": {
     "position": [
       -1.06,
       0.98,
@@ -1406,11 +1406,11 @@ const PREVIEW_OVERRIDES = {
       1
     ]
   },
-  "Mesh_253": {
+  "Mesh_254": {
     "position": [
-      -0.834,
+      -0.828,
       0.98,
-      -2.372
+      -2.342
     ],
     "rotation": [
       0,
@@ -1423,7 +1423,7 @@ const PREVIEW_OVERRIDES = {
       1
     ]
   },
-  "PointLight_254": {
+  "PointLight_255": {
     "position": [
       -1.06,
       0.98,
@@ -1440,7 +1440,7 @@ const PREVIEW_OVERRIDES = {
       1
     ]
   },
-  "Mesh_256": {
+  "Mesh_257": {
     "position": [
       -0.5,
       0.96,
@@ -1457,7 +1457,7 @@ const PREVIEW_OVERRIDES = {
       1
     ]
   },
-  "PointLight_257": {
+  "PointLight_258": {
     "position": [
       -0.5,
       0.96,
@@ -1474,7 +1474,7 @@ const PREVIEW_OVERRIDES = {
       1
     ]
   },
-  "Mesh_259": {
+  "Mesh_260": {
     "position": [
       0.5,
       0.96,
@@ -1491,7 +1491,7 @@ const PREVIEW_OVERRIDES = {
       1
     ]
   },
-  "PointLight_260": {
+  "PointLight_261": {
     "position": [
       0.5,
       0.96,
@@ -1508,7 +1508,7 @@ const PREVIEW_OVERRIDES = {
       1
     ]
   },
-  "Mesh_262": {
+  "Mesh_263": {
     "position": [
       -0.2,
       0.88,
@@ -1525,7 +1525,7 @@ const PREVIEW_OVERRIDES = {
       1
     ]
   },
-  "PointLight_263": {
+  "PointLight_264": {
     "position": [
       -0.2,
       0.88,
@@ -1542,7 +1542,7 @@ const PREVIEW_OVERRIDES = {
       1
     ]
   },
-  "Mesh_265": {
+  "Mesh_266": {
     "position": [
       0.2,
       0.88,
@@ -1559,7 +1559,7 @@ const PREVIEW_OVERRIDES = {
       1
     ]
   },
-  "PointLight_266": {
+  "PointLight_267": {
     "position": [
       0.2,
       0.88,
@@ -2120,7 +2120,7 @@ const PREVIEW_OVERRIDES = {
       1
     ]
   },
-  "motorcycleRoot/bikeFrontWheelPivot/Group_301": {
+  "motorcycleRoot/bikeFrontWheelPivot/Group_302": {
     "position": [
       0,
       0,
@@ -2137,7 +2137,7 @@ const PREVIEW_OVERRIDES = {
       1
     ]
   },
-  "motorcycleRoot/bikeFrontWheelPivot/Group_301/Group_302": {
+  "motorcycleRoot/bikeFrontWheelPivot/Group_302/Group_303": {
     "position": [
       0,
       0,
@@ -2154,7 +2154,7 @@ const PREVIEW_OVERRIDES = {
       1
     ]
   },
-  "motorcycleRoot/bikeFrontWheelPivot/Group_301/Group_302/tire": {
+  "motorcycleRoot/bikeFrontWheelPivot/Group_302/Group_303/tire": {
     "position": [
       0,
       0,
@@ -2171,7 +2171,7 @@ const PREVIEW_OVERRIDES = {
       1
     ]
   },
-  "motorcycleRoot/bikeFrontWheelPivot/Group_301/Group_302/rim": {
+  "motorcycleRoot/bikeFrontWheelPivot/Group_302/Group_303/rim": {
     "position": [
       0,
       0,
@@ -2188,7 +2188,7 @@ const PREVIEW_OVERRIDES = {
       1
     ]
   },
-  "motorcycleRoot/bikeFrontWheelPivot/Group_301/Group_302/hub": {
+  "motorcycleRoot/bikeFrontWheelPivot/Group_302/Group_303/hub": {
     "position": [
       0,
       0,
@@ -2205,7 +2205,7 @@ const PREVIEW_OVERRIDES = {
       1
     ]
   },
-  "motorcycleRoot/bikeFrontWheelPivot/Group_301/bikeFrontDisc": {
+  "motorcycleRoot/bikeFrontWheelPivot/Group_302/bikeFrontDisc": {
     "position": [
       0.07,
       0,
@@ -2239,7 +2239,7 @@ const PREVIEW_OVERRIDES = {
       1
     ]
   },
-  "motorcycleRoot/bikeRearWheelMount/Group_307": {
+  "motorcycleRoot/bikeRearWheelMount/Group_308": {
     "position": [
       0,
       0,
@@ -2256,7 +2256,7 @@ const PREVIEW_OVERRIDES = {
       1
     ]
   },
-  "motorcycleRoot/bikeRearWheelMount/Group_307/Group_308": {
+  "motorcycleRoot/bikeRearWheelMount/Group_308/Group_309": {
     "position": [
       0,
       0,
@@ -2273,7 +2273,7 @@ const PREVIEW_OVERRIDES = {
       1
     ]
   },
-  "motorcycleRoot/bikeRearWheelMount/Group_307/Group_308/tire": {
+  "motorcycleRoot/bikeRearWheelMount/Group_308/Group_309/tire": {
     "position": [
       0,
       0,
@@ -2290,7 +2290,7 @@ const PREVIEW_OVERRIDES = {
       1
     ]
   },
-  "motorcycleRoot/bikeRearWheelMount/Group_307/Group_308/rim": {
+  "motorcycleRoot/bikeRearWheelMount/Group_308/Group_309/rim": {
     "position": [
       0,
       0,
@@ -2307,7 +2307,7 @@ const PREVIEW_OVERRIDES = {
       1
     ]
   },
-  "motorcycleRoot/bikeRearWheelMount/Group_307/Group_308/hub": {
+  "motorcycleRoot/bikeRearWheelMount/Group_308/Group_309/hub": {
     "position": [
       0,
       0,
@@ -2324,16 +2324,16 @@ const PREVIEW_OVERRIDES = {
       1
     ]
   },
-  "motorcycleRoot/Mesh_312": {
+  "motorcycleRoot/Mesh_313": {
     "position": [
-      -0.29,
-      0.56,
+      -0.18,
+      0.44,
       -0.12
     ],
     "rotation": [
-      1.574,
-      -0.056,
-      -0.134
+      0.1,
+      0,
+      0.3
     ],
     "scale": [
       1,
@@ -2358,7 +2358,7 @@ const PREVIEW_OVERRIDES = {
       1
     ]
   },
-  "motorcycleRoot/PointLight_321": {
+  "motorcycleRoot/PointLight_322": {
     "position": [
       0.18,
       1.06,
@@ -2392,7 +2392,7 @@ const PREVIEW_OVERRIDES = {
       1
     ]
   },
-  "motorcycleRoot/PointLight_324": {
+  "motorcycleRoot/PointLight_325": {
     "position": [
       0.16,
       0.96,
@@ -2426,7 +2426,7 @@ const PREVIEW_OVERRIDES = {
       1
     ]
   },
-  "motorcycleRoot/PointLight_327": {
+  "motorcycleRoot/PointLight_328": {
     "position": [
       -0.18,
       1.06,
@@ -2460,7 +2460,7 @@ const PREVIEW_OVERRIDES = {
       1
     ]
   },
-  "motorcycleRoot/PointLight_330": {
+  "motorcycleRoot/PointLight_331": {
     "position": [
       -0.16,
       0.96,
@@ -2494,7 +2494,7 @@ const PREVIEW_OVERRIDES = {
       1
     ]
   },
-  "motorcycleRoot/PointLight_333": {
+  "motorcycleRoot/PointLight_334": {
     "position": [
       0,
       0.84,
@@ -2630,7 +2630,7 @@ const PREVIEW_OVERRIDES = {
       1
     ]
   },
-  "ArrowHelper_335": {
+  "ArrowHelper_336": {
     "position": [
       0,
       2.2,
@@ -2647,10 +2647,10 @@ const PREVIEW_OVERRIDES = {
       1
     ]
   },
-  "ArrowHelper_335/Line_336": {
+  "ArrowHelper_336/Line_337": {
     "position": [
       0,
-      -1.606,
+      0,
       0
     ],
     "rotation": [
@@ -2661,10 +2661,10 @@ const PREVIEW_OVERRIDES = {
     "scale": [
       1,
       2.8,
-      1
+      -0.05
     ]
   },
-  "ArrowHelper_335/Mesh_337": {
+  "ArrowHelper_336/Mesh_338": {
     "position": [
       0,
       3.6,

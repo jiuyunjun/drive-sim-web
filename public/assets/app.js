@@ -530,6 +530,7 @@ const { group: car, parts: carParts } = buildCar(THREE);
 scene.add(car);
 
 const {
+  sedanRoot,
   body, shoulderShell, hood, trunk, frontBumper, rearBumper, grille,
   cabin, roofPanel, aPillarL, aPillarR, cPillarL, cPillarR,
   windshield, rearWindow, sideWindowL, sideWindowR,
