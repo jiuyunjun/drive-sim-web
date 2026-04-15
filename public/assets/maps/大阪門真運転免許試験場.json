@@ -1,0 +1,10 @@
+{
+  "image": "大阪門真運転免許試験場.webp",
+  "mapWidth": 550,
+  "maxSpeed": 10,
+  "startPose": {
+    "x": -229.9,
+    "z": 7.8,
+    "heading": 3.136777
+  }
+}

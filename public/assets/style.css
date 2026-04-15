@@ -112,6 +112,11 @@ select {
   color: #fff;
 }
 
+option {
+  background: #16202a;
+  color: #f4fbff;
+}
+
 input[type="number"] {
   width: 90px;
 }
