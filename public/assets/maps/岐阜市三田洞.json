@@ -1,0 +1,10 @@
+{
+  "image": "岐阜市三田洞.webp",
+  "mapWidth": 550,
+  "maxSpeed": 10,
+  "startPose": {
+    "x": -42.6,
+    "z": -101.9,
+    "heading": 1.404663
+  }
+}
