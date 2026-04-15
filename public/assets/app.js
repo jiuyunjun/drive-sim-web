@@ -433,15 +433,23 @@ function clampCarInsideMap() {
 }
 
 function updateGroundGeometry(widthMeters) {
+  const previousWidth = groundSize.width;
+  const previousHeight = groundSize.height;
   groundSize.width = widthMeters;
   groundSize.height = widthMeters * groundAspect;
 
   if (!groundMesh) return;
 
+  if (previousWidth > 0 && previousHeight > 0) {
+    const scaleX = groundSize.width / previousWidth;
+    const scaleZ = groundSize.height / previousHeight;
+    car.position.x *= scaleX;
+    car.position.z *= scaleZ;
+  }
+
   groundMesh.geometry.dispose();
   groundMesh.geometry = new THREE.PlaneGeometry(groundSize.width, groundSize.height);
   updateSunShadowBounds();
-  clampCarInsideMap();
 }
 
 function applyGroundTexture(texture, widthMeters, heightMeters) {
@@ -1049,6 +1057,7 @@ const state = {
   followLookOffset: 0,
   followLookPitch: 0,
   cockpitLookOffset: 0,
+  mapResizeSnapUntil: 0,
   lookDragActive: false,
   lookDragPointerId: null,
   lookDragStartX: 0,
@@ -1626,7 +1635,7 @@ function updateCar(dt) {
   speedEl.textContent = (Math.abs(state.speed) * 3.6).toFixed(1);
   gearEl.textContent = state.speed > 0.2 ? 'D' : state.speed < -0.2 ? 'R' : 'N';
   positionEl.textContent = `${car.position.x.toFixed(1)}, ${car.position.z.toFixed(1)}`;
-  headingEl.textContent = THREE.MathUtils.euclideanModulo(THREE.MathUtils.radToDeg(state.heading), 360).toFixed(1);
+  headingEl.textContent = formatHeadingValue(state.heading);
 }
 
 function updateEngineAudio() {
@@ -1659,7 +1668,11 @@ function updateCamera(dt) {
 
   if (state.view === 'orbit') {
     const orbitTarget = car.position.clone().add(new THREE.Vector3(0, state.vehicleType === 'motorcycle' ? 1.0 : 1.2, 0));
-    controls.target.lerp(orbitTarget, 1 - Math.pow(0.01, dt));
+    if (performance.now() < state.mapResizeSnapUntil) {
+      controls.target.copy(orbitTarget);
+    } else {
+      controls.target.lerp(orbitTarget, 1 - Math.pow(0.01, dt));
+    }
     controls.update();
     return;
   }
@@ -1672,7 +1685,11 @@ function updateCamera(dt) {
   }
 
   const smooth = 1 - Math.pow(0.002, dt);
-  camera.position.lerp(pose.position, smooth);
+  if (performance.now() < state.mapResizeSnapUntil) {
+    camera.position.copy(pose.position);
+  } else {
+    camera.position.lerp(pose.position, smooth);
+  }
   camera.lookAt(pose.lookTarget);
 }
 
@@ -1815,9 +1832,16 @@ quickViewButtons.forEach((button) => {
 
 function updateMapWidth(widthMeters) {
   const clampedWidth = THREE.MathUtils.clamp(widthMeters, MAP_WIDTH_MIN, MAP_WIDTH_MAX);
+  state.mapResizeSnapUntil = performance.now() + 120;
   syncMapControls(clampedWidth);
   updateGroundGeometry(clampedWidth);
   saveSettings();
+}
+
+function formatHeadingValue(headingRadians) {
+  const normalizedRadians = THREE.MathUtils.euclideanModulo(headingRadians, Math.PI * 2);
+  const degrees = THREE.MathUtils.radToDeg(normalizedRadians);
+  return `${degrees.toFixed(1)}° / ${normalizedRadians.toFixed(6)} rad`;
 }
 
 mapScaleEl.addEventListener('input', () => {
