@@ -1,0 +1,10 @@
+{
+  "image": "広島県免許センター.webp",
+  "mapWidth": 667,
+  "maxSpeed": 10,
+  "startPose": {
+    "x": -58.3,
+    "z": 50.6,
+    "heading": 2.372034
+  }
+}
