@@ -1,0 +1,10 @@
+{
+  "image": "香取県高松市免許センター.webp",
+  "mapWidth": 550,
+  "maxSpeed": 10,
+  "startPose": {
+    "x": 149.1,
+    "z": -65.1,
+    "heading": 0.075790
+  }
+}
