@@ -1,0 +1,10 @@
+{
+  "image": "埼玉県警察運転免許センター.webp",
+  "mapWidth": 641,
+  "maxSpeed": 10,
+  "startPose": {
+    "x": 72.3,
+    "z": -9.0,
+    "heading": 0.012180
+  }
+}
