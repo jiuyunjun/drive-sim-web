@@ -207,26 +207,6 @@ p {
   color: #d5d5d5;
 }
 
-.seoSummary {
-  margin-top: var(--gap-lg);
-  padding: 14px 16px;
-  border-radius: 18px;
-  background: rgba(7, 12, 18, 0.52);
-  border: 1px solid rgba(255, 255, 255, 0.08);
-}
-
-.seoSummary h2 {
-  margin: 0 0 8px;
-  font-size: 16px;
-}
-
-.seoSummary p {
-  margin: 0;
-  color: #c7d9e4;
-  line-height: 1.6;
-  font-size: 13px;
-}
-
 /* ===== Panel Rows ===== */
 .row {
   display: flex;
@@ -234,6 +214,40 @@ p {
   gap: var(--gap-md);
   align-items: center;
   margin-bottom: 12px;
+}
+
+.controlsSection {
+  display: grid;
+  gap: 10px;
+  margin-top: 16px;
+  margin-bottom: 14px;
+}
+
+.controlGrid {
+  display: grid;
+  grid-template-columns: repeat(12, minmax(0, 1fr));
+  gap: var(--gap-md);
+  align-items: stretch;
+}
+
+.span-3 {
+  grid-column: span 3;
+}
+
+.span-4 {
+  grid-column: span 4;
+}
+
+.span-8 {
+  grid-column: span 8;
+}
+
+.span-9 {
+  grid-column: span 9;
+}
+
+.span-12 {
+  grid-column: span 12;
 }
 
 .primary-controls,
@@ -282,7 +296,8 @@ p {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  min-height: 74px;
+  min-height: 40px;
+  padding: 7px 10px;
   text-align: center;
   font-weight: 600;
 }
@@ -330,31 +345,39 @@ p {
 }
 
 .range-card.control-range {
+  position: relative;
   min-height: 74px;
-  grid-template-columns: minmax(0, 1fr) auto;
-  grid-template-rows: auto auto;
-  grid-template-areas:
-    "label value"
-    "slider slider";
-  align-content: center;
-  gap: 8px 12px;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  justify-content: center;
+  gap: 12px;
+  padding: 12px 14px;
 }
 
 .range-card.control-range > span:first-child {
-  grid-area: label;
+  padding-right: 70px;
+  line-height: 1.35;
 }
 
 .range-card.control-range input[type="range"] {
-  grid-area: slider;
   width: 100%;
+  margin: 0;
 }
 
 .control-value {
-  grid-area: value;
-  min-width: 62px;
-  text-align: right;
+  position: absolute;
+  top: 12px;
+  right: 14px;
+  min-width: 52px;
+  padding: 3px 8px;
+  border-radius: var(--radius-pill);
+  background: rgba(124, 200, 255, 0.14);
+  text-align: center;
   color: #bfe7ff;
+  font-size: 11px;
   font-weight: 600;
+  line-height: 1.2;
 }
 
 .range-card span:last-child {
@@ -1533,6 +1556,19 @@ body.minimap-expanded .mobileClusterRight {
     margin-bottom: 10px;
   }
 
+  .controlGrid {
+    grid-template-columns: 1fr;
+    gap: 8px;
+  }
+
+  .span-3,
+  .span-4,
+  .span-8,
+  .span-9,
+  .span-12 {
+    grid-column: auto;
+  }
+
   .primary-controls,
   .secondary-controls {
     grid-template-columns: 1fr;
@@ -1549,12 +1585,16 @@ body.minimap-expanded .mobileClusterRight {
   .range-card.control-range,
   .toggle-card,
   .action-btn {
-    min-height: 64px;
+    min-height: 40px;
   }
 
   h1 {
     font-size: 17px;
     margin-bottom: 8px;
+  }
+
+  .tips {
+    display: none;
   }
 
   p,

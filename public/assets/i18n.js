@@ -18,7 +18,7 @@ const TRANSLATIONS = {
     },
     hero: {
       title: '驾驶考试中心 3D 模拟驾驶',
-      description: '上传一张平面地图图片，把它作为地面贴图，然后直接在网页里开车。',
+      description: '选择一张地图，或者上传一张平面地图图片，把它作为地面贴图，然后直接在网页里开车。',
     },
     controls: {
       vehicleType: '车型',
@@ -47,13 +47,9 @@ const TRANSLATIONS = {
       currentOutput: '当前输出',
     },
     tips: {
-      title: '操作：',
-      forward: 'W / ↑ 前进',
-      reverse: 'S / ↓ 倒车',
-      left: 'A / ← 左转',
-      right: 'D / → 右转',
-      signalLeft: 'Q 左转向灯',
-      signalRight: 'E 右转向灯',
+      title: '操作指南：',
+      drive: 'W / A / S / D 或 ↑ / ← / ↓ / → 驾驶',
+      signal: 'Q / E 转向灯',
       brake: '空格 刹车',
       reset: 'O 重置',
       cycleViews: 'V 切换三种视角',
@@ -139,7 +135,7 @@ const TRANSLATIONS = {
     },
     hero: {
       title: 'Driving Test Center 3D Driving Simulator',
-      description: 'Upload a top-down map image, use it as the ground texture, and drive directly in the browser.',
+      description: 'Choose a map, or upload a top-down map image, use it as the ground texture, and drive directly in the browser.',
     },
     controls: {
       vehicleType: 'Vehicle',
@@ -168,13 +164,9 @@ const TRANSLATIONS = {
       currentOutput: 'Current Output',
     },
     tips: {
-      title: 'Controls:',
-      forward: 'W / Up Forward',
-      reverse: 'S / Down Reverse',
-      left: 'A / Left Steer Left',
-      right: 'D / Right Steer Right',
-      signalLeft: 'Q Left Signal',
-      signalRight: 'E Right Signal',
+      title: 'Control Guide:',
+      drive: 'W / A / S / D or Arrow Keys Drive',
+      signal: 'Q / E Signals',
       brake: 'Space Brake',
       reset: 'O Reset',
       cycleViews: 'V Cycle Views',
@@ -260,7 +252,7 @@ const TRANSLATIONS = {
     },
     hero: {
       title: '運転試験センター 3D シミュレーター',
-      description: '上から見た地図画像をアップロードして地面テクスチャにし、そのままブラウザで運転できます。',
+      description: 'マップを選ぶか、上から見た地図画像をアップロードして地面テクスチャにし、そのままブラウザで運転できます。',
     },
     controls: {
       vehicleType: '車種',
@@ -289,13 +281,9 @@ const TRANSLATIONS = {
       currentOutput: '現在の出力',
     },
     tips: {
-      title: '操作:',
-      forward: 'W / ↑ 前進',
-      reverse: 'S / ↓ 後退',
-      left: 'A / ← 左へ',
-      right: 'D / → 右へ',
-      signalLeft: 'Q 左ウインカー',
-      signalRight: 'E 右ウインカー',
+      title: '操作ガイド:',
+      drive: 'W / A / S / D または矢印キーで運転',
+      signal: 'Q / E ウインカー',
       brake: 'Space ブレーキ',
       reset: 'O リセット',
       cycleViews: 'V で視点切替',
