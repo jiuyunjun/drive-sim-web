@@ -1,0 +1,10 @@
+{
+  "image": "徳島県免許センター.webp",
+  "mapWidth": 457,
+  "maxSpeed": 10,
+  "startPose": {
+    "x": -144.6,
+    "z": -54.4,
+    "heading": 1.580315
+  }
+}
