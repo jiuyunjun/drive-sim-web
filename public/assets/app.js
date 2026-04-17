@@ -89,6 +89,8 @@ const positionEl = document.getElementById('position');
 const headingEl = document.getElementById('heading');
 const maxSpeedEl = document.getElementById('maxSpeed');
 const maxSpeedValueEl = document.getElementById('maxSpeedValue');
+const steeringSensitivityEl = document.getElementById('steeringSensitivity');
+const steeringSensitivityValueEl = document.getElementById('steeringSensitivityValue');
 const accelCurveEl = document.getElementById('accelCurve');
 const accelCurveValueEl = document.getElementById('accelCurveValue');
 const accelCurveLineEl = document.getElementById('accelCurveLine');
@@ -137,6 +139,8 @@ const TURN_SIGNAL_INTERVAL = 0.42;
 const MIN_DRIVE_SPEED = 2;
 const MAX_STEER = 0.6;
 const STEERING_WHEEL_MAX = Math.PI * 1.35;
+const STEERING_SENSITIVITY_MIN = Number(steeringSensitivityEl?.min) / 100 || 0.5;
+const STEERING_SENSITIVITY_MAX = Number(steeringSensitivityEl?.max) / 100 || 2.0;
 const FOLLOW_PITCH_LIMIT = THREE.MathUtils.degToRad(35);
 const COCKPIT_LOOK_LIMIT = THREE.MathUtils.degToRad(75);
 const AudioContextClass = window.AudioContext || window.webkitAudioContext;
@@ -206,6 +210,7 @@ function loadSettings() {
 function saveSettings() {
   const settings = {
     maxSpeed: state.maxSpeed,
+    steeringSensitivity: state.steeringSensitivity,
     accelCurve: state.accelCurve,
     autoCenterSteering: state.autoCenterSteering,
     vehicleType: state.vehicleType,
@@ -232,6 +237,16 @@ function syncMaxSpeedControl(speed) {
   const clampedSpeed = THREE.MathUtils.clamp(speed, Number(maxSpeedEl.min) || MIN_DRIVE_SPEED, Number(maxSpeedEl.max) || 40);
   maxSpeedEl.value = String(clampedSpeed);
   maxSpeedValueEl.textContent = `${clampedSpeed} m/s`;
+}
+
+function syncSteeringSensitivityControl(sensitivity) {
+  const clampedSensitivity = THREE.MathUtils.clamp(
+    sensitivity,
+    STEERING_SENSITIVITY_MIN,
+    STEERING_SENSITIVITY_MAX
+  );
+  steeringSensitivityEl.value = String(Math.round(clampedSensitivity * 100));
+  steeringSensitivityValueEl.textContent = `${clampedSensitivity.toFixed(2)}x`;
 }
 
 function syncAccelCurveControl(curve) {
@@ -840,7 +855,7 @@ function bindMobileControls() {
       // 110px 对应满打方向盘，灵敏度可调
       const sensitivity = STEERING_WHEEL_MAX / 110;
       state.steeringWheelAngle = THREE.MathUtils.clamp(
-        state.touchSteerStartAngle - dx * sensitivity,
+        state.touchSteerStartAngle - dx * sensitivity * state.steeringSensitivity,
         -STEERING_WHEEL_MAX,
         STEERING_WHEEL_MAX
       );
@@ -1039,6 +1054,11 @@ const state = {
   heading: 0,
   steer: 0,
   steeringWheelAngle: 0,
+  steeringSensitivity: THREE.MathUtils.clamp(
+    Number(persistedSettings?.steeringSensitivity) || 1,
+    STEERING_SENSITIVITY_MIN,
+    STEERING_SENSITIVITY_MAX
+  ),
   vehicleType: persistedSettings?.vehicleType === 'motorcycle' ? 'motorcycle' : 'sedan',
   view: 'follow',
   uiCollapsed: false,
@@ -1560,7 +1580,7 @@ function updateCar(dt) {
   // 速度敏感转向：速度越快，方向盘转动越迟钝（防止高速急打方向）
   const speedMs = Math.abs(state.speed);
   const steerSpeedFactor = 1.0 / (1.0 + speedMs * dynamics.steerSpeedDrop);
-  const effectiveSteeringSpeed = steeringWheelSpeed * steerSpeedFactor;
+  const effectiveSteeringSpeed = steeringWheelSpeed * state.steeringSensitivity * steerSpeedFactor;
   const effectiveReturnSpeed = steeringReturnSpeed * (0.55 + 0.45 * steerSpeedFactor);
 
   // 触控滑动转向时跳过键盘路径，由 touch handler 直接写 steeringWheelAngle
@@ -1869,6 +1889,12 @@ maxSpeedEl.addEventListener('input', () => {
   saveSettings();
 });
 
+steeringSensitivityEl.addEventListener('input', () => {
+  state.steeringSensitivity = Number(steeringSensitivityEl.value) / 100;
+  syncSteeringSensitivityControl(state.steeringSensitivity);
+  saveSettings();
+});
+
 accelCurveEl.addEventListener('input', () => {
   state.accelCurve = Number(accelCurveEl.value) / 100;
   syncAccelCurveControl(state.accelCurve);
@@ -2013,6 +2039,7 @@ setAudioStatus(
   audioState.supported ? t('audio.pending') : t('audio.unavailable')
 );
 syncMaxSpeedControl(persistedSettings?.maxSpeed ?? state.maxSpeed);
+syncSteeringSensitivityControl(state.steeringSensitivity);
 syncAccelCurveControl(state.accelCurve);
 syncAutoCenterControl(state.autoCenterSteering);
 syncVehicleTypeControl(state.vehicleType);
