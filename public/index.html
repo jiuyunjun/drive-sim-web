@@ -1,25 +1,25 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="ja">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
   <meta name="theme-color" content="#091118" />
-  <meta name="description" content="Drive Sim Web is a browser driving simulator for 2D course practice, custom map uploads, and mobile fullscreen play in Chinese, English, and Japanese." />
+  <meta name="description" content="試験場・免許センターのコース練習ができる運転シミュレーター・ゲーム。四輪・バイク対応、地図アップロード対応、日本語・英語・中文ページあり。" />
   <meta name="robots" content="index,follow" />
   <meta property="og:type" content="website" />
-  <meta property="og:title" content="Drive Sim Web | Browser Driving Simulator" />
-  <meta property="og:description" content="Practice 2D driving courses in a browser with multilingual pages, custom map uploads, and mobile-friendly controls." />
+  <meta property="og:title" content="試験場・免許センター向け運転シミュレーター・ゲーム | by LazyDogLab" />
+  <meta property="og:description" content="試験場・免許センターのコースをブラウザで練習できる運転シミュレーター・ゲーム。四輪・バイク対応、地図アップロード対応。" />
   <meta property="og:url" content="https://drive-sim-web.web.app/" />
   <meta property="og:image" content="https://drive-sim-web.web.app/assets/icons/icon-512.png" />
   <meta name="twitter:card" content="summary_large_image" />
-  <meta name="twitter:title" content="Drive Sim Web | Browser Driving Simulator" />
-  <meta name="twitter:description" content="Practice 2D driving courses in a browser with multilingual pages, custom map uploads, and mobile-friendly controls." />
+  <meta name="twitter:title" content="試験場・免許センター向け運転シミュレーター・ゲーム | by LazyDogLab" />
+  <meta name="twitter:description" content="試験場・免許センターのコースをブラウザで練習できる運転シミュレーター・ゲーム。四輪・バイク対応、地図アップロード対応。" />
   <link rel="canonical" href="https://drive-sim-web.web.app/" />
   <link rel="alternate" hreflang="en" href="https://drive-sim-web.web.app/en/index.html" />
   <link rel="alternate" hreflang="ja" href="https://drive-sim-web.web.app/ja/index.html" />
   <link rel="alternate" hreflang="zh-CN" href="https://drive-sim-web.web.app/zh/index.html" />
   <link rel="alternate" hreflang="x-default" href="https://drive-sim-web.web.app/" />
-  <title>Drive Sim Web | Browser Driving Simulator</title>
+  <title>試験場・免許センター向け運転シミュレーター・ゲーム | by LazyDogLab</title>
   <script async src="https://www.googletagmanager.com/gtag/js?id=G-03R8H6QX5F"></script>
   <script>
     window.dataLayer = window.dataLayer || [];
@@ -97,17 +97,101 @@
     .links {
       display: flex;
       flex-wrap: wrap;
-      gap: 10px;
-      margin-bottom: 14px;
+      gap: 12px;
+      margin: 18px 0 16px;
     }
 
     .links a {
+      position: relative;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-width: 138px;
+      min-height: 54px;
       color: #eef7ff;
       text-decoration: none;
-      padding: 10px 14px;
-      border-radius: 999px;
-      border: 1px solid rgba(255, 255, 255, 0.16);
-      background: rgba(255, 255, 255, 0.06);
+      padding: 0 18px;
+      border-radius: 18px;
+      border: 1px solid rgba(143, 204, 255, 0.34);
+      background:
+        linear-gradient(135deg, rgba(89, 180, 255, 0.18), rgba(255, 255, 255, 0.05)),
+        rgba(255, 255, 255, 0.08);
+      box-shadow:
+        0 14px 28px rgba(0, 0, 0, 0.24),
+        inset 0 1px 0 rgba(255, 255, 255, 0.18);
+      font-size: 15px;
+      font-weight: 700;
+      line-height: 1.1;
+      letter-spacing: 0.01em;
+      overflow: hidden;
+      isolation: isolate;
+      transition:
+        transform 0.22s ease,
+        border-color 0.22s ease,
+        box-shadow 0.22s ease,
+        background 0.22s ease;
+      animation: entryFloat 4.8s ease-in-out infinite;
+    }
+
+    .links a::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background:
+        radial-gradient(circle at top left, rgba(255, 255, 255, 0.16), transparent 48%),
+        linear-gradient(135deg, rgba(76, 167, 255, 0.14), rgba(255, 255, 255, 0));
+      z-index: -2;
+    }
+
+    .links a::after {
+      content: "";
+      position: absolute;
+      top: -140%;
+      left: -32%;
+      width: 38%;
+      height: 280%;
+      background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.34), transparent);
+      transform: rotate(20deg);
+      z-index: -1;
+      animation: entrySweep 3.9s ease-in-out infinite;
+    }
+
+    .links a:nth-child(2) {
+      animation-delay: 0.16s;
+    }
+
+    .links a:nth-child(2)::after {
+      animation-delay: 0.24s;
+    }
+
+    .links a:nth-child(3) {
+      animation-delay: 0.32s;
+    }
+
+    .links a:nth-child(3)::after {
+      animation-delay: 0.4s;
+    }
+
+    .links a:hover,
+    .links a:focus-visible {
+      transform: translateY(-3px) scale(1.02);
+      border-color: rgba(177, 224, 255, 0.72);
+      background:
+        linear-gradient(135deg, rgba(89, 180, 255, 0.28), rgba(255, 255, 255, 0.08)),
+        rgba(255, 255, 255, 0.1);
+      box-shadow:
+        0 18px 34px rgba(0, 0, 0, 0.3),
+        0 0 0 1px rgba(184, 229, 255, 0.18),
+        inset 0 1px 0 rgba(255, 255, 255, 0.26);
+    }
+
+    .links a:focus-visible {
+      outline: 2px solid rgba(202, 236, 255, 0.92);
+      outline-offset: 3px;
+    }
+
+    .links a:active {
+      transform: translateY(-1px) scale(0.99);
     }
 
     .highlights {
@@ -164,13 +248,139 @@
       color: #eef7ff;
       text-decoration: none;
     }
+
+    .contactStack {
+      display: grid;
+      gap: 12px;
+      width: 100%;
+    }
+
+    .contactCopyBtn {
+      display: grid;
+      gap: 5px;
+      width: min(100%, 360px);
+      padding: 14px 16px;
+      border-radius: 18px;
+      border: 1px solid rgba(143, 204, 255, 0.28);
+      background:
+        linear-gradient(135deg, rgba(89, 180, 255, 0.14), rgba(255, 255, 255, 0.04)),
+        rgba(255, 255, 255, 0.05);
+      box-shadow:
+        0 16px 28px rgba(0, 0, 0, 0.22),
+        inset 0 1px 0 rgba(255, 255, 255, 0.12);
+      color: #eef7ff;
+      text-align: left;
+      cursor: pointer;
+      transition:
+        transform 0.2s ease,
+        border-color 0.2s ease,
+        box-shadow 0.2s ease,
+        background 0.2s ease;
+    }
+
+    .contactCopyBtn:hover,
+    .contactCopyBtn:focus-visible {
+      transform: translateY(-2px);
+      border-color: rgba(177, 224, 255, 0.62);
+      box-shadow:
+        0 18px 32px rgba(0, 0, 0, 0.26),
+        0 0 0 1px rgba(184, 229, 255, 0.14),
+        inset 0 1px 0 rgba(255, 255, 255, 0.18);
+    }
+
+    .contactCopyBtn:focus-visible {
+      outline: 2px solid rgba(202, 236, 255, 0.92);
+      outline-offset: 3px;
+    }
+
+    .contactCopyBtn:active {
+      transform: translateY(0);
+    }
+
+    .contactCopyBtn[data-copy-state="success"] {
+      border-color: rgba(98, 214, 151, 0.68);
+      background:
+        linear-gradient(135deg, rgba(56, 171, 109, 0.18), rgba(255, 255, 255, 0.04)),
+        rgba(255, 255, 255, 0.05);
+    }
+
+    .contactCopyBtn[data-copy-state="error"] {
+      border-color: rgba(241, 132, 132, 0.7);
+      background:
+        linear-gradient(135deg, rgba(173, 65, 65, 0.2), rgba(255, 255, 255, 0.04)),
+        rgba(255, 255, 255, 0.05);
+    }
+
+    .contactCopyLabel {
+      font-size: 13px;
+      color: #c8dbe9;
+    }
+
+    .contactCopyValue {
+      font-family: Consolas, "SFMono-Regular", Monaco, monospace;
+      font-size: 18px;
+      letter-spacing: 0.06em;
+      color: #ffffff;
+    }
+
+    .contactCopyHint {
+      font-size: 12px;
+      color: #9ec8e6;
+      line-height: 1.4;
+    }
+
+    @keyframes entryFloat {
+      0%,
+      100% {
+        transform: translateY(0);
+      }
+      50% {
+        transform: translateY(-2px);
+      }
+    }
+
+    @keyframes entrySweep {
+      0%,
+      18% {
+        transform: translateX(-180%) rotate(20deg);
+      }
+      58%,
+      100% {
+        transform: translateX(360%) rotate(20deg);
+      }
+    }
+
+    @media (max-width: 640px) {
+      .links a {
+        flex: 1 1 calc(50% - 12px);
+        min-width: 0;
+      }
+
+      .links a:last-child {
+        flex-basis: 100%;
+      }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .links a,
+      .links a::after {
+        animation: none;
+        transition: none;
+      }
+    }
   </style>
   <script type="application/ld+json">
     {
       "@context": "https://schema.org",
       "@type": "WebSite",
-      "name": "Drive Sim Web",
+      "name": "試験場・免許センター向け運転シミュレーター・ゲーム",
+      "alternateName": "試験場・免許センターのシミュレーター・ゲーム",
+      "description": "試験場・免許センターのコース練習ができる運転シミュレーター・ゲーム。四輪・バイク対応、地図アップロード対応、日本語・英語・中文ページあり。",
       "url": "https://drive-sim-web.web.app/",
+      "publisher": {
+        "@type": "Organization",
+        "name": "LazyDogLab"
+      },
       "inLanguage": ["en", "ja", "zh-CN"]
     }
   </script>
@@ -178,49 +388,73 @@
     const ROOT_PAGE_COPY = {
       en: {
         lang: 'en',
-        heroLead: 'Practice driving in the browser, with no installation required.',
+        title: 'Driving Test Center & License Course Simulator Game | by LazyDogLab',
+        description: 'Practice driving test center and license course maps in the browser. Supports sedan, motorcycle, custom map uploads, and Japanese, English, and Chinese pages.',
+        heroTitle: 'Driving Test Center & License Course Simulator Game',
+        heroLead: 'Practice driving test center and license course maps in the browser, with no installation required.',
         languageLinks: ['Japanese', 'English', '中文'],
-        heroBody: 'Train on 2D top-down course maps on your phone or PC. Upload your own map, switch vehicles, and start practicing immediately.',
-        copyTitle: 'What You Can Do',
-        brandBadge: 'by lazydoglab',
+        heroBody: 'Train on 2D top-down course maps on your phone or PC. Switch between sedan and motorcycle modes, upload your own map, and start practicing immediately.',
+        copyTitle: 'What This Simulator Offers',
+        brandBadge: 'by LazyDogLab',
+        contactEmailLabel: 'Email',
+        contactWechatLabel: 'WeChat',
+        copyWechatHint: 'Click to copy',
+        copiedWechatHint: 'Copied',
+        copyWechatFailed: 'Copy failed',
         promoTitle: 'We also make an extremely useful browser plugin for translation, replies, and language learning.',
         promoBody: 'Open Linguabridge',
         bullets: [
-          'Practice driving test center style courses directly in the browser without installing an app.',
-          'Switch between sedan and motorcycle modes for different training styles.',
-          'Upload your own 2D map image and create a custom practice course.',
-          'Use fullscreen mobile controls or desktop keyboard controls, then share the site in Japanese, English, or Chinese.'
+          'Practice driving test center and license course style maps directly in the browser without installing an app.',
+          'Switch between sedan and motorcycle modes for different training styles and steering behavior.',
+          'Upload your own 2D map image and build a custom practice course for simulator play.',
+          'Use fullscreen mobile controls or desktop keyboard controls, then open Japanese, English, or Chinese landing pages.'
         ]
       },
       ja: {
         lang: 'ja',
-        heroLead: 'ブラウザでそのまま運転練習。',
+        title: '試験場・免許センター向け運転シミュレーター・ゲーム | by LazyDogLab',
+        description: '試験場・免許センターのコース練習ができる運転シミュレーター・ゲーム。四輪・バイク対応、地図アップロード対応、日本語・英語・中文ページあり。',
+        heroTitle: '試験場・免許センター向け運転シミュレーター・ゲーム',
+        heroLead: '試験場・免許センターのコース練習を、ブラウザですぐ始められる運転シミュレーター・ゲームです。',
         languageLinks: ['日本語', 'English', '中文'],
-        heroBody: '2D の俯瞰マップでコース練習ができるブラウザ版シミュレーターです。スマホや PC でそのまま使えて、自分の地図もアップロードできます。',
-        copyTitle: 'このサイトでできること',
-        brandBadge: 'by lazydoglab',
+        heroBody: '2D の俯瞰マップで、四輪・バイクのコース練習ができます。免許センター風コースの練習にも、自分の地図をアップロードしたシミュレーター・ゲーム用途にも対応しています。',
+        copyTitle: 'このシミュレーターでできること',
+        brandBadge: 'by LazyDogLab',
+        contactEmailLabel: 'メール',
+        contactWechatLabel: 'WeChat',
+        copyWechatHint: 'クリックでコピー',
+        copiedWechatHint: 'コピーしました',
+        copyWechatFailed: 'コピーに失敗しました',
         promoTitle: '超超超超超スーパー使いやすい、翻訳・返信・語学学習用ブラウザ拡張も作っています。',
         promoBody: 'Linguabridge を見る',
         bullets: [
-          '免許センターのコース練習を、インストール不要でブラウザからすぐ始められます。',
-          '四輪・バイクを切り替えて、それぞれの練習スタイルに対応できます。',
-          '2D マップ画像をアップロードして、自分だけの練習コースも作れます。',
+          '試験場・免許センターのコース練習を、インストール不要でブラウザからすぐ始められます。',
+          '四輪・バイクを切り替えて、それぞれの練習スタイルや操舵感覚に対応できます。',
+          '2D マップ画像をアップロードして、自分だけの練習コースやゲーム感覚の走行コースも作れます。',
           'スマホ横画面と PC 操作の両方に対応し、日本語・英語・中国語ページもそのまま共有できます。'
         ]
       },
       zh: {
         lang: 'zh-CN',
-        heroLead: '直接在浏览器里开始驾驶练习。',
+        title: '试验场 / 免许中心驾驶模拟器 / 游戏 | by LazyDogLab',
+        description: '在浏览器里练习试验场和免许中心路线，支持四轮、摩托、自定义地图上传，以及日语、英语、中文页面。',
+        heroTitle: '试验场 / 免许中心驾驶模拟器 / 游戏',
+        heroLead: '直接在浏览器里开始试验场和免许中心路线练习。',
         languageLinks: ['日本語', 'English', '中文'],
-        heroBody: '这是一个基于 2D 俯视地图的驾驶练习模拟器。支持手机和 PC，支持用户自己上传地图，也支持直接切换车辆开始练习。',
-        copyTitle: '这个网站能做什么',
-        brandBadge: 'by lazydoglab',
+        heroBody: '这是一个基于 2D 俯视地图的驾驶模拟器 / 游戏。支持手机和 PC，支持四轮与摩托切换，也支持上传自己的地图开始练习。',
+        copyTitle: '这个模拟器能做什么',
+        brandBadge: 'by LazyDogLab',
+        contactEmailLabel: '邮箱',
+        contactWechatLabel: '微信',
+        copyWechatHint: '点击复制',
+        copiedWechatHint: '已复制',
+        copyWechatFailed: '复制失败',
         promoTitle: '我们还做了超超超超超超级好用的浏览器外语翻译 / 回复 / 学习插件！',
         promoBody: '打开 Linguabridge',
         bullets: [
-          '不用安装 App，就能直接练习免许中心风格或自定义路线。',
-          '支持四轮和摩托切换，适合不同练习场景。',
-          '支持上传 2D 地图图片，自定义自己的练习路线。',
+          '不用安装 App，就能直接练习试验场、免许中心风格或自定义路线。',
+          '支持四轮和摩托切换，适合不同练习场景和转向手感。',
+          '支持上传 2D 地图图片，自定义自己的练习路线或游戏地图。',
           '支持手机横屏全屏操作和桌面键盘操作，日语、英语、中文页面也能直接分享。'
         ]
       }
@@ -240,14 +474,60 @@
       return 'en';
     }
 
+    async function copyTextToClipboard(text) {
+      try {
+        if (navigator.clipboard?.writeText) {
+          await navigator.clipboard.writeText(text);
+          return true;
+        }
+      } catch (error) {
+        console.warn('Clipboard API copy failed:', error);
+      }
+
+      const textArea = document.createElement('textarea');
+      textArea.value = text;
+      textArea.setAttribute('readonly', '');
+      textArea.style.position = 'fixed';
+      textArea.style.opacity = '0';
+      textArea.style.pointerEvents = 'none';
+      document.body.append(textArea);
+      textArea.select();
+      textArea.setSelectionRange(0, text.length);
+
+      try {
+        return document.execCommand('copy');
+      } catch (error) {
+        console.warn('execCommand copy failed:', error);
+        return false;
+      } finally {
+        textArea.remove();
+      }
+    }
+
     document.addEventListener('DOMContentLoaded', () => {
+      const WECHAT_ID = 'JIUYUNJIUYUN';
       const locale = resolveRootLocale();
       const copy = ROOT_PAGE_COPY[locale];
+      const setMeta = (selector, value) => {
+        const element = document.querySelector(selector);
+        if (element) element.setAttribute('content', value);
+      };
+
       document.documentElement.lang = copy.lang;
+      document.title = copy.title;
+      setMeta('meta[name="description"]', copy.description);
+      setMeta('meta[property="og:title"]', copy.title);
+      setMeta('meta[property="og:description"]', copy.description);
+      setMeta('meta[name="twitter:title"]', copy.title);
+      setMeta('meta[name="twitter:description"]', copy.description);
+      document.getElementById('rootHeroTitle').textContent = copy.heroTitle;
       document.getElementById('rootHeroLead').textContent = copy.heroLead;
       document.getElementById('rootHeroBody').textContent = copy.heroBody;
       document.getElementById('rootCopyTitle').textContent = copy.copyTitle;
       document.getElementById('rootBrandBadge').textContent = copy.brandBadge;
+      document.getElementById('rootContactEmailLabel').textContent = copy.contactEmailLabel;
+      document.getElementById('rootContactWechatLabel').textContent = copy.contactWechatLabel;
+      document.getElementById('rootWechatCopyHint').textContent = copy.copyWechatHint;
       document.getElementById('rootPromoTitle').textContent = copy.promoTitle;
       document.getElementById('rootPromoBody').textContent = copy.promoBody;
 
@@ -260,30 +540,49 @@
       bulletEls.forEach((bullet, index) => {
         bullet.textContent = copy.bullets[index];
       });
+
+      const wechatCopyBtn = document.getElementById('rootWechatCopyBtn');
+      const wechatCopyHintEl = document.getElementById('rootWechatCopyHint');
+      let copyHintResetTimer = null;
+
+      wechatCopyBtn?.addEventListener('click', async () => {
+        if (copyHintResetTimer) {
+          clearTimeout(copyHintResetTimer);
+        }
+
+        const copied = await copyTextToClipboard(WECHAT_ID);
+        wechatCopyBtn.dataset.copyState = copied ? 'success' : 'error';
+        wechatCopyHintEl.textContent = copied ? copy.copiedWechatHint : copy.copyWechatFailed;
+
+        copyHintResetTimer = window.setTimeout(() => {
+          wechatCopyBtn.dataset.copyState = 'idle';
+          wechatCopyHintEl.textContent = copy.copyWechatHint;
+        }, 1800);
+      });
     });
   </script>
 </head>
 <body>
   <main>
     <section class="heroCard">
-      <div class="brandBadge"><span id="rootBrandBadge">by lazydoglab</span></div>
-      <h1>Drive Sim Web</h1>
-      <p class="heroLead" id="rootHeroLead">A browser driving simulator for driving test center course practice, custom map uploads, and fullscreen mobile play.</p>
+      <div class="brandBadge"><span id="rootBrandBadge">by LazyDogLab</span></div>
+      <h1 id="rootHeroTitle">試験場・免許センター向け運転シミュレーター・ゲーム</h1>
+      <p class="heroLead" id="rootHeroLead">試験場・免許センターのコース練習を、ブラウザですぐ始められる運転シミュレーター・ゲームです。</p>
       <div class="links">
         <a href="./ja/index.html" data-root-link>日本語</a>
         <a href="./en/index.html" data-root-link>English</a>
         <a href="./zh/index.html" data-root-link>中文</a>
       </div>
-      <p id="rootHeroBody">Choose a language to open the simulator. Each localized page is directly indexable and includes the same driving simulator with map presets, vehicle switching, and mobile controls.</p>
+      <p id="rootHeroBody">2D の俯瞰マップで、四輪・バイクのコース練習ができます。免許センター風コースの練習にも、自分の地図をアップロードしたシミュレーター・ゲーム用途にも対応しています。</p>
     </section>
 
     <section class="copyCard">
-      <h2 id="rootCopyTitle">What This Site Offers</h2>
+      <h2 id="rootCopyTitle">このシミュレーターでできること</h2>
       <ul class="highlights">
-        <li data-root-bullet>Practice driving test center courses in the browser without installing an app.</li>
-        <li data-root-bullet>Switch between sedan and motorcycle layouts with map-specific start positions and speed presets.</li>
-        <li data-root-bullet>Use fullscreen landscape mode on mobile and a keyboard-driven desktop mode.</li>
-        <li data-root-bullet>Open Japanese, English, or Chinese landing pages for search and direct sharing.</li>
+        <li data-root-bullet>試験場・免許センターのコース練習を、インストール不要でブラウザからすぐ始められます。</li>
+        <li data-root-bullet>四輪・バイクを切り替えて、それぞれの練習スタイルや操舵感覚に対応できます。</li>
+        <li data-root-bullet>2D マップ画像をアップロードして、自分だけの練習コースやゲーム感覚の走行コースも作れます。</li>
+        <li data-root-bullet>スマホ横画面と PC 操作の両方に対応し、日本語・英語・中国語ページもそのまま共有できます。</li>
       </ul>
       <a class="promoLink" href="https://linguabridge.lazydoglab.com/" target="_blank" rel="noopener noreferrer">
         <div>
@@ -295,7 +594,14 @@
 
     <section class="copyCard brandFooter">
       <img src="./assets/logos/lazydoglablogo.png" alt="lazydoglab" />
-      <p class="contactLine">Contact: <a href="mailto:jiu.yun@foxmail.com">jiu.yun@foxmail.com</a></p>
+      <div class="contactStack">
+        <p class="contactLine"><span id="rootContactEmailLabel">Email</span>: <a href="mailto:jiu.yun@foxmail.com">jiu.yun@foxmail.com</a></p>
+        <button id="rootWechatCopyBtn" class="contactCopyBtn" type="button" data-copy-state="idle">
+          <span class="contactCopyLabel" id="rootContactWechatLabel">WeChat</span>
+          <strong class="contactCopyValue">JIUYUNJIUYUN</strong>
+          <span class="contactCopyHint" id="rootWechatCopyHint" aria-live="polite">Click to copy</span>
+        </button>
+      </div>
     </section>
   </main>
 </body>
