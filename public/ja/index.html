@@ -65,48 +65,48 @@
         <p>Drive Sim Web は、2D の俯瞰マップを使って免許センターのコース練習ができるブラウザシミュレーターです。四輪とバイクを切り替えられ、ユーザー自身の地図アップロード、スマホ横画面、PC 操作にも対応しています。</p>
       </section>
 
-      <div class="row">
-        <label>
+      <div class="row primary-controls">
+        <label class="control-field">
           <span data-i18n="controls.vehicleType">Vehicle</span>
           <select id="vehicleType">
             <option value="sedan" data-i18n="controls.sedan">Corolla Sedan</option>
             <option value="motorcycle" data-i18n="controls.motorcycle">Motorcycle</option>
           </select>
         </label>
-        <label>
+        <label class="control-field">
           <span data-i18n="controls.map">Map</span>
           <select id="mapPreset"></select>
         </label>
-        <label class="file-label">
+        <label class="file-label action-btn">
           <span data-i18n="controls.uploadMap">Upload Map</span>
           <input id="mapInput" type="file" accept="image/*" />
         </label>
-        <button id="resetBtn" data-i18n="controls.resetVehicle">Reset Vehicle</button>
-        <button id="setSpawnBtn" data-i18n="controls.setSpawn">Set Spawn</button>
-        <button id="viewBtn" data-i18n="controls.changeView">Change View</button>
+        <button id="resetBtn" class="action-btn" data-i18n="controls.resetVehicle">Reset Vehicle</button>
+        <button id="setSpawnBtn" class="action-btn" data-i18n="controls.setSpawn">Set Spawn</button>
+        <button id="viewBtn" class="action-btn" data-i18n="controls.changeView">Change View</button>
       </div>
 
-      <div class="row compact">
-        <label>
+      <div class="row compact secondary-controls">
+        <label class="control-field">
           <span data-i18n="controls.mapWidth">Map Width (m)</span>
           <input id="mapWidth" type="number" min="10" max="1000" step="1" value="80" />
         </label>
-        <div class="range-card">
+        <div class="range-card control-range">
           <span data-i18n="controls.resizeMap">Map Scale</span>
           <input id="mapScale" type="range" min="10" max="1000" step="1" value="80" />
-          <span id="mapScaleValue">80 m</span>
+          <span id="mapScaleValue" class="control-value">80 m</span>
         </div>
-        <label>
+        <div class="range-card control-range">
           <span data-i18n="controls.maxSpeed">Max Speed</span>
           <input id="maxSpeed" type="range" min="2" max="40" step="1" value="18" />
-        </label>
-        <span id="maxSpeedValue">18 m/s</span>
-        <label>
+          <span id="maxSpeedValue" class="control-value">18 m/s</span>
+        </div>
+        <div class="range-card control-range">
           <span data-i18n="controls.steeringSensitivity">Steering Sensitivity</span>
           <input id="steeringSensitivity" type="range" min="50" max="200" step="1" value="100" />
-        </label>
-        <span id="steeringSensitivityValue">1.00x</span>
-        <label>
+          <span id="steeringSensitivityValue" class="control-value">1.00x</span>
+        </div>
+        <label class="toggle-card">
           <input id="autoCenterSteering" type="checkbox" />
           <span data-i18n="controls.autoCenterSteering">Auto-center Steering</span>
         </label>
