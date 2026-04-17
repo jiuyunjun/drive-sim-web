@@ -236,7 +236,79 @@ p {
   margin-bottom: 12px;
 }
 
-.row.compact label {
+.primary-controls,
+.secondary-controls {
+  display: grid;
+  align-items: stretch;
+}
+
+.primary-controls {
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+}
+
+.secondary-controls {
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+}
+
+.primary-controls > *,
+.secondary-controls > * {
+  min-width: 0;
+}
+
+.control-field {
+  display: grid;
+  align-content: start;
+  gap: 8px;
+  min-height: 74px;
+  padding: 10px 12px;
+  background: var(--surface-subtle);
+  border-radius: var(--radius-sm);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.control-field > span:first-child,
+.control-range > span:first-child {
+  color: #cfe6f7;
+  font-size: 12px;
+  line-height: 1.35;
+}
+
+.control-field select,
+.control-field input[type="number"] {
+  width: 100%;
+}
+
+.action-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 74px;
+  text-align: center;
+  font-weight: 600;
+}
+
+.toggle-card {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 74px;
+  padding: 10px 12px;
+  background: var(--surface-subtle);
+  border-radius: var(--radius-sm);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.toggle-card input[type="checkbox"] {
+  margin: 0;
+  flex: 0 0 auto;
+}
+
+.toggle-card span {
+  color: #e7f3fb;
+  line-height: 1.45;
+}
+
+.row.compact label:not(.control-field):not(.toggle-card) {
   display: flex;
   align-items: center;
   gap: 8px;
@@ -255,6 +327,34 @@ p {
   background: var(--surface-subtle);
   border-radius: var(--radius-sm);
   padding: 8px 12px;
+}
+
+.range-card.control-range {
+  min-height: 74px;
+  grid-template-columns: minmax(0, 1fr) auto;
+  grid-template-rows: auto auto;
+  grid-template-areas:
+    "label value"
+    "slider slider";
+  align-content: center;
+  gap: 8px 12px;
+}
+
+.range-card.control-range > span:first-child {
+  grid-area: label;
+}
+
+.range-card.control-range input[type="range"] {
+  grid-area: slider;
+  width: 100%;
+}
+
+.control-value {
+  grid-area: value;
+  min-width: 62px;
+  text-align: right;
+  color: #bfe7ff;
+  font-weight: 600;
 }
 
 .range-card span:last-child {
@@ -1433,9 +1533,23 @@ body.minimap-expanded .mobileClusterRight {
     margin-bottom: 10px;
   }
 
+  .primary-controls,
+  .secondary-controls {
+    grid-template-columns: 1fr;
+  }
+
   .row.compact label,
-  .range-card {
+  .range-card,
+  .action-btn,
+  .toggle-card {
     width: 100%;
+  }
+
+  .control-field,
+  .range-card.control-range,
+  .toggle-card,
+  .action-btn {
+    min-height: 64px;
   }
 
   h1 {
