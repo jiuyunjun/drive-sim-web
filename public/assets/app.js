@@ -109,6 +109,7 @@ const uiEl = document.getElementById('ui');
 const uiToggleEl = document.getElementById('uiToggle');
 const quickViewButtons = Array.from(document.querySelectorAll('.quickViewBtn'));
 const setSpawnBtnEl = document.getElementById('setSpawnBtn');
+const copyMapJsonBtnEl = document.getElementById('copyMapJsonBtn');
 const mirrorHudEl = document.getElementById('mirrorHud');
 const mirrorLeftEl = document.getElementById('mirrorLeft');
 const mirrorCenterEl = document.getElementById('mirrorCenter');
@@ -217,6 +218,7 @@ function saveSettings() {
     uiCollapsed: state.uiCollapsed,
     selectedMapId: state.selectedMapId,
     mapImageDataUrl: state.mapImageDataUrl,
+    currentMapImage: state.currentMapImage,
   };
 
   try {
@@ -1072,6 +1074,7 @@ const state = {
   autoCenterSteering: persistedSettings?.autoCenterSteering !== undefined ? Boolean(persistedSettings.autoCenterSteering) : true,
   selectedMapId: persistedSettings?.selectedMapId || '',
   mapImageDataUrl: persistedSettings?.mapImageDataUrl || null,
+  currentMapImage: typeof persistedSettings?.currentMapImage === 'string' ? persistedSettings.currentMapImage : '',
   startPose: getDefaultStartPose(),
   miniMapExpanded: false,
   followLookOffset: 0,
@@ -1839,6 +1842,7 @@ setSpawnBtnEl.addEventListener('click', () => {
   };
   saveSettings();
 });
+copyMapJsonBtnEl?.addEventListener('click', handleCopyMapJson);
 uiToggleEl.addEventListener('click', () => {
   setUiCollapsed(!state.uiCollapsed);
 });
@@ -1862,6 +1866,69 @@ function formatHeadingValue(headingRadians) {
   const normalizedRadians = THREE.MathUtils.euclideanModulo(headingRadians, Math.PI * 2);
   const degrees = THREE.MathUtils.radToDeg(normalizedRadians);
   return `${degrees.toFixed(1)}° / ${normalizedRadians.toFixed(6)} rad`;
+}
+
+function buildCurrentMapConfigJson() {
+  const normalizedHeading = THREE.MathUtils.euclideanModulo(state.heading, Math.PI * 2);
+  return JSON.stringify({
+    image: state.currentMapImage || '',
+    mapWidth: Math.round(groundSize.width),
+    maxSpeed: Number(state.maxSpeed.toFixed(2)),
+    startPose: {
+      x: Number(car.position.x.toFixed(1)),
+      z: Number(car.position.z.toFixed(1)),
+      heading: Number(normalizedHeading.toFixed(6)),
+    },
+  }, null, 2);
+}
+
+async function copyTextToClipboard(text) {
+  if (navigator.clipboard?.writeText) {
+    try {
+      await navigator.clipboard.writeText(text);
+      return;
+    } catch (error) {
+      console.warn('navigator.clipboard.writeText failed, falling back to execCommand:', error);
+    }
+  }
+
+  const helper = document.createElement('textarea');
+  helper.value = text;
+  helper.setAttribute('readonly', '');
+  helper.style.position = 'fixed';
+  helper.style.opacity = '0';
+  helper.style.pointerEvents = 'none';
+  document.body.append(helper);
+  helper.select();
+  helper.setSelectionRange(0, helper.value.length);
+  const copied = document.execCommand('copy');
+  helper.remove();
+
+  if (!copied) {
+    throw new Error('Clipboard copy failed');
+  }
+}
+
+let copyMapJsonResetTimer = null;
+
+async function handleCopyMapJson() {
+  if (!copyMapJsonBtnEl) return;
+  const defaultLabel = t('controls.copyMapJson');
+
+  try {
+    await copyTextToClipboard(buildCurrentMapConfigJson());
+    copyMapJsonBtnEl.textContent = t('controls.copyMapJsonDone');
+  } catch (error) {
+    console.warn('Failed to copy map JSON:', error);
+    copyMapJsonBtnEl.textContent = t('controls.copyMapJsonFailed');
+  }
+
+  if (copyMapJsonResetTimer) {
+    window.clearTimeout(copyMapJsonResetTimer);
+  }
+  copyMapJsonResetTimer = window.setTimeout(() => {
+    copyMapJsonBtnEl.textContent = defaultLabel;
+  }, 1600);
 }
 
 mapScaleEl.addEventListener('input', () => {
@@ -1972,6 +2039,7 @@ async function loadBuiltInMap(mapId, shouldReset = true) {
 
   state.selectedMapId = resolvedMapId;
   state.mapImageDataUrl = null;
+  state.currentMapImage = typeof mapConfig.image === 'string' ? mapConfig.image : '';
   state.startPose = sanitizeStartPose(mapConfig.startPose);
   state.maxSpeed = THREE.MathUtils.clamp(
     Number.isFinite(mapConfig.maxSpeed) ? mapConfig.maxSpeed : state.maxSpeed,
@@ -1992,6 +2060,7 @@ function handleMapUpload(file) {
     if (typeof reader.result !== 'string') return;
     state.selectedMapId = 'custom';
     state.mapImageDataUrl = reader.result;
+    state.currentMapImage = file.name || 'custom-map';
     syncMapPresetControl('custom');
     applyMapSource(reader.result);
   };

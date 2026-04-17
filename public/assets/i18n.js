@@ -34,6 +34,9 @@ const TRANSLATIONS = {
       maxSpeed: '车辆最大速度',
       steeringSensitivity: '转向灵敏度',
       autoCenterSteering: '方向盘自动回正',
+      copyMapJson: '复制当前位置 JSON',
+      copyMapJsonDone: 'JSON 已复制',
+      copyMapJsonFailed: '复制失败',
     },
     curve: {
       cardLabel: '加速曲线图',
@@ -151,6 +154,9 @@ const TRANSLATIONS = {
       maxSpeed: 'Max Speed',
       steeringSensitivity: 'Steering Sensitivity',
       autoCenterSteering: 'Auto-center Steering',
+      copyMapJson: 'Copy Current JSON',
+      copyMapJsonDone: 'JSON Copied',
+      copyMapJsonFailed: 'Copy Failed',
     },
     curve: {
       cardLabel: 'Acceleration curve chart',
@@ -268,6 +274,9 @@ const TRANSLATIONS = {
       maxSpeed: '最高速度',
       steeringSensitivity: '操舵感度',
       autoCenterSteering: '自動でハンドルを戻す',
+      copyMapJson: '現在の JSON をコピー',
+      copyMapJsonDone: 'JSON をコピーしました',
+      copyMapJsonFailed: 'コピーに失敗しました',
     },
     curve: {
       cardLabel: '加速カーブ図',

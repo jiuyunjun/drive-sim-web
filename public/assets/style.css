@@ -518,6 +518,32 @@ p {
   background: var(--surface-subtle);
 }
 
+.panelUtility {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 8px;
+}
+
+.subtleUtilityBtn {
+  padding: 6px 10px;
+  border-radius: var(--radius-pill);
+  border-color: rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.04);
+  color: rgba(219, 235, 245, 0.78);
+  font-size: 11px;
+  line-height: 1.2;
+  font-weight: 500;
+  letter-spacing: 0.01em;
+  box-shadow: none;
+}
+
+.subtleUtilityBtn:hover,
+.subtleUtilityBtn:focus-visible {
+  background: rgba(255, 255, 255, 0.08);
+  border-color: rgba(255, 255, 255, 0.16);
+  color: rgba(232, 244, 251, 0.9);
+}
+
 .curveMeta strong {
   color: #f3fbff;
 }
