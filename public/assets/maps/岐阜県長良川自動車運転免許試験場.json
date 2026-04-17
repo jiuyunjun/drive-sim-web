@@ -1,0 +1,10 @@
+{
+  "image": "岐阜県長良川自動車運転免許試験場.webp",
+  "mapWidth": 490,
+  "maxSpeed": 10,
+  "startPose": {
+    "x": -22.9,
+    "z": -76.1,
+    "heading": 1.384953
+  }
+}
