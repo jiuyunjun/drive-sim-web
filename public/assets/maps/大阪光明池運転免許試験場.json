@@ -1,0 +1,10 @@
+{
+  "image": "大阪光明池運転免許試験場.webp",
+  "mapWidth": 374,
+  "maxSpeed": 10,
+  "startPose": {
+    "x": -107.3,
+    "z": 103.4,
+    "heading": 4.192486
+  }
+}
