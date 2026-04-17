@@ -32,6 +32,7 @@ const TRANSLATIONS = {
       mapWidth: '地图宽度（米）',
       resizeMap: '拖拽地图比例',
       maxSpeed: '车辆最大速度',
+      steeringSensitivity: '转向灵敏度',
       autoCenterSteering: '方向盘自动回正',
     },
     curve: {
@@ -152,6 +153,7 @@ const TRANSLATIONS = {
       mapWidth: 'Map Width (m)',
       resizeMap: 'Map Scale',
       maxSpeed: 'Max Speed',
+      steeringSensitivity: 'Steering Sensitivity',
       autoCenterSteering: 'Auto-center Steering',
     },
     curve: {
@@ -272,6 +274,7 @@ const TRANSLATIONS = {
       mapWidth: 'マップ幅（m）',
       resizeMap: 'マップ倍率',
       maxSpeed: '最高速度',
+      steeringSensitivity: '操舵感度',
       autoCenterSteering: '自動でハンドルを戻す',
     },
     curve: {
