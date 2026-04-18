@@ -1485,6 +1485,10 @@ body.minimap-expanded .mobileClusterRight {
     overflow: hidden;
   }
 
+  body.mobile-linear-throttle-invert .mobileThrottleLeverTrack {
+    transform: rotate(180deg);
+  }
+
   .mobileThrottleLeverFill {
     position: absolute;
     left: 0;

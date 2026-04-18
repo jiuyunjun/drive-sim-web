@@ -101,6 +101,7 @@ const accelCurveInputValueEl = document.getElementById('accelCurveInputValue');
 const accelCurveOutputValueEl = document.getElementById('accelCurveOutputValue');
 const autoCenterSteeringEl = document.getElementById('autoCenterSteering');
 const mobileLinearThrottleToggleEl = document.getElementById('mobileLinearThrottle');
+const mobileLinearThrottleInvertToggleEl = document.getElementById('mobileLinearThrottleInvert');
 const vehicleTypeEl = document.getElementById('vehicleType');
 const mapWidthEl = document.getElementById('mapWidth');
 const mapScaleEl = document.getElementById('mapScale');
@@ -148,6 +149,8 @@ const STEERING_SENSITIVITY_MIN = Number(steeringSensitivityEl?.min) / 100 || 0.5
 const STEERING_SENSITIVITY_MAX = Number(steeringSensitivityEl?.max) / 100 || 2.0;
 const FOLLOW_PITCH_LIMIT = THREE.MathUtils.degToRad(35);
 const COCKPIT_LOOK_LIMIT = THREE.MathUtils.degToRad(75);
+const MOBILE_STEER_DEADZONE_PX = 4;
+const MOBILE_STEER_FOLLOW_SPEED = 20;
 const AudioContextClass = window.AudioContext || window.webkitAudioContext;
 const SETTINGS_STORAGE_KEY = 'driveSimSettingsV2';
 const MAPS_BASE_URL = new URL('./maps/', import.meta.url);
@@ -332,6 +335,7 @@ function saveSettings() {
     accelCurve: state.accelCurve,
     autoCenterSteering: state.autoCenterSteering,
     mobileLinearThrottleEnabled: state.mobileLinearThrottleEnabled,
+    mobileLinearThrottleInvert: state.mobileLinearThrottleInvert,
     vehicleType: state.vehicleType,
     uiCollapsed: state.uiCollapsed,
     selectedMapId: state.selectedMapId,
@@ -450,6 +454,13 @@ function updateMobileThrottleLeverUi() {
   mobileThrottleLeverEl.dataset.active = state.mobileThrottlePointerId !== null ? 'true' : 'false';
   if (mobileThrottleLeverFillEl) mobileThrottleLeverFillEl.setAttribute('aria-hidden', 'true');
   if (mobileThrottleLeverKnobEl) mobileThrottleLeverKnobEl.setAttribute('aria-hidden', 'true');
+}
+
+function syncMobileLinearThrottleInvertControl(enabled) {
+  const isEnabled = Boolean(enabled);
+  state.mobileLinearThrottleInvert = isEnabled;
+  if (mobileLinearThrottleInvertToggleEl) mobileLinearThrottleInvertToggleEl.checked = isEnabled;
+  document.body.classList.toggle('mobile-linear-throttle-invert', isEnabled);
 }
 
 function releaseActiveTouchBinding(pointerId, shouldVibrate = true) {
@@ -1007,7 +1018,9 @@ function bindMobileControls() {
       const insetTop = 28;
       const insetBottom = 10;
       const usableHeight = Math.max(rect.height - insetTop - insetBottom, 1);
-      const rawLevel = (rect.bottom - insetBottom - event.clientY) / usableHeight;
+      const rawLevel = state.mobileLinearThrottleInvert
+        ? (event.clientY - (rect.top + insetTop)) / usableHeight
+        : (rect.bottom - insetBottom - event.clientY) / usableHeight;
       const nextLevel = THREE.MathUtils.clamp(rawLevel, 0, 1);
       state.mobileThrottleLeverTarget = nextLevel;
       const nextHapticStep = Math.round(nextLevel * 8);
@@ -1061,6 +1074,7 @@ function bindMobileControls() {
       state.touchSteerPointerId = e.pointerId;
       state.touchSteerStartX = e.clientX;
       state.touchSteerStartAngle = state.steeringWheelAngle;
+      state.touchSteerTargetAngle = state.steeringWheelAngle;
       steerHapticStep = Math.round((state.steeringWheelAngle / STEERING_WHEEL_MAX) * MOBILE_HAPTIC.steerStepCount);
       mobileSteerZoneEl.setPointerCapture(e.pointerId);
       mobileSteerZoneEl.classList.add('active');
@@ -1068,20 +1082,23 @@ function bindMobileControls() {
 
     mobileSteerZoneEl.addEventListener('pointermove', (e) => {
       if (e.pointerId !== state.touchSteerPointerId) return;
-      const dx = e.clientX - state.touchSteerStartX;
+      const rawDx = e.clientX - state.touchSteerStartX;
+      const dx = Math.abs(rawDx) <= MOBILE_STEER_DEADZONE_PX
+        ? 0
+        : rawDx - Math.sign(rawDx) * MOBILE_STEER_DEADZONE_PX;
       // 110px 对应满打方向盘，灵敏度可调
       const sensitivity = STEERING_WHEEL_MAX / 110;
-      state.steeringWheelAngle = THREE.MathUtils.clamp(
+      state.touchSteerTargetAngle = THREE.MathUtils.clamp(
         state.touchSteerStartAngle - dx * sensitivity * state.steeringSensitivity,
         -STEERING_WHEEL_MAX,
         STEERING_WHEEL_MAX
       );
-      const nextHapticStep = Math.round((state.steeringWheelAngle / STEERING_WHEEL_MAX) * MOBILE_HAPTIC.steerStepCount);
+      const nextHapticStep = Math.round((state.touchSteerTargetAngle / STEERING_WHEEL_MAX) * MOBILE_HAPTIC.steerStepCount);
       if (nextHapticStep !== steerHapticStep) {
         steerHapticStep = nextHapticStep;
         triggerMobileVibration(MOBILE_HAPTIC.steerTick);
       }
-      const pct = Math.round((state.steeringWheelAngle / STEERING_WHEEL_MAX) * -100);
+      const pct = Math.round((state.touchSteerTargetAngle / STEERING_WHEEL_MAX) * -100);
       mobileSteerZoneEl.setAttribute('aria-valuenow', pct);
     });
 
@@ -1089,6 +1106,7 @@ function bindMobileControls() {
       if (e.pointerId !== state.touchSteerPointerId) return;
       state.touchSteerActive = false;
       state.touchSteerPointerId = null;
+      state.touchSteerTargetAngle = state.steeringWheelAngle;
       mobileSteerZoneEl.classList.remove('active');
       triggerMobileVibration(MOBILE_HAPTIC.release);
     };
@@ -1169,6 +1187,7 @@ function bindMobileControls() {
     // 失焦时也复位触控转向
     state.touchSteerActive = false;
     state.touchSteerPointerId = null;
+    state.touchSteerTargetAngle = state.steeringWheelAngle;
     state.mobileThrottlePointerId = null;
     state.mobileThrottleLeverTarget = 0;
     if (mobileSteerZoneEl) mobileSteerZoneEl.classList.remove('active');
@@ -1291,6 +1310,7 @@ const state = {
   reverseInput: 0,
   autoCenterSteering: persistedSettings?.autoCenterSteering !== undefined ? Boolean(persistedSettings.autoCenterSteering) : true,
   mobileLinearThrottleEnabled: Boolean(persistedSettings?.mobileLinearThrottleEnabled),
+  mobileLinearThrottleInvert: Boolean(persistedSettings?.mobileLinearThrottleInvert),
   selectedMapId: persistedSettings?.selectedMapId || '',
   mapImageDataUrl: persistedSettings?.mapImageDataUrl || null,
   currentMapImage: typeof persistedSettings?.currentMapImage === 'string' ? persistedSettings.currentMapImage : '',
@@ -1310,6 +1330,7 @@ const state = {
   touchSteerPointerId: null,
   touchSteerStartX: 0,
   touchSteerStartAngle: 0,
+  touchSteerTargetAngle: 0,
   mobileThrottleLeverValue: 0,
   mobileThrottleLeverTarget: 0,
   mobileThrottlePointerId: null,
@@ -1682,6 +1703,7 @@ function resetCar() {
   state.speed = 0;
   state.steer = 0;
   state.steeringWheelAngle = 0;
+  state.touchSteerTargetAngle = 0;
   state.turnSignal = 'off';
   state.signalBlinkVisible = false;
   state.signalTimer = 0;
@@ -1826,15 +1848,19 @@ function updateCar(dt) {
   const effectiveReturnSpeed = steeringReturnSpeed * (0.55 + 0.45 * steerSpeedFactor);
 
   // 触控滑动转向时跳过键盘路径，由 touch handler 直接写 steeringWheelAngle
-  if (!state.touchSteerActive) {
+  if (state.touchSteerActive) {
+    state.steeringWheelAngle = THREE.MathUtils.damp(
+      state.steeringWheelAngle,
+      state.touchSteerTargetAngle,
+      MOBILE_STEER_FOLLOW_SPEED,
+      dt
+    );
+  } else {
     if (left) state.steeringWheelAngle += effectiveSteeringSpeed * dt;
     if (right) state.steeringWheelAngle -= effectiveSteeringSpeed * dt;
     if (state.autoCenterSteering && !left && !right) {
       state.steeringWheelAngle = THREE.MathUtils.damp(state.steeringWheelAngle, 0, effectiveReturnSpeed, dt);
     }
-  } else if (state.autoCenterSteering) {
-    // 松手后自动回正（触控路径）
-    state.steeringWheelAngle = THREE.MathUtils.damp(state.steeringWheelAngle, 0, effectiveReturnSpeed, dt);
   }
   state.steeringWheelAngle = THREE.MathUtils.clamp(state.steeringWheelAngle, -STEERING_WHEEL_MAX, STEERING_WHEEL_MAX);
   state.steer = (state.steeringWheelAngle / STEERING_WHEEL_MAX) * dynamics.maxSteer;
@@ -2218,6 +2244,11 @@ mobileLinearThrottleToggleEl?.addEventListener('change', () => {
   saveSettings();
 });
 
+mobileLinearThrottleInvertToggleEl?.addEventListener('change', () => {
+  syncMobileLinearThrottleInvertControl(mobileLinearThrottleInvertToggleEl.checked);
+  saveSettings();
+});
+
 
 vehicleTypeEl.addEventListener('change', () => {
   setVehicleType(vehicleTypeEl.value);
@@ -2362,6 +2393,7 @@ syncSteeringSensitivityControl(state.steeringSensitivity);
 syncAccelCurveControl(state.accelCurve);
 syncAutoCenterControl(state.autoCenterSteering);
 syncMobileLinearThrottleControl(state.mobileLinearThrottleEnabled);
+syncMobileLinearThrottleInvertControl(state.mobileLinearThrottleInvert);
 syncVehicleTypeControl(state.vehicleType);
 state.maxSpeed = Number(maxSpeedEl.value);
 
