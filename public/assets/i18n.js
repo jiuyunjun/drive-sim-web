@@ -34,6 +34,7 @@ const TRANSLATIONS = {
       maxSpeed: '车辆最大速度',
       steeringSensitivity: '转向灵敏度',
       autoCenterSteering: '方向盘自动回正',
+      mobileLinearThrottle: '手机模式启用线性油门拉杆',
       copyMapJson: '复制当前位置 JSON',
       copyMapJsonDone: 'JSON 已复制',
       copyMapJsonFailed: '复制失败',
@@ -108,6 +109,7 @@ const TRANSLATIONS = {
       brake: '刹车',
       reverse: '后退',
       throttle: '油门',
+      throttleLever: '线性油门拉杆',
     },
     rotate: {
       title: '请横屏使用',
@@ -154,6 +156,7 @@ const TRANSLATIONS = {
       maxSpeed: 'Max Speed',
       steeringSensitivity: 'Steering Sensitivity',
       autoCenterSteering: 'Auto-center Steering',
+      mobileLinearThrottle: 'Use linear throttle lever on mobile',
       copyMapJson: 'Copy Current JSON',
       copyMapJsonDone: 'JSON Copied',
       copyMapJsonFailed: 'Copy Failed',
@@ -228,6 +231,7 @@ const TRANSLATIONS = {
       brake: 'Brake',
       reverse: 'Reverse',
       throttle: 'Throttle',
+      throttleLever: 'Linear throttle lever',
     },
     rotate: {
       title: 'Use Landscape Mode',
@@ -274,6 +278,7 @@ const TRANSLATIONS = {
       maxSpeed: '最高速度',
       steeringSensitivity: '操舵感度',
       autoCenterSteering: '自動でハンドルを戻す',
+      mobileLinearThrottle: 'モバイルで線形アクセルレバーを使う',
       copyMapJson: '現在の JSON をコピー',
       copyMapJsonDone: 'JSON をコピーしました',
       copyMapJsonFailed: 'コピーに失敗しました',
@@ -348,6 +353,7 @@ const TRANSLATIONS = {
       brake: 'ブレーキ',
       reverse: '後退',
       throttle: 'アクセル',
+      throttleLever: '線形アクセルレバー',
     },
     rotate: {
       title: '横向きでご利用ください',

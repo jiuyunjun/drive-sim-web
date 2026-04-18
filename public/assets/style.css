@@ -906,6 +906,10 @@ body.minimap-expanded .mobileClusterRight {
   min-height: 72px;
 }
 
+.mobileThrottleLever {
+  display: none;
+}
+
 .mobileThrottle {
   background: linear-gradient(180deg, rgba(40, 138, 93, 0.82), rgba(22, 78, 56, 0.88));
   min-height: 72px;
@@ -1394,9 +1398,22 @@ body.minimap-expanded .mobileClusterRight {
   .mobileControlTall,
   .mobileThrottle,
   .mobileBrake,
+  .mobileThrottleLever,
   .mobileReverse {
     min-width: 54px;
     min-height: 60px;
+  }
+
+  body.mobile-linear-throttle-enabled .mobileThrottle {
+    display: none;
+  }
+
+  body.mobile-linear-throttle-enabled .mobileThrottleLever {
+    display: block;
+  }
+
+  body:not(.mobile-linear-throttle-enabled) .mobileThrottleLever {
+    display: none;
   }
 
   .mobileThrottle {
@@ -1415,6 +1432,86 @@ body.minimap-expanded .mobileClusterRight {
       inset 0 1px 0 rgba(255, 255, 255, 0.14),
       inset 0 -3px 0 rgba(0, 0, 0, 0.18),
       0 10px 18px rgba(0, 0, 0, 0.24);
+  }
+
+  .mobileThrottleLever {
+    --throttle-level: 0;
+    position: relative;
+    width: clamp(44px, 10.5vw, 54px);
+    min-width: clamp(44px, 10.5vw, 54px);
+    height: clamp(108px, 24vw, 136px);
+    padding: 8px 0 10px;
+    border: 1px solid rgba(88, 182, 126, 0.65);
+    border-radius: 22px;
+    background:
+      linear-gradient(180deg, rgba(20, 42, 31, 0.95), rgba(11, 24, 18, 0.98)),
+      rgba(255, 255, 255, 0.04);
+    box-shadow:
+      inset 0 1px 0 rgba(255, 255, 255, 0.1),
+      0 12px 22px rgba(0, 0, 0, 0.28);
+    backdrop-filter: blur(10px);
+    touch-action: none;
+    user-select: none;
+    -webkit-user-select: none;
+    -webkit-touch-callout: none;
+  }
+
+  .mobileThrottleLever[data-active="true"] {
+    border-color: rgba(126, 226, 160, 0.9);
+    box-shadow:
+      inset 0 1px 0 rgba(255, 255, 255, 0.16),
+      0 0 0 1px rgba(108, 212, 146, 0.24),
+      0 14px 24px rgba(0, 0, 0, 0.32);
+  }
+
+  .mobileThrottleLeverLabel {
+    display: block;
+    text-align: center;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    color: rgba(223, 245, 232, 0.92);
+    pointer-events: none;
+  }
+
+  .mobileThrottleLeverTrack {
+    position: absolute;
+    inset: 28px 8px 10px;
+    border-radius: 16px;
+    background:
+      linear-gradient(180deg, rgba(255, 255, 255, 0.08), rgba(255, 255, 255, 0.02)),
+      rgba(4, 12, 8, 0.5);
+    box-shadow: inset 0 1px 4px rgba(0, 0, 0, 0.34);
+    overflow: hidden;
+  }
+
+  .mobileThrottleLeverFill {
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    height: calc(var(--throttle-level) * 100%);
+    min-height: calc(var(--throttle-level) * 18px);
+    background:
+      linear-gradient(180deg, rgba(113, 234, 157, 0.42), rgba(36, 154, 88, 0.88)),
+      repeating-linear-gradient(90deg, rgba(255, 255, 255, 0.1) 0 4px, rgba(255, 255, 255, 0.02) 4px 8px);
+    transform-origin: bottom;
+    pointer-events: none;
+  }
+
+  .mobileThrottleLeverKnob {
+    position: absolute;
+    left: 50%;
+    bottom: calc(6px + var(--throttle-level) * (100% - 34px));
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    transform: translateX(-50%);
+    background: linear-gradient(180deg, rgba(240, 255, 245, 0.96), rgba(146, 220, 171, 0.96));
+    box-shadow:
+      0 4px 10px rgba(0, 0, 0, 0.36),
+      inset 0 1px 0 rgba(255, 255, 255, 0.8);
+    pointer-events: none;
   }
 
   .mobileBrakePrimary {

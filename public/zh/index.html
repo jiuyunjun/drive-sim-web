@@ -125,6 +125,12 @@
             <span data-i18n="controls.autoCenterSteering">Auto-center Steering</span>
           </label>
         </div>
+        <div class="controlGrid">
+          <label class="toggle-card span-12">
+            <input id="mobileLinearThrottle" type="checkbox" />
+            <span data-i18n="controls.mobileLinearThrottle">手机模式启用线性油门拉杆</span>
+          </label>
+        </div>
       </section>
 
       <div class="curveCard" data-i18n-aria-label="curve.cardLabel" aria-label="Acceleration curve chart">
@@ -267,6 +273,22 @@
         <button class="mobileControl mobileHandbrake" data-hold-key=" " data-i18n="mobile.brake" data-i18n-aria-label="mobile.brake" aria-label="Brake">Brake</button>
         <button class="mobileControl mobileControlTall mobileReverse" data-hold-key="s" data-i18n="mobile.reverse" data-i18n-aria-label="mobile.reverse" aria-label="Reverse">Reverse</button>
         <button class="mobileControl mobileControlTall mobileBrake mobileBrakePrimary" data-hold-key=" " data-i18n="mobile.brake" data-i18n-aria-label="mobile.brake" aria-label="Brake">Brake</button>
+        <div
+          id="mobileThrottleLever"
+          class="mobileThrottleLever"
+          role="slider"
+          aria-valuemin="0"
+          aria-valuemax="100"
+          aria-valuenow="0"
+          data-i18n-aria-label="mobile.throttleLever"
+          aria-label="线性油门拉杆"
+        >
+          <span class="mobileThrottleLeverLabel" data-i18n="mobile.throttle">油门</span>
+          <div class="mobileThrottleLeverTrack">
+            <div class="mobileThrottleLeverFill" id="mobileThrottleLeverFill"></div>
+            <div class="mobileThrottleLeverKnob" id="mobileThrottleLeverKnob"></div>
+          </div>
+        </div>
         <button class="mobileControl mobileControlTall mobileThrottle" data-hold-key="w" data-i18n="mobile.throttle" data-i18n-aria-label="mobile.throttle" aria-label="Throttle">Throttle</button>
       </div>
     </div>
