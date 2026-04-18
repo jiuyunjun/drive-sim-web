@@ -147,6 +147,7 @@ const COCKPIT_LOOK_LIMIT = THREE.MathUtils.degToRad(75);
 const AudioContextClass = window.AudioContext || window.webkitAudioContext;
 const SETTINGS_STORAGE_KEY = 'driveSimSettingsV2';
 const MAPS_BASE_URL = new URL('./maps/', import.meta.url);
+const ANALYTICS_HEARTBEAT_MS = 30000;
 const ACCEL_CURVE_CHART = Object.freeze({
   left: 32,
   right: 188,
@@ -159,6 +160,118 @@ const VIEW_LABELS = {
   cockpit: t('views.cockpit'),
   orbit: t('views.orbit'),
 };
+
+function getAnalyticsTracker() {
+  return typeof window.gtag === 'function' ? window.gtag : null;
+}
+
+function trackAnalyticsEvent(eventName, params = {}) {
+  const gtag = getAnalyticsTracker();
+  if (!gtag) return;
+  gtag('event', eventName, {
+    page_location: window.location.href,
+    page_path: window.location.pathname,
+    page_title: document.title,
+    language: document.documentElement.lang || navigator.language || 'unknown',
+    ...params,
+  });
+}
+
+const playtimeAnalytics = {
+  activeSinceMs: null,
+  pendingPageMs: 0,
+  pendingMapMs: 0,
+  heartbeatTimerId: null,
+  currentMapId: '',
+  currentMapLabel: '',
+  currentMapSource: 'built_in',
+};
+
+function isAnalyticsActive() {
+  return !document.hidden;
+}
+
+function beginPlaytimeTracking() {
+  if (!isAnalyticsActive() || playtimeAnalytics.activeSinceMs !== null) return;
+  playtimeAnalytics.activeSinceMs = performance.now();
+}
+
+function consumeTrackedPlaytime(now = performance.now()) {
+  if (playtimeAnalytics.activeSinceMs === null) return;
+  const elapsedMs = Math.max(0, now - playtimeAnalytics.activeSinceMs);
+  playtimeAnalytics.activeSinceMs = now;
+  playtimeAnalytics.pendingPageMs += elapsedMs;
+  playtimeAnalytics.pendingMapMs += elapsedMs;
+}
+
+function stopPlaytimeTracking(now = performance.now()) {
+  consumeTrackedPlaytime(now);
+  playtimeAnalytics.activeSinceMs = null;
+}
+
+function getCurrentMapAnalyticsMeta() {
+  const isCustomMap = state.selectedMapId === 'custom';
+  const fallbackLabel = isCustomMap ? (state.currentMapImage || 'custom-map') : (state.selectedMapId || 'unknown');
+  return {
+    mapId: isCustomMap ? 'custom' : (state.selectedMapId || 'unknown'),
+    mapLabel: fallbackLabel,
+    mapSource: isCustomMap ? 'custom' : 'built_in',
+  };
+}
+
+function syncPlaytimeMapContext() {
+  const { mapId, mapLabel, mapSource } = getCurrentMapAnalyticsMeta();
+  playtimeAnalytics.currentMapId = mapId;
+  playtimeAnalytics.currentMapLabel = mapLabel;
+  playtimeAnalytics.currentMapSource = mapSource;
+}
+
+function flushPlaytimeAnalytics(reason) {
+  if (isAnalyticsActive()) {
+    consumeTrackedPlaytime();
+  }
+
+  const pageSeconds = Math.floor(playtimeAnalytics.pendingPageMs / 1000);
+  const mapSeconds = Math.floor(playtimeAnalytics.pendingMapMs / 1000);
+
+  if (pageSeconds >= 1) {
+    trackAnalyticsEvent('drive_play_time', {
+      reason,
+      value: pageSeconds,
+      play_time_seconds: pageSeconds,
+      engagement_time_msec: pageSeconds * 1000,
+      current_map_id: playtimeAnalytics.currentMapId || 'unknown',
+      current_map_label: playtimeAnalytics.currentMapLabel || 'unknown',
+      current_map_source: playtimeAnalytics.currentMapSource || 'built_in',
+    });
+    playtimeAnalytics.pendingPageMs -= pageSeconds * 1000;
+  }
+
+  if (mapSeconds >= 1 && playtimeAnalytics.currentMapId) {
+    trackAnalyticsEvent('drive_map_play_time', {
+      reason,
+      value: mapSeconds,
+      play_time_seconds: mapSeconds,
+      engagement_time_msec: mapSeconds * 1000,
+      map_id: playtimeAnalytics.currentMapId,
+      map_label: playtimeAnalytics.currentMapLabel || playtimeAnalytics.currentMapId,
+      map_source: playtimeAnalytics.currentMapSource || 'built_in',
+    });
+    playtimeAnalytics.pendingMapMs -= mapSeconds * 1000;
+  }
+}
+
+function startPlaytimeHeartbeat() {
+  if (playtimeAnalytics.heartbeatTimerId !== null) return;
+  playtimeAnalytics.heartbeatTimerId = window.setInterval(() => {
+    flushPlaytimeAnalytics('heartbeat');
+  }, ANALYTICS_HEARTBEAT_MS);
+}
+
+function finalizePlaytimeTracking(reason) {
+  stopPlaytimeTracking();
+  flushPlaytimeAnalytics(reason);
+}
 
 let groundMesh;
 let groundSize = { width: 80, height: 45 };
@@ -754,9 +867,17 @@ renderer.domElement.addEventListener('pointerup', endLookDrag);
 renderer.domElement.addEventListener('pointercancel', endLookDrag);
 window.addEventListener('fullscreenchange', refreshMobileShellState);
 window.addEventListener('visibilitychange', () => {
-  if (!document.hidden) refreshMobileShellState();
+  if (!document.hidden) {
+    refreshMobileShellState();
+    beginPlaytimeTracking();
+    return;
+  }
+  finalizePlaytimeTracking('hidden');
 });
 window.addEventListener('pageshow', refreshMobileShellState);
+window.addEventListener('pageshow', beginPlaytimeTracking);
+window.addEventListener('pagehide', () => finalizePlaytimeTracking('pagehide'));
+window.addEventListener('beforeunload', () => finalizePlaytimeTracking('beforeunload'));
 
 function bindMobileControls() {
   if (!mobileControlsEl) return;
@@ -2033,6 +2154,7 @@ async function loadMapCatalog() {
 }
 
 async function loadBuiltInMap(mapId, shouldReset = true) {
+  flushPlaytimeAnalytics('map_change');
   const resolvedMapId = availableMaps.includes(mapId) ? mapId : availableMaps[0];
   const configUrl = new URL(`${resolvedMapId}.json`, MAPS_BASE_URL);
   const mapConfig = await fetchJson(configUrl);
@@ -2049,18 +2171,21 @@ async function loadBuiltInMap(mapId, shouldReset = true) {
   syncMapPresetControl(resolvedMapId);
   syncMapControls(mapConfig.mapWidth ?? groundSize.width);
   syncMaxSpeedControl(state.maxSpeed);
+  syncPlaytimeMapContext();
 
   applyMapSource(new URL(mapConfig.image, MAPS_BASE_URL).href, shouldReset);
   saveSettings();
 }
 
 function handleMapUpload(file) {
+  flushPlaytimeAnalytics('map_change');
   const reader = new FileReader();
   reader.onload = () => {
     if (typeof reader.result !== 'string') return;
     state.selectedMapId = 'custom';
     state.mapImageDataUrl = reader.result;
     state.currentMapImage = file.name || 'custom-map';
+    syncPlaytimeMapContext();
     syncMapPresetControl('custom');
     applyMapSource(reader.result);
   };
@@ -2118,6 +2243,9 @@ resetCar();
 setView('follow');
 setVehicleType(state.vehicleType);
 setUiCollapsed(isMobileLikeDevice() ? true : Boolean(persistedSettings?.uiCollapsed));
+syncPlaytimeMapContext();
+beginPlaytimeTracking();
+startPlaytimeHeartbeat();
 
 async function initializeMaps() {
   try {
