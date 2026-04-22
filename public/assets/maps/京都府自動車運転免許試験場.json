@@ -1,0 +1,10 @@
+{
+  "image": "京都府自動車運転免許試験場.webp",
+  "mapWidth": 439,
+  "maxSpeed": 10,
+  "startPose": {
+    "x": 22.2,
+    "z": 79.7,
+    "heading": 4.691834
+  }
+}
