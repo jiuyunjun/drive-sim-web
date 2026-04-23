@@ -1,0 +1,10 @@
+{
+  "image": "愛知県名古屋市平針運転免許試験場.webp",
+  "mapWidth": 500,
+  "maxSpeed": 10,
+  "startPose": {
+    "x": -160,
+    "z": 51.3,
+    "heading": 1.570796
+  }
+}
