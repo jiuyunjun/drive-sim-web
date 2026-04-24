@@ -1,7 +1,7 @@
 {
   "image": "京都ニュードライバー.webp",
   "mapWidth": 450,
-  "maxSpeed": 10,
+  "maxSpeed": 17,
       "startPose": {
     "x": 51.6,
     "z": -82.3,

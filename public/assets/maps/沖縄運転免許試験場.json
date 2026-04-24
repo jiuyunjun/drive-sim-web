@@ -1,7 +1,7 @@
 {
   "image": "沖縄運転免許試験場.webp",
   "mapWidth": 439,
-  "maxSpeed": 10,
+  "maxSpeed": 17,
   "startPose": {
     "x": -10.2,
     "z": -114.5,

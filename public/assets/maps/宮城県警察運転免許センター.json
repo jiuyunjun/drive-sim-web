@@ -1,7 +1,7 @@
 {
   "image": "宮城県警察運転免許センター.webp",
   "mapWidth": 500,
-  "maxSpeed": 10,
+  "maxSpeed": 17,
   "startPose": {
     "x": -160,
     "z": 55,
