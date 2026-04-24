@@ -1,6 +1,7 @@
 /* ===== CSS Custom Properties ===== */
 :root {
   /* z-index layers (low → high) */
+  --z-speed-fx: 2;
   --z-mirror: 9;
   --z-minimap: 10;
   --z-hud: 10;
@@ -63,6 +64,30 @@ html, body {
   display: block;
   width: 100vw;
   height: 100vh;
+}
+
+/* ===== Speed visual effects ===== */
+#speedVignette {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: var(--z-speed-fx);
+  background: radial-gradient(ellipse at center, transparent 30%, rgba(0, 0, 0, 0.92) 100%);
+  opacity: 0;
+  will-change: opacity;
+}
+
+#speedBlur {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: var(--z-speed-fx);
+  backdrop-filter: blur(5px);
+  -webkit-backdrop-filter: blur(5px);
+  mask-image: radial-gradient(ellipse 56% 56% at 50% 50%, transparent 50%, black 82%);
+  -webkit-mask-image: radial-gradient(ellipse 56% 56% at 50% 50%, transparent 50%, black 82%);
+  opacity: 0;
+  will-change: opacity;
 }
 
 #app,

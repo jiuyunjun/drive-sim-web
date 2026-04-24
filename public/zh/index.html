@@ -115,6 +115,14 @@
         </div>
 
         <div class="controlGrid">
+          <div class="range-card control-range span-12">
+            <span data-i18n="controls.volume">音量</span>
+            <input id="masterVolume" type="range" min="0" max="100" step="1" value="55" />
+            <span id="masterVolumeValue" class="control-value">55%</span>
+          </div>
+        </div>
+
+        <div class="controlGrid">
           <div class="range-card control-range span-8">
             <span data-i18n="controls.steeringSensitivity">Steering Sensitivity</span>
             <input id="steeringSensitivity" type="range" min="50" max="200" step="1" value="100" />
@@ -326,6 +334,8 @@
     </div>
   </div>
 
+  <div id="speedVignette" aria-hidden="true"></div>
+  <div id="speedBlur" aria-hidden="true"></div>
   <canvas id="app"></canvas>
   <script type="module" src="../assets/app.js"></script>
   <script type="application/ld+json">

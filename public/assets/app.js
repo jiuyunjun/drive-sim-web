@@ -84,6 +84,8 @@ sun.shadow.camera.top = 60;
 sun.shadow.camera.bottom = -60;
 scene.add(sun);
 
+const speedVignetteEl = document.getElementById('speedVignette');
+const speedBlurEl = document.getElementById('speedBlur');
 const speedEl = document.getElementById('speed');
 const gearEl = document.getElementById('gear');
 const viewModeEl = document.getElementById('viewMode');
@@ -91,6 +93,8 @@ const positionEl = document.getElementById('position');
 const headingEl = document.getElementById('heading');
 const maxSpeedEl = document.getElementById('maxSpeed');
 const maxSpeedValueEl = document.getElementById('maxSpeedValue');
+const masterVolumeEl = document.getElementById('masterVolume');
+const masterVolumeValueEl = document.getElementById('masterVolumeValue');
 const steeringSensitivityEl = document.getElementById('steeringSensitivity');
 const steeringSensitivityValueEl = document.getElementById('steeringSensitivityValue');
 const accelCurveEl = document.getElementById('accelCurve');
@@ -303,8 +307,11 @@ const audioState = {
   engineGain: null,
   engineOscSub: null,
   engineOscLow: null,
+  engineOscMid: null,
   engineOscHigh: null,
   engineFilter: null,
+  engineNoiseGain: null,
+  engineNoiseFilter: null,
 };
 const persistedSettings = loadSettings();
 let attemptedAddressBarHide = false;
@@ -343,6 +350,7 @@ function loadSettings() {
 function saveSettings() {
   const settings = {
     maxSpeed: state.maxSpeed,
+    masterVolume: state.masterVolume,
     steeringSensitivity: state.steeringSensitivity,
     accelCurve: state.accelCurve,
     autoCenterSteering: state.autoCenterSteering,
@@ -373,6 +381,14 @@ function syncMaxSpeedControl(speed) {
   const clampedSpeed = THREE.MathUtils.clamp(speed, Number(maxSpeedEl.min) || MIN_DRIVE_SPEED, Number(maxSpeedEl.max) || 40);
   maxSpeedEl.value = String(clampedSpeed);
   maxSpeedValueEl.textContent = `${clampedSpeed} m/s`;
+}
+
+function syncVolumeControl(volume) {
+  const clamped = THREE.MathUtils.clamp(volume, 0, 1);
+  const sliderVal = Math.round(clamped * 100);
+  if (masterVolumeEl) masterVolumeEl.value = String(sliderVal);
+  if (masterVolumeValueEl) masterVolumeValueEl.textContent = `${sliderVal}%`;
+  if (audioState.masterGain) audioState.masterGain.gain.value = clamped * 0.4;
 }
 
 function syncSteeringSensitivityControl(sensitivity) {
@@ -537,52 +553,98 @@ function setupAudioGraph() {
   const context = new AudioContextClass();
   const masterGain = context.createGain();
   const engineGain = context.createGain();
+
+  // Highpass removes subsonic mud; lowpass with slight resonance shapes engine growl
+  const engineHpFilter = context.createBiquadFilter();
   const engineFilter = context.createBiquadFilter();
+
+  // 4 oscillators: sub rumble (sine), fundamental (sawtooth), 2nd harmonic (sawtooth), 3rd harmonic (square)
   const engineOscSub = context.createOscillator();
   const engineOscLow = context.createOscillator();
+  const engineOscMid = context.createOscillator();
   const engineOscHigh = context.createOscillator();
   const subMix = context.createGain();
   const lowMix = context.createGain();
+  const midMix = context.createGain();
   const highMix = context.createGain();
 
-  masterGain.gain.value = 0.2;
+  // Noise source simulates induction / exhaust breathiness
+  const noiseBuffer = context.createBuffer(1, context.sampleRate, context.sampleRate);
+  const noiseData = noiseBuffer.getChannelData(0);
+  for (let i = 0; i < noiseData.length; i++) noiseData[i] = Math.random() * 2 - 1;
+  const engineNoise = context.createBufferSource();
+  engineNoise.buffer = noiseBuffer;
+  engineNoise.loop = true;
+  const engineNoiseFilter = context.createBiquadFilter();
+  const engineNoiseGain = context.createGain();
+
+  masterGain.gain.value = THREE.MathUtils.clamp(state.masterVolume || 0.55, 0, 1) * 0.4;
   engineGain.gain.value = 0.0001;
+
+  engineHpFilter.type = 'highpass';
+  engineHpFilter.frequency.value = 44;
+  engineHpFilter.Q.value = 0.7;
+
   engineFilter.type = 'lowpass';
   engineFilter.frequency.value = 420;
-  engineFilter.Q.value = 0.85;
+  engineFilter.Q.value = 1.3;  // slight resonance adds growl character
 
   engineOscSub.type = 'sine';
-  engineOscLow.type = 'triangle';
-  engineOscHigh.type = 'triangle';
+  engineOscLow.type = 'sawtooth';
+  engineOscMid.type = 'sawtooth';
+  engineOscHigh.type = 'square';
   engineOscSub.frequency.value = 28;
-  engineOscLow.frequency.value = 56;
-  engineOscHigh.frequency.value = 112;
+  engineOscLow.frequency.value = 55;
+  engineOscMid.frequency.value = 110;
+  engineOscHigh.frequency.value = 165;
 
-  subMix.gain.value = 0.42;
-  lowMix.gain.value = 0.36;
-  highMix.gain.value = 0.08;
+  // Slight detuning between oscillators for organic beating effect
+  engineOscLow.detune.value = -4;
+  engineOscMid.detune.value = 6;
+  engineOscHigh.detune.value = -9;
+
+  subMix.gain.value = 0.44;
+  lowMix.gain.value = 0.40;
+  midMix.gain.value = 0.15;
+  highMix.gain.value = 0.05;
+
+  engineNoiseFilter.type = 'bandpass';
+  engineNoiseFilter.frequency.value = 900;
+  engineNoiseFilter.Q.value = 0.9;
+  engineNoiseGain.gain.value = 0.0001;
 
   engineOscSub.connect(subMix);
   engineOscLow.connect(lowMix);
+  engineOscMid.connect(midMix);
   engineOscHigh.connect(highMix);
-  subMix.connect(engineFilter);
-  lowMix.connect(engineFilter);
-  highMix.connect(engineFilter);
+  subMix.connect(engineHpFilter);
+  lowMix.connect(engineHpFilter);
+  midMix.connect(engineHpFilter);
+  highMix.connect(engineHpFilter);
+  engineHpFilter.connect(engineFilter);
   engineFilter.connect(engineGain);
+  engineNoise.connect(engineNoiseFilter);
+  engineNoiseFilter.connect(engineNoiseGain);
+  engineNoiseGain.connect(engineGain);
   engineGain.connect(masterGain);
   masterGain.connect(context.destination);
 
   engineOscSub.start();
   engineOscLow.start();
+  engineOscMid.start();
   engineOscHigh.start();
+  engineNoise.start();
 
   audioState.context = context;
   audioState.masterGain = masterGain;
   audioState.engineGain = engineGain;
   audioState.engineOscSub = engineOscSub;
   audioState.engineOscLow = engineOscLow;
+  audioState.engineOscMid = engineOscMid;
   audioState.engineOscHigh = engineOscHigh;
   audioState.engineFilter = engineFilter;
+  audioState.engineNoiseGain = engineNoiseGain;
+  audioState.engineNoiseFilter = engineNoiseFilter;
 
   return context;
 }
@@ -1360,6 +1422,7 @@ const state = {
   view: 'follow',
   uiCollapsed: false,
   maxSpeed: Number(maxSpeedEl.value),
+  masterVolume: THREE.MathUtils.clamp(Number(persistedSettings?.masterVolume) || 0.55, 0, 1),
   accelCurve: THREE.MathUtils.clamp((Number(persistedSettings?.accelCurve) || 1.35), 0.8, 1.8),
   turnSignal: 'off',
   signalBlinkVisible: false,
@@ -2108,17 +2171,38 @@ function updateEngineAudio() {
   const speedRatio = Math.min(Math.abs(state.speed) / Math.max(state.maxSpeed, 1), 1);
   const throttleAmount = Math.max(state.throttleInput, reversing ? 0.55 : accelerating ? 0.35 : 0.12);
   const rpm = THREE.MathUtils.clamp(state.virtualRpm || 0.22, 0.18, 1);
-  const shiftDip = state.shiftTimer > 0 ? (state.vehicleType === 'motorcycle' ? -8 : -13) : 0;
+  const shiftDip = state.shiftTimer > 0 ? (state.vehicleType === 'motorcycle' ? -10 : -18) : 0;
   const engineLoad = Math.max(throttleAmount, speedRatio * 0.18);
-  const baseFrequency = 24 + rpm * 96 + engineLoad * 10 + shiftDip;
-  const targetCutoff = 260 + rpm * 760 + engineLoad * 210 + speedRatio * 120;
-  const targetGain = 0.012 + rpm * 0.032 + engineLoad * 0.026;
 
-  audioState.engineOscSub?.frequency.setTargetAtTime(baseFrequency * 0.5, now, 0.11);
-  audioState.engineOscLow.frequency.setTargetAtTime(baseFrequency, now, 0.1);
-  audioState.engineOscHigh.frequency.setTargetAtTime(baseFrequency * 1.96, now, 0.1);
-  audioState.engineFilter.frequency.setTargetAtTime(targetCutoff, now, 0.16);
-  audioState.engineGain.gain.setTargetAtTime(targetGain, now, 0.14);
+  // Fundamental frequency mapped from RPM (28 Hz idle → 158 Hz redline)
+  const baseFrequency = 28 + rpm * 130 + engineLoad * 12 + shiftDip;
+
+  // Filter cutoff opens wide at high RPM/load, creating the classic "rev" character
+  const targetCutoff = 290 + rpm * 940 + engineLoad * 300 + speedRatio * 180;
+
+  // Gain has a larger range and is more load-sensitive for audible stress under acceleration
+  const targetGain = 0.010 + rpm * 0.040 + engineLoad * 0.034 + speedRatio * 0.008;
+
+  // Bandpass noise center rises with RPM/throttle to mimic intake induction rush
+  const noiseFreq = 650 + rpm * 1600 + engineLoad * 450;
+  const noiseGain = engineLoad * 0.042 + rpm * 0.018;
+
+  audioState.engineOscSub?.frequency.setTargetAtTime(baseFrequency * 0.5, now, 0.12);
+  audioState.engineOscLow.frequency.setTargetAtTime(baseFrequency, now, 0.08);
+  audioState.engineOscMid?.frequency.setTargetAtTime(baseFrequency * 2.0, now, 0.08);
+  audioState.engineOscHigh.frequency.setTargetAtTime(baseFrequency * 3.1, now, 0.07);
+  audioState.engineFilter.frequency.setTargetAtTime(targetCutoff, now, 0.14);
+  audioState.engineGain.gain.setTargetAtTime(targetGain, now, 0.12);
+  audioState.engineNoiseFilter?.frequency.setTargetAtTime(noiseFreq, now, 0.18);
+  audioState.engineNoiseGain?.gain.setTargetAtTime(noiseGain, now, 0.16);
+}
+
+function updateSpeedEffects() {
+  const absSpeed = Math.abs(state.speed);
+  // Effects start at 6 m/s (~22 km/h), reach full intensity at 22 m/s (~79 km/h)
+  const t = Math.pow(THREE.MathUtils.clamp((absSpeed - 6) / 16, 0, 1), 1.8);
+  if (speedVignetteEl) speedVignetteEl.style.opacity = (t * 0.78).toFixed(3);
+  if (speedBlurEl) speedBlurEl.style.opacity = (t * 0.92).toFixed(3);
 }
 
 function updateCamera(dt) {
@@ -2140,6 +2224,13 @@ function updateCamera(dt) {
     controls.update();
     return;
   }
+
+  // Widen FOV with absolute speed (follow and cockpit views only)
+  const baseFov = state.view === 'cockpit' ? COCKPIT_CAMERA_FOV : DEFAULT_CAMERA_FOV;
+  const fovT = THREE.MathUtils.clamp(Math.abs(state.speed) / 22, 0, 1);
+  const targetFov = baseFov + fovT * 14;
+  camera.fov = THREE.MathUtils.damp(camera.fov, targetFov, 5, dt);
+  camera.updateProjectionMatrix();
 
   const pose = getViewPose(state.view);
   if (state.view === 'cockpit') {
@@ -2491,6 +2582,12 @@ maxSpeedEl.addEventListener('input', () => {
   saveSettings();
 });
 
+masterVolumeEl?.addEventListener('input', () => {
+  state.masterVolume = Number(masterVolumeEl.value) / 100;
+  syncVolumeControl(state.masterVolume);
+  saveSettings();
+});
+
 steeringSensitivityEl.addEventListener('input', () => {
   state.steeringSensitivity = Number(steeringSensitivityEl.value) / 100;
   syncSteeringSensitivityControl(state.steeringSensitivity);
@@ -2708,6 +2805,7 @@ setAudioStatus(
   audioState.supported ? t('audio.pending') : t('audio.unavailable')
 );
 syncMaxSpeedControl(persistedSettings?.maxSpeed ?? state.maxSpeed);
+syncVolumeControl(state.masterVolume);
 syncSteeringSensitivityControl(state.steeringSensitivity);
 syncAccelCurveControl(state.accelCurve);
 syncAutoCenterControl(state.autoCenterSteering);
@@ -2749,6 +2847,7 @@ function animate() {
   updateCar(dt);
   updateTurnSignal(dt);
   updateEngineAudio();
+  updateSpeedEffects();
   updateCamera(dt);
 
   renderer.setViewport(0, 0, window.innerWidth, window.innerHeight);
