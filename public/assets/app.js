@@ -1356,6 +1356,9 @@ const state = {
   signalTimer: 0,
   throttleInput: 0,
   reverseInput: 0,
+  virtualGearIndex: 0,
+  virtualRpm: 0.22,
+  shiftTimer: 0,
   autoCenterSteering: persistedSettings?.autoCenterSteering !== undefined ? Boolean(persistedSettings.autoCenterSteering) : true,
   mobileLinearThrottleEnabled: Boolean(persistedSettings?.mobileLinearThrottleEnabled),
   mobileLinearThrottleInvert: Boolean(persistedSettings?.mobileLinearThrottleInvert),
@@ -1758,6 +1761,9 @@ function teleportCarTo(x, z) {
   state.speed = 0;
   state.throttleInput = 0;
   state.reverseInput = 0;
+  state.virtualGearIndex = 0;
+  state.virtualRpm = 0.22;
+  state.shiftTimer = 0;
   state.mobileThrottleLeverValue = 0;
   state.mobileThrottleLeverTarget = 0;
   state.mobileThrottlePointerId = null;
@@ -1789,6 +1795,9 @@ function resetCar() {
   state.signalTimer = 0;
   state.throttleInput = 0;
   state.reverseInput = 0;
+  state.virtualGearIndex = 0;
+  state.virtualRpm = 0.22;
+  state.shiftTimer = 0;
   state.mobileThrottleLeverValue = 0;
   state.mobileThrottleLeverTarget = 0;
   state.mobileThrottlePointerId = null;
@@ -1828,6 +1837,59 @@ function resetCar() {
   }
 }
 
+const SEDAN_SHIFT_POINTS = Object.freeze([
+  { up: 0.19, down: 0.00, torque: 1.12 },
+  { up: 0.39, down: 0.14, torque: 0.98 },
+  { up: 0.64, down: 0.31, torque: 0.84 },
+  { up: 1.01, down: 0.52, torque: 0.72 },
+]);
+const MOTORCYCLE_SHIFT_POINTS = Object.freeze([
+  { up: 0.16, down: 0.00, torque: 1.18 },
+  { up: 0.32, down: 0.11, torque: 1.04 },
+  { up: 0.52, down: 0.24, torque: 0.92 },
+  { up: 0.74, down: 0.42, torque: 0.80 },
+  { up: 1.01, down: 0.62, torque: 0.70 },
+]);
+
+function getTransmissionShiftPoints() {
+  return state.vehicleType === 'motorcycle' ? MOTORCYCLE_SHIFT_POINTS : SEDAN_SHIFT_POINTS;
+}
+
+function updateVirtualTransmission(dt, throttleAmount, reverseAmount) {
+  const speedRatio = THREE.MathUtils.clamp(Math.abs(state.speed) / Math.max(state.maxSpeed, 1), 0, 1);
+  const gears = getTransmissionShiftPoints();
+
+  if (reverseAmount > 0.05 || state.speed < -0.2) {
+    state.virtualGearIndex = 0;
+    state.shiftTimer = Math.max(0, state.shiftTimer - dt);
+    state.virtualRpm = THREE.MathUtils.damp(state.virtualRpm, 0.28 + Math.min(speedRatio * 1.3, 0.7), 7, dt);
+    return 0.72;
+  }
+
+  const previousGear = state.virtualGearIndex;
+  if (state.virtualGearIndex < gears.length - 1 && speedRatio > gears[state.virtualGearIndex].up) {
+    state.virtualGearIndex += 1;
+  } else if (state.virtualGearIndex > 0 && speedRatio < gears[state.virtualGearIndex].down) {
+    state.virtualGearIndex -= 1;
+  }
+
+  if (state.virtualGearIndex !== previousGear) {
+    state.shiftTimer = 0.18;
+  } else {
+    state.shiftTimer = Math.max(0, state.shiftTimer - dt);
+  }
+
+  const current = gears[state.virtualGearIndex];
+  const lower = state.virtualGearIndex === 0 ? 0 : gears[state.virtualGearIndex - 1].up;
+  const upper = Math.max(current.up, lower + 0.01);
+  const gearProgress = THREE.MathUtils.clamp((speedRatio - lower) / (upper - lower), 0, 1);
+  const rpmTarget = THREE.MathUtils.clamp(0.24 + gearProgress * 0.62 + throttleAmount * 0.2, 0.2, 1);
+  const shiftDip = state.shiftTimer > 0 ? 0.78 : 1;
+
+  state.virtualRpm = THREE.MathUtils.damp(state.virtualRpm, rpmTarget, state.shiftTimer > 0 ? 11 : 5.5, dt);
+  return current.torque * shiftDip * THREE.MathUtils.lerp(1.05, 0.88, Math.max(0, state.virtualRpm - 0.75) / 0.25);
+}
+
 function updateCar(dt) {
   const dynamics = getVehicleDynamics();
   const accel = dynamics.accel;
@@ -1842,6 +1904,9 @@ function updateCar(dt) {
   const reverseRise = dynamics.reverseRise;
   const reverseFall = dynamics.reverseFall;
   const mobileThrottleEnabled = isMobileLinearThrottleEnabled() && isMobileLikeDevice();
+
+  state.maxSpeed = Number(maxSpeedEl.value);
+  state.accelCurve = Number(accelCurveEl.value) / 100;
 
   state.mobileThrottleLeverValue = THREE.MathUtils.damp(
     state.mobileThrottleLeverValue,
@@ -1874,9 +1939,11 @@ function updateCar(dt) {
     dt
   );
 
+  const transmissionPower = updateVirtualTransmission(dt, state.throttleInput, state.reverseInput);
+
   if (state.throttleInput > 0.001) {
     const launchBoost = THREE.MathUtils.lerp(0.38, 1, Math.min(Math.abs(state.speed) / Math.max(state.maxSpeed * 0.4, MIN_DRIVE_SPEED), 1));
-    state.speed += accel * Math.pow(state.throttleInput, state.accelCurve) * launchBoost * dt;
+    state.speed += accel * transmissionPower * Math.pow(state.throttleInput, state.accelCurve) * launchBoost * dt;
     if (state.speed > 0 && state.speed < MIN_DRIVE_SPEED) state.speed = MIN_DRIVE_SPEED;
   }
   if (state.reverseInput > 0.001) {
@@ -1916,16 +1983,27 @@ function updateCar(dt) {
   updateBrakeLights(state.reverseInput > 0.05 || brakePedal);
   updateReverseLights(state.reverseInput > 0.05 || state.speed < -0.2);
 
-  state.maxSpeed = Number(maxSpeedEl.value);
-  state.accelCurve = Number(accelCurveEl.value) / 100;
   maxSpeedValueEl.textContent = `${state.maxSpeed} m/s`;
   state.speed = THREE.MathUtils.clamp(state.speed, -Math.max(MIN_DRIVE_SPEED * reverseFactor, state.maxSpeed * 0.45), state.maxSpeed);
 
-  // 速度敏感转向：速度越快，方向盘转动越迟钝（防止高速急打方向）
+  // 速度敏感转向：高速时同时限制打方向速度和最大前轮角，低速保留揉库/掉头能力。
   const speedMs = Math.abs(state.speed);
-  const steerSpeedFactor = 1.0 / (1.0 + speedMs * dynamics.steerSpeedDrop);
+  const speedRatioForSteer = Math.min(speedMs / Math.max(state.maxSpeed, 1), 1);
+  const highSpeedSteerBlend = THREE.MathUtils.smoothstep(speedMs, 3.5, Math.max(6, state.maxSpeed * 0.82));
+  const reverseSteerRelief = state.speed < -0.2 ? 0.22 : 0;
+  const effectiveMaxSteer = dynamics.maxSteer * THREE.MathUtils.lerp(
+    1,
+    state.vehicleType === 'motorcycle' ? 0.58 : 0.46,
+    Math.max(0, highSpeedSteerBlend - reverseSteerRelief)
+  );
+  const steerSpeedFactor = 1.0 / (1.0 + speedMs * dynamics.steerSpeedDrop * 1.15);
   const effectiveSteeringSpeed = steeringWheelSpeed * state.steeringSensitivity * steerSpeedFactor;
-  const effectiveReturnSpeed = steeringReturnSpeed * (0.55 + 0.45 * steerSpeedFactor);
+  const steeringAngleRatio = Math.min(Math.abs(state.steeringWheelAngle) / STEERING_WHEEL_MAX, 1);
+  const effectiveReturnSpeed = steeringReturnSpeed * (
+    0.08 +
+    speedRatioForSteer * (state.vehicleType === 'motorcycle' ? 1.65 : 1.42) +
+    steeringAngleRatio * (0.18 + speedRatioForSteer * 0.42)
+  );
 
   // 触控滑动转向时跳过键盘路径，由 touch handler 直接写 steeringWheelAngle
   if (state.touchSteerActive) {
@@ -1943,13 +2021,12 @@ function updateCar(dt) {
     }
   }
   state.steeringWheelAngle = THREE.MathUtils.clamp(state.steeringWheelAngle, -STEERING_WHEEL_MAX, STEERING_WHEEL_MAX);
-  state.steer = (state.steeringWheelAngle / STEERING_WHEEL_MAX) * dynamics.maxSteer;
+  state.steer = (state.steeringWheelAngle / STEERING_WHEEL_MAX) * effectiveMaxSteer;
 
   if (Math.abs(state.speed) > 0.05 && Math.abs(state.steer) > 0.0005) {
     const turnRadius = wheelBase / Math.tan(state.steer);
     // 横向抓地力上限：弯道速度过高时产生推头，car往外滑
     const lateralAccelNeeded = (state.speed * state.speed) / Math.abs(turnRadius);
-    const maxLateralAccel = 7.0; // 约 0.7g，驾校车型的抓地力上限
     const gripFactor = Math.min(1.0, dynamics.maxLateralAccel / Math.max(lateralAccelNeeded, 0.01));
     state.heading += (state.speed / turnRadius) * gripFactor * dt;
     // 超出抓地力时：轮胎摩擦消耗速度 + 触觉反馈
@@ -2002,7 +2079,7 @@ function updateCar(dt) {
   }
 
   speedEl.textContent = (Math.abs(state.speed) * 3.6).toFixed(1);
-  gearEl.textContent = state.speed > 0.2 ? 'D' : state.speed < -0.2 ? 'R' : 'N';
+  gearEl.textContent = state.speed > 0.2 ? `D${state.virtualGearIndex + 1}` : state.speed < -0.2 ? 'R' : 'N';
   positionEl.textContent = `${car.position.x.toFixed(1)}, ${car.position.z.toFixed(1)}`;
   headingEl.textContent = formatHeadingValue(state.heading);
 }
@@ -2015,10 +2092,12 @@ function updateEngineAudio() {
   const accelerating = keys.has('w') || keys.has('arrowup');
   const reversing = keys.has('s') || keys.has('arrowdown');
   const speedRatio = Math.min(Math.abs(state.speed) / Math.max(state.maxSpeed, 1), 1);
-  const throttleAmount = accelerating ? 1 : reversing ? 0.65 : 0.18;
-  const baseFrequency = 42 + speedRatio * 96 + throttleAmount * 22;
-  const targetCutoff = 220 + speedRatio * 860 + throttleAmount * 240;
-  const targetGain = 0.018 + speedRatio * 0.055 + throttleAmount * 0.015;
+  const throttleAmount = Math.max(state.throttleInput, reversing ? 0.55 : accelerating ? 0.35 : 0.12);
+  const rpm = THREE.MathUtils.clamp(state.virtualRpm || 0.22, 0.18, 1);
+  const shiftDip = state.shiftTimer > 0 ? -10 : 0;
+  const baseFrequency = 38 + rpm * 122 + throttleAmount * 18 + shiftDip;
+  const targetCutoff = 190 + rpm * 960 + throttleAmount * 310 + speedRatio * 160;
+  const targetGain = 0.016 + rpm * 0.045 + throttleAmount * 0.024;
 
   audioState.engineOscLow.frequency.setTargetAtTime(baseFrequency, now, 0.08);
   audioState.engineOscHigh.frequency.setTargetAtTime(baseFrequency * 2.03, now, 0.08);
