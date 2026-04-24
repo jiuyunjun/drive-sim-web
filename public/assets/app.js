@@ -1838,18 +1838,18 @@ function resetCar() {
 }
 
 const SEDAN_SHIFT_POINTS = Object.freeze([
-  { up: 0.16, down: 0.00, torque: 1.15 },
-  { up: 0.33, down: 0.11, torque: 1.03 },
-  { up: 0.52, down: 0.24, torque: 0.92 },
-  { up: 0.74, down: 0.42, torque: 0.81 },
-  { up: 1.01, down: 0.61, torque: 0.70 },
+  { up: 5.0, down: 0.0, torque: 1.15 },
+  { up: 8.9, down: 3.8, torque: 1.03 },
+  { up: 13.3, down: 6.7, torque: 0.92 },
+  { up: 18.1, down: 10.8, torque: 0.81 },
+  { up: Infinity, down: 14.7, torque: 0.70 },
 ]);
 const MOTORCYCLE_SHIFT_POINTS = Object.freeze([
-  { up: 0.16, down: 0.00, torque: 1.18 },
-  { up: 0.32, down: 0.11, torque: 1.04 },
-  { up: 0.52, down: 0.24, torque: 0.92 },
-  { up: 0.74, down: 0.42, torque: 0.80 },
-  { up: 1.01, down: 0.62, torque: 0.70 },
+  { up: 4.4, down: 0.0, torque: 1.18 },
+  { up: 8.3, down: 3.3, torque: 1.04 },
+  { up: 13.9, down: 6.4, torque: 0.92 },
+  { up: 20.0, down: 11.1, torque: 0.80 },
+  { up: Infinity, down: 16.7, torque: 0.70 },
 ]);
 
 function getTransmissionShiftPoints() {
@@ -1857,7 +1857,8 @@ function getTransmissionShiftPoints() {
 }
 
 function updateVirtualTransmission(dt, throttleAmount, reverseAmount) {
-  const speedRatio = THREE.MathUtils.clamp(Math.abs(state.speed) / Math.max(state.maxSpeed, 1), 0, 1);
+  const speedMs = Math.abs(state.speed);
+  const speedRatio = THREE.MathUtils.clamp(speedMs / Math.max(state.maxSpeed, 1), 0, 1);
   const gears = getTransmissionShiftPoints();
 
   if (reverseAmount > 0.05 || state.speed < -0.2) {
@@ -1868,9 +1869,9 @@ function updateVirtualTransmission(dt, throttleAmount, reverseAmount) {
   }
 
   const previousGear = state.virtualGearIndex;
-  if (state.virtualGearIndex < gears.length - 1 && speedRatio > gears[state.virtualGearIndex].up) {
+  if (state.virtualGearIndex < gears.length - 1 && speedMs > gears[state.virtualGearIndex].up) {
     state.virtualGearIndex += 1;
-  } else if (state.virtualGearIndex > 0 && speedRatio < gears[state.virtualGearIndex].down) {
+  } else if (state.virtualGearIndex > 0 && speedMs < gears[state.virtualGearIndex].down) {
     state.virtualGearIndex -= 1;
   }
 
@@ -1882,8 +1883,9 @@ function updateVirtualTransmission(dt, throttleAmount, reverseAmount) {
 
   const current = gears[state.virtualGearIndex];
   const lower = state.virtualGearIndex === 0 ? 0 : gears[state.virtualGearIndex - 1].up;
-  const upper = Math.max(current.up, lower + 0.01);
-  const gearProgress = THREE.MathUtils.clamp((speedRatio - lower) / (upper - lower), 0, 1);
+  const fallbackUpper = lower + Math.max(4, state.maxSpeed * 0.22);
+  const upper = Number.isFinite(current.up) ? Math.max(current.up, lower + 0.01) : fallbackUpper;
+  const gearProgress = THREE.MathUtils.clamp((speedMs - lower) / (upper - lower), 0, 1);
   const rpmTarget = THREE.MathUtils.clamp(0.2 + gearProgress * 0.72 + throttleAmount * 0.24, 0.18, 1);
   const shiftDip = state.shiftTimer > 0 ? (state.vehicleType === 'motorcycle' ? 0.76 : 0.68) : 1;
 
