@@ -97,6 +97,13 @@ const TRANSLATIONS = {
     minimap: {
       label: '小地图',
       close: '收起小地图',
+      hint: '滚轮或双指缩放，点击地点可移动车辆',
+    },
+    firstRun: {
+      title: '开始驾驶',
+      desktop: 'WASD 或方向键驾驶，空格刹车，V 切换视角，O 重置车辆。',
+      mobile: '左侧滑动转向，右侧控制油门和刹车。',
+      close: '关闭操作提示',
     },
     mobile: {
       controls: '移动端驾驶控制',
@@ -119,6 +126,12 @@ const TRANSLATIONS = {
     loading: {
       label: '地图加载中',
       text: '地图加载中…',
+      prepare: '准备地图…',
+      downloading: '正在下载地图图片',
+      decoding: '正在解析地图图片',
+      applying: '正在生成驾驶场景',
+      ready: '地图加载完成',
+      unknownSize: '正在下载地图图片',
     },
     option: {
       custom: '自定义',
@@ -220,6 +233,13 @@ const TRANSLATIONS = {
     minimap: {
       label: 'Mini Map',
       close: 'Close mini map',
+      hint: 'Wheel or pinch to zoom. Click a point to move.',
+    },
+    firstRun: {
+      title: 'Start driving',
+      desktop: 'Use WASD or arrow keys to drive, Space to brake, V for views, O to reset.',
+      mobile: 'Swipe the left pad to steer, and use the right controls for throttle and brake.',
+      close: 'Close tips',
     },
     mobile: {
       controls: 'Mobile driving controls',
@@ -242,6 +262,12 @@ const TRANSLATIONS = {
     loading: {
       label: 'Loading map',
       text: 'Loading map…',
+      prepare: 'Preparing map…',
+      downloading: 'Downloading map image',
+      decoding: 'Decoding map image',
+      applying: 'Building driving scene',
+      ready: 'Map ready',
+      unknownSize: 'Downloading map image',
     },
     option: {
       custom: 'Custom',
@@ -343,6 +369,13 @@ const TRANSLATIONS = {
     minimap: {
       label: 'ミニマップ',
       close: 'ミニマップを閉じる',
+      hint: 'ホイールまたはピンチで拡大縮小、クリックで移動',
+    },
+    firstRun: {
+      title: '運転を開始',
+      desktop: 'WASD または矢印キーで運転、Space でブレーキ、V で視点切替、O でリセット。',
+      mobile: '左側をスワイプして操舵し、右側でアクセルとブレーキを操作します。',
+      close: '操作ヒントを閉じる',
     },
     mobile: {
       controls: 'モバイル運転コントロール',
@@ -365,6 +398,12 @@ const TRANSLATIONS = {
     loading: {
       label: 'マップを読み込み中',
       text: 'マップを読み込み中…',
+      prepare: 'マップを準備中…',
+      downloading: 'マップ画像をダウンロード中',
+      decoding: 'マップ画像を解析中',
+      applying: '運転シーンを生成中',
+      ready: 'マップの読み込み完了',
+      unknownSize: 'マップ画像をダウンロード中',
     },
     option: {
       custom: 'カスタム',

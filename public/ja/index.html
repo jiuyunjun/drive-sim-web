@@ -228,7 +228,15 @@
 
   <div id="miniMap" aria-hidden="true">
     <span class="miniMapLabel" data-i18n="minimap.label">Mini Map</span>
+    <span class="miniMapHint" data-i18n="minimap.hint">Wheel or pinch to zoom. Click a point to move.</span>
     <button id="miniMapClose" type="button" data-i18n-aria-label="minimap.close" aria-label="Close mini map">×</button>
+  </div>
+
+  <div id="firstRunHint" class="firstRunHint" aria-live="polite" hidden>
+    <button id="firstRunHintClose" type="button" data-i18n-aria-label="firstRun.close" aria-label="Close tips">×</button>
+    <strong data-i18n="firstRun.title">Start driving</strong>
+    <span class="firstRunDesktop" data-i18n="firstRun.desktop">WASD or arrow keys drive, Space brakes, V changes view, O resets.</span>
+    <span class="firstRunMobile" data-i18n="firstRun.mobile">Swipe the left pad to steer, use the right controls for throttle and brake.</span>
   </div>
 
   <div id="mobileControls" data-i18n-aria-label="mobile.controls" aria-label="Mobile driving controls">
@@ -310,7 +318,11 @@
   <div id="loadingOverlay" aria-live="polite" data-i18n-aria-label="loading.label" aria-label="Loading map">
     <div class="loadingCard">
       <div class="loadingSpinner"></div>
-      <span data-i18n="loading.text">Loading map…</span>
+      <span id="loadingText" data-i18n="loading.text">Loading map…</span>
+      <span id="loadingDetail" class="loadingDetail" data-i18n="loading.prepare">Preparing map…</span>
+      <div class="loadingProgress" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0">
+        <div id="loadingProgressBar" class="loadingProgressBar"></div>
+      </div>
     </div>
   </div>
 
