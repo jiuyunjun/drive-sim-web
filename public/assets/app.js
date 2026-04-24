@@ -301,6 +301,7 @@ const audioState = {
   context: null,
   masterGain: null,
   engineGain: null,
+  engineOscSub: null,
   engineOscLow: null,
   engineOscHigh: null,
   engineFilter: null,
@@ -537,39 +538,48 @@ function setupAudioGraph() {
   const masterGain = context.createGain();
   const engineGain = context.createGain();
   const engineFilter = context.createBiquadFilter();
+  const engineOscSub = context.createOscillator();
   const engineOscLow = context.createOscillator();
   const engineOscHigh = context.createOscillator();
+  const subMix = context.createGain();
   const lowMix = context.createGain();
   const highMix = context.createGain();
 
-  masterGain.gain.value = 0.22;
+  masterGain.gain.value = 0.2;
   engineGain.gain.value = 0.0001;
   engineFilter.type = 'lowpass';
-  engineFilter.frequency.value = 280;
-  engineFilter.Q.value = 1.2;
+  engineFilter.frequency.value = 420;
+  engineFilter.Q.value = 0.85;
 
-  engineOscLow.type = 'sawtooth';
+  engineOscSub.type = 'sine';
+  engineOscLow.type = 'triangle';
   engineOscHigh.type = 'triangle';
-  engineOscLow.frequency.value = 42;
-  engineOscHigh.frequency.value = 86;
+  engineOscSub.frequency.value = 28;
+  engineOscLow.frequency.value = 56;
+  engineOscHigh.frequency.value = 112;
 
-  lowMix.gain.value = 0.45;
-  highMix.gain.value = 0.18;
+  subMix.gain.value = 0.42;
+  lowMix.gain.value = 0.36;
+  highMix.gain.value = 0.08;
 
+  engineOscSub.connect(subMix);
   engineOscLow.connect(lowMix);
   engineOscHigh.connect(highMix);
+  subMix.connect(engineFilter);
   lowMix.connect(engineFilter);
   highMix.connect(engineFilter);
   engineFilter.connect(engineGain);
   engineGain.connect(masterGain);
   masterGain.connect(context.destination);
 
+  engineOscSub.start();
   engineOscLow.start();
   engineOscHigh.start();
 
   audioState.context = context;
   audioState.masterGain = masterGain;
   audioState.engineGain = engineGain;
+  audioState.engineOscSub = engineOscSub;
   audioState.engineOscLow = engineOscLow;
   audioState.engineOscHigh = engineOscHigh;
   audioState.engineFilter = engineFilter;
@@ -2098,15 +2108,17 @@ function updateEngineAudio() {
   const speedRatio = Math.min(Math.abs(state.speed) / Math.max(state.maxSpeed, 1), 1);
   const throttleAmount = Math.max(state.throttleInput, reversing ? 0.55 : accelerating ? 0.35 : 0.12);
   const rpm = THREE.MathUtils.clamp(state.virtualRpm || 0.22, 0.18, 1);
-  const shiftDip = state.shiftTimer > 0 ? (state.vehicleType === 'motorcycle' ? -14 : -24) : 0;
-  const baseFrequency = 34 + rpm * 154 + throttleAmount * 20 + shiftDip;
-  const targetCutoff = 170 + rpm * 1260 + throttleAmount * 330 + speedRatio * 130;
-  const targetGain = 0.016 + rpm * 0.045 + throttleAmount * 0.024;
+  const shiftDip = state.shiftTimer > 0 ? (state.vehicleType === 'motorcycle' ? -8 : -13) : 0;
+  const engineLoad = Math.max(throttleAmount, speedRatio * 0.18);
+  const baseFrequency = 24 + rpm * 96 + engineLoad * 10 + shiftDip;
+  const targetCutoff = 260 + rpm * 760 + engineLoad * 210 + speedRatio * 120;
+  const targetGain = 0.012 + rpm * 0.032 + engineLoad * 0.026;
 
-  audioState.engineOscLow.frequency.setTargetAtTime(baseFrequency, now, 0.08);
-  audioState.engineOscHigh.frequency.setTargetAtTime(baseFrequency * 2.03, now, 0.08);
-  audioState.engineFilter.frequency.setTargetAtTime(targetCutoff, now, 0.12);
-  audioState.engineGain.gain.setTargetAtTime(targetGain, now, 0.12);
+  audioState.engineOscSub?.frequency.setTargetAtTime(baseFrequency * 0.5, now, 0.11);
+  audioState.engineOscLow.frequency.setTargetAtTime(baseFrequency, now, 0.1);
+  audioState.engineOscHigh.frequency.setTargetAtTime(baseFrequency * 1.96, now, 0.1);
+  audioState.engineFilter.frequency.setTargetAtTime(targetCutoff, now, 0.16);
+  audioState.engineGain.gain.setTargetAtTime(targetGain, now, 0.14);
 }
 
 function updateCamera(dt) {

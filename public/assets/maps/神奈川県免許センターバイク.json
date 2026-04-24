@@ -1,7 +1,7 @@
 {
   "image": "神奈川県免許センターバイク.webp",
   "mapWidth": 500,
-  "maxSpeed": 10,
+  "maxSpeed": 17,
   "startPose": {
     "x": 140.5,
     "z": 36.0,

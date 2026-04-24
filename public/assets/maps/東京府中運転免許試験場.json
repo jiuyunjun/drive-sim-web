@@ -1,7 +1,7 @@
 {
   "image": "東京府中運転免許試験場.webp",
   "mapWidth": 800,
-  "maxSpeed": 10,
+  "maxSpeed": 17,
     "startPose": {
     "x": 1.7,
     "z": 110.8,

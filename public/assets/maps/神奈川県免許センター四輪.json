@@ -1,7 +1,7 @@
 {
   "image": "神奈川県免許センター四輪.webp",
   "mapWidth": 550,
-  "maxSpeed": 10,
+  "maxSpeed": 17,
   "startPose": {
     "x": -67.9,
     "z": 125.8,

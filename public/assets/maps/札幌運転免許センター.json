@@ -1,7 +1,7 @@
 {
   "image": "札幌運転免許センター.webp",
   "mapWidth": 422,
-  "maxSpeed": 10,
+  "maxSpeed": 17,
   "startPose": {
     "x": 174.7,
     "z": -28.3,
