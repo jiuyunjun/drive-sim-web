@@ -165,6 +165,7 @@ const MAPS_BASE_URL = new URL('./maps/', import.meta.url);
 const MINI_MAP_ZOOM_MIN = 1;
 const MINI_MAP_ZOOM_MAX = 6;
 const MINI_MAP_ZOOM_STEP = 1.18;
+const MINI_MAP_PAN_THRESHOLD_PX = 5;
 const ANALYTICS_HEARTBEAT_MS = 30000;
 const ACCEL_CURVE_CHART = Object.freeze({
   left: 32,
@@ -1364,6 +1365,14 @@ const state = {
   startPose: getDefaultStartPose(),
   miniMapExpanded: false,
   miniMapZoom: 1,
+  miniMapPanX: 0,
+  miniMapPanZ: 0,
+  miniMapPanPointerId: null,
+  miniMapPanStartX: 0,
+  miniMapPanStartY: 0,
+  miniMapPanLastX: 0,
+  miniMapPanLastY: 0,
+  miniMapPanMoved: false,
   miniMapPointerDistance: 0,
   miniMapGestureActive: false,
   followLookOffset: 0,
@@ -1674,13 +1683,27 @@ function setMiniMapExpanded(expanded) {
   state.miniMapExpanded = expanded;
   if (expanded) {
     state.miniMapZoom = 1;
+    state.miniMapPanX = 0;
+    state.miniMapPanZ = 0;
+  } else {
+    state.miniMapPanPointerId = null;
+    state.miniMapPanMoved = false;
   }
   miniMapEl.classList.toggle('expanded', expanded);
+  miniMapEl.classList.remove('is-panning');
   document.body.classList.toggle('minimap-expanded', expanded);
+}
+
+function clampMiniMapPan() {
+  const maxX = Math.max(0, groundSize.width * 0.5 - miniMapViewport.halfWidth);
+  const maxZ = Math.max(0, groundSize.height * 0.5 - miniMapViewport.halfHeight);
+  state.miniMapPanX = THREE.MathUtils.clamp(state.miniMapPanX, -maxX, maxX);
+  state.miniMapPanZ = THREE.MathUtils.clamp(state.miniMapPanZ, -maxZ, maxZ);
 }
 
 function setMiniMapZoom(zoom) {
   state.miniMapZoom = THREE.MathUtils.clamp(zoom, MINI_MAP_ZOOM_MIN, MINI_MAP_ZOOM_MAX);
+  clampMiniMapPan();
 }
 
 function getVehicleDynamics() {
@@ -2095,18 +2118,20 @@ function updateMiniMapCamera() {
   const miniHalfSize = state.miniMapExpanded ? baseHalfSize / state.miniMapZoom : baseHalfSize;
   const halfWidth = aspect >= 1 ? miniHalfSize * aspect : miniHalfSize;
   const halfHeight = aspect >= 1 ? miniHalfSize : miniHalfSize / aspect;
+  miniMapViewport.halfWidth = halfWidth;
+  miniMapViewport.halfHeight = halfHeight;
+  clampMiniMapPan();
+
   const centerX = state.miniMapExpanded
-    ? 0
+    ? state.miniMapPanX
     : THREE.MathUtils.clamp(car.position.x, -mapHalfWidth, mapHalfWidth);
   const centerZ = state.miniMapExpanded
-    ? 0
+    ? state.miniMapPanZ
     : THREE.MathUtils.clamp(car.position.z, -mapHalfHeight, mapHalfHeight);
 
   miniMapViewport.centerX = centerX;
   miniMapViewport.centerZ = centerZ;
   miniMapViewport.halfSize = miniHalfSize;
-  miniMapViewport.halfWidth = halfWidth;
-  miniMapViewport.halfHeight = halfHeight;
 
   miniMapCamera.left = -halfWidth;
   miniMapCamera.right = halfWidth;
@@ -2158,19 +2183,57 @@ miniMapEl.addEventListener('wheel', (event) => {
 }, { passive: false });
 const miniMapPointers = new Map();
 miniMapEl.addEventListener('pointerdown', (event) => {
-  if (!state.miniMapExpanded || event.pointerType === 'mouse') return;
+  if (!state.miniMapExpanded || event.target === miniMapCloseEl) return;
+  if (event.pointerType === 'mouse' && event.button !== 0) return;
+  event.preventDefault();
   miniMapEl.setPointerCapture?.(event.pointerId);
   miniMapPointers.set(event.pointerId, { x: event.clientX, y: event.clientY });
+
+  if (miniMapPointers.size === 1) {
+    state.miniMapPanPointerId = event.pointerId;
+    state.miniMapPanStartX = event.clientX;
+    state.miniMapPanStartY = event.clientY;
+    state.miniMapPanLastX = event.clientX;
+    state.miniMapPanLastY = event.clientY;
+    state.miniMapPanMoved = false;
+  }
+
   if (miniMapPointers.size === 2) {
     const points = Array.from(miniMapPointers.values());
     state.miniMapPointerDistance = Math.hypot(points[0].x - points[1].x, points[0].y - points[1].y);
+    state.miniMapGestureActive = true;
+    state.miniMapPanPointerId = null;
+    miniMapEl.classList.remove('is-panning');
   }
 });
 miniMapEl.addEventListener('pointermove', (event) => {
-  if (!state.miniMapExpanded || event.pointerType === 'mouse' || !miniMapPointers.has(event.pointerId)) return;
+  if (!state.miniMapExpanded || !miniMapPointers.has(event.pointerId)) return;
   miniMapPointers.set(event.pointerId, { x: event.clientX, y: event.clientY });
-  if (miniMapPointers.size < 2) return;
   event.preventDefault();
+
+  if (miniMapPointers.size === 1 && state.miniMapPanPointerId === event.pointerId) {
+    const totalDx = event.clientX - state.miniMapPanStartX;
+    const totalDy = event.clientY - state.miniMapPanStartY;
+    const dx = event.clientX - state.miniMapPanLastX;
+    const dy = event.clientY - state.miniMapPanLastY;
+    const movedEnough = Math.hypot(totalDx, totalDy) >= MINI_MAP_PAN_THRESHOLD_PX;
+
+    if (movedEnough) {
+      const rect = miniMapEl.getBoundingClientRect();
+      state.miniMapPanX -= (dx / rect.width) * miniMapViewport.halfWidth * 2;
+      state.miniMapPanZ -= (dy / rect.height) * miniMapViewport.halfHeight * 2;
+      clampMiniMapPan();
+      state.miniMapPanMoved = true;
+      state.miniMapGestureActive = true;
+      miniMapEl.classList.add('is-panning');
+    }
+
+    state.miniMapPanLastX = event.clientX;
+    state.miniMapPanLastY = event.clientY;
+    return;
+  }
+
+  if (miniMapPointers.size < 2) return;
   const points = Array.from(miniMapPointers.values());
   const distance = Math.hypot(points[0].x - points[1].x, points[0].y - points[1].y);
   if (state.miniMapPointerDistance > 0) {
@@ -2183,6 +2246,10 @@ function releaseMiniMapPointer(event) {
   miniMapPointers.delete(event.pointerId);
   if (miniMapPointers.size < 2) {
     state.miniMapPointerDistance = 0;
+  }
+  if (state.miniMapPanPointerId === event.pointerId) {
+    state.miniMapPanPointerId = null;
+    miniMapEl.classList.remove('is-panning');
   }
 }
 miniMapEl.addEventListener('pointerup', releaseMiniMapPointer);

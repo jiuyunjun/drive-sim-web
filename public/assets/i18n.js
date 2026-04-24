@@ -97,7 +97,7 @@ const TRANSLATIONS = {
     minimap: {
       label: '小地图',
       close: '收起小地图',
-      hint: '滚轮或双指缩放，点击地点可移动车辆',
+      hint: '按住拖动平移，滚轮或双指缩放，点击地点移动车辆',
     },
     firstRun: {
       title: '开始驾驶',
@@ -233,7 +233,7 @@ const TRANSLATIONS = {
     minimap: {
       label: 'Mini Map',
       close: 'Close mini map',
-      hint: 'Wheel or pinch to zoom. Click a point to move.',
+      hint: 'Hold and drag to pan. Wheel or pinch to zoom. Click a point to move.',
     },
     firstRun: {
       title: 'Start driving',
@@ -369,7 +369,7 @@ const TRANSLATIONS = {
     minimap: {
       label: 'ミニマップ',
       close: 'ミニマップを閉じる',
-      hint: 'ホイールまたはピンチで拡大縮小、クリックで移動',
+      hint: '長押しドラッグで移動、ホイールまたはピンチで拡大縮小、クリックで移動',
     },
     firstRun: {
       title: '運転を開始',
