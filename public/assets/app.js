@@ -1968,7 +1968,8 @@ function updateCar(dt) {
   // 踩油时也有持续空气阻力，让极速感觉是"推不动了"而非撞到硬限速
   {
     const v = Math.abs(state.speed);
-    const contAero = 0.025 * v * v * dt;
+    const poweredDragCoefficient = (accel * 0.52) / Math.max(state.maxSpeed * state.maxSpeed, 1);
+    const contAero = poweredDragCoefficient * v * v * dt;
     if (v > contAero) state.speed -= Math.sign(state.speed) * contAero;
   }
 
