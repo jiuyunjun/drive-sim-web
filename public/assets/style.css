@@ -869,13 +869,13 @@ p {
 body.minimap-expanded #mobileControls,
 body.minimap-expanded #wheelHud,
 body.minimap-expanded #mirrorHud,
-body.minimap-expanded #ui {
+body.minimap-expanded #cockpitSignalHud,
+body.minimap-expanded #hud,
+body.minimap-expanded #ui,
+body.minimap-expanded #firstRunHint {
+  opacity: 0;
   pointer-events: none;
-}
-
-body.minimap-expanded .mobileClusterRight {
-  opacity: 0.18;
-  z-index: 1;
+  visibility: hidden;
 }
 
 /* ===== First Run Hint ===== */
