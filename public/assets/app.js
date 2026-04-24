@@ -1838,10 +1838,11 @@ function resetCar() {
 }
 
 const SEDAN_SHIFT_POINTS = Object.freeze([
-  { up: 0.19, down: 0.00, torque: 1.12 },
-  { up: 0.39, down: 0.14, torque: 0.98 },
-  { up: 0.64, down: 0.31, torque: 0.84 },
-  { up: 1.01, down: 0.52, torque: 0.72 },
+  { up: 0.16, down: 0.00, torque: 1.15 },
+  { up: 0.33, down: 0.11, torque: 1.03 },
+  { up: 0.52, down: 0.24, torque: 0.92 },
+  { up: 0.74, down: 0.42, torque: 0.81 },
+  { up: 1.01, down: 0.61, torque: 0.70 },
 ]);
 const MOTORCYCLE_SHIFT_POINTS = Object.freeze([
   { up: 0.16, down: 0.00, torque: 1.18 },
@@ -1874,7 +1875,7 @@ function updateVirtualTransmission(dt, throttleAmount, reverseAmount) {
   }
 
   if (state.virtualGearIndex !== previousGear) {
-    state.shiftTimer = 0.18;
+    state.shiftTimer = state.vehicleType === 'motorcycle' ? 0.2 : 0.34;
   } else {
     state.shiftTimer = Math.max(0, state.shiftTimer - dt);
   }
@@ -1883,10 +1884,10 @@ function updateVirtualTransmission(dt, throttleAmount, reverseAmount) {
   const lower = state.virtualGearIndex === 0 ? 0 : gears[state.virtualGearIndex - 1].up;
   const upper = Math.max(current.up, lower + 0.01);
   const gearProgress = THREE.MathUtils.clamp((speedRatio - lower) / (upper - lower), 0, 1);
-  const rpmTarget = THREE.MathUtils.clamp(0.24 + gearProgress * 0.62 + throttleAmount * 0.2, 0.2, 1);
-  const shiftDip = state.shiftTimer > 0 ? 0.78 : 1;
+  const rpmTarget = THREE.MathUtils.clamp(0.2 + gearProgress * 0.72 + throttleAmount * 0.24, 0.18, 1);
+  const shiftDip = state.shiftTimer > 0 ? (state.vehicleType === 'motorcycle' ? 0.76 : 0.68) : 1;
 
-  state.virtualRpm = THREE.MathUtils.damp(state.virtualRpm, rpmTarget, state.shiftTimer > 0 ? 11 : 5.5, dt);
+  state.virtualRpm = THREE.MathUtils.damp(state.virtualRpm, rpmTarget, state.shiftTimer > 0 ? 5.5 : 3.2, dt);
   return current.torque * shiftDip * THREE.MathUtils.lerp(1.05, 0.88, Math.max(0, state.virtualRpm - 0.75) / 0.25);
 }
 
@@ -2094,9 +2095,9 @@ function updateEngineAudio() {
   const speedRatio = Math.min(Math.abs(state.speed) / Math.max(state.maxSpeed, 1), 1);
   const throttleAmount = Math.max(state.throttleInput, reversing ? 0.55 : accelerating ? 0.35 : 0.12);
   const rpm = THREE.MathUtils.clamp(state.virtualRpm || 0.22, 0.18, 1);
-  const shiftDip = state.shiftTimer > 0 ? -10 : 0;
-  const baseFrequency = 38 + rpm * 122 + throttleAmount * 18 + shiftDip;
-  const targetCutoff = 190 + rpm * 960 + throttleAmount * 310 + speedRatio * 160;
+  const shiftDip = state.shiftTimer > 0 ? (state.vehicleType === 'motorcycle' ? -14 : -24) : 0;
+  const baseFrequency = 34 + rpm * 154 + throttleAmount * 20 + shiftDip;
+  const targetCutoff = 170 + rpm * 1260 + throttleAmount * 330 + speedRatio * 130;
   const targetGain = 0.016 + rpm * 0.045 + throttleAmount * 0.024;
 
   audioState.engineOscLow.frequency.setTargetAtTime(baseFrequency, now, 0.08);
