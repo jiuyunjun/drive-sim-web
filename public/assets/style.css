@@ -795,6 +795,10 @@ p {
   z-index: var(--z-minimap-expanded);
 }
 
+#miniMap.expanded.is-panning {
+  cursor: grabbing;
+}
+
 #miniMap::after {
   content: "";
   position: absolute;
