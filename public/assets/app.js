@@ -52,6 +52,8 @@ const miniMapViewport = {
   centerX: 0,
   centerZ: 0,
   halfSize: 24,
+  halfWidth: 24,
+  halfHeight: 24,
 };
 
 const mirrorCameras = {
@@ -120,6 +122,8 @@ const cockpitSignalHudEl = document.getElementById('cockpitSignalHud');
 const cockpitSignalLampEls = Array.from(document.querySelectorAll('#cockpitSignalHud .cockpitSignalLamp'));
 const miniMapEl = document.getElementById('miniMap');
 const miniMapCloseEl = document.getElementById('miniMapClose');
+const firstRunHintEl = document.getElementById('firstRunHint');
+const firstRunHintCloseEl = document.getElementById('firstRunHintClose');
 const mobileControlsEl = document.getElementById('mobileControls');
 const rotateOverlayEl = document.getElementById('rotateOverlay');
 const mobileSteerZoneEl = document.getElementById('mobileSteerZone');
@@ -130,6 +134,9 @@ const mobileThrottleLeverKnobEl = document.getElementById('mobileThrottleLeverKn
 const signalLeverEl = document.getElementById('signalLever');
 const signalLeverKnobEl = document.getElementById('signalLeverKnob');
 const loadingOverlayEl = document.getElementById('loadingOverlay');
+const loadingTextEl = document.getElementById('loadingText');
+const loadingDetailEl = document.getElementById('loadingDetail');
+const loadingProgressBarEl = document.getElementById('loadingProgressBar');
 const signalStatusEl = document.getElementById('signalStatus');
 const signalStatusBoxEl = document.getElementById('signalStatusBox');
 const audioStatusEl = document.getElementById('audioStatus');
@@ -153,7 +160,11 @@ const MOBILE_STEER_DEADZONE_PX = 4;
 const MOBILE_STEER_FOLLOW_SPEED = 20;
 const AudioContextClass = window.AudioContext || window.webkitAudioContext;
 const SETTINGS_STORAGE_KEY = 'driveSimSettingsV2';
+const FIRST_RUN_HINT_STORAGE_KEY = 'driveSimFirstRunHintDismissedV1';
 const MAPS_BASE_URL = new URL('./maps/', import.meta.url);
+const MINI_MAP_ZOOM_MIN = 1;
+const MINI_MAP_ZOOM_MAX = 6;
+const MINI_MAP_ZOOM_STEP = 1.18;
 const ANALYTICS_HEARTBEAT_MS = 30000;
 const ACCEL_CURVE_CHART = Object.freeze({
   left: 32,
@@ -284,7 +295,6 @@ let groundMesh;
 let groundSize = { width: 80, height: 45 };
 let groundAspect = 45 / 80;
 let activeGroundTexture = null;
-const textureLoader = new THREE.TextureLoader();
 const audioState = {
   supported: Boolean(AudioContextClass),
   context: null,
@@ -859,13 +869,50 @@ function deactivateKey(key) {
   keys.delete(key);
 }
 
-function showLoading() {
+function formatPercent(progress) {
+  return `${Math.round(THREE.MathUtils.clamp(progress, 0, 1) * 100)}%`;
+}
+
+function updateLoadingStatus(detailText = t('loading.prepare'), progress = 0) {
+  if (loadingTextEl) loadingTextEl.textContent = t('loading.text');
+  if (loadingDetailEl) loadingDetailEl.textContent = detailText;
+  if (loadingProgressBarEl) {
+    const percent = formatPercent(progress);
+    loadingProgressBarEl.style.width = percent;
+    loadingProgressBarEl.parentElement?.setAttribute('aria-valuenow', String(Math.round(progress * 100)));
+  }
+}
+
+function showLoading(detailText = t('loading.prepare'), progress = 0) {
+  updateLoadingStatus(detailText, progress);
   loadingOverlayEl?.classList.add('visible');
 }
 
 function hideLoading() {
   loadingOverlayEl?.classList.remove('visible');
 }
+
+function dismissFirstRunHint() {
+  if (!firstRunHintEl) return;
+  firstRunHintEl.hidden = true;
+  try {
+    localStorage.setItem(FIRST_RUN_HINT_STORAGE_KEY, '1');
+  } catch (error) {
+    console.warn('Failed to save first-run hint state:', error);
+  }
+}
+
+function showFirstRunHintOnce() {
+  if (!firstRunHintEl) return;
+  try {
+    if (localStorage.getItem(FIRST_RUN_HINT_STORAGE_KEY) === '1') return;
+  } catch (error) {
+    console.warn('Failed to read first-run hint state:', error);
+  }
+  firstRunHintEl.hidden = false;
+}
+
+firstRunHintCloseEl?.addEventListener('click', dismissFirstRunHint);
 
 function handleDiscreteControlAction(action) {
   if (action === 'reset') resetCar();
@@ -1316,6 +1363,9 @@ const state = {
   currentMapImage: typeof persistedSettings?.currentMapImage === 'string' ? persistedSettings.currentMapImage : '',
   startPose: getDefaultStartPose(),
   miniMapExpanded: false,
+  miniMapZoom: 1,
+  miniMapPointerDistance: 0,
+  miniMapGestureActive: false,
   followLookOffset: 0,
   followLookPitch: 0,
   cockpitLookOffset: 0,
@@ -1622,8 +1672,15 @@ function placeCarAtStart() {
 
 function setMiniMapExpanded(expanded) {
   state.miniMapExpanded = expanded;
+  if (expanded) {
+    state.miniMapZoom = 1;
+  }
   miniMapEl.classList.toggle('expanded', expanded);
   document.body.classList.toggle('minimap-expanded', expanded);
+}
+
+function setMiniMapZoom(zoom) {
+  state.miniMapZoom = THREE.MathUtils.clamp(zoom, MINI_MAP_ZOOM_MIN, MINI_MAP_ZOOM_MAX);
 }
 
 function getVehicleDynamics() {
@@ -2028,11 +2085,16 @@ function renderRearViewMirrors() {
 }
 
 function updateMiniMapCamera() {
+  const rect = miniMapEl.getBoundingClientRect();
+  const aspect = rect.width > 0 && rect.height > 0 ? rect.width / rect.height : 1;
   const mapHalfWidth = groundSize.width * 0.5;
   const mapHalfHeight = groundSize.height * 0.5;
-  const miniHalfSize = state.miniMapExpanded
+  const baseHalfSize = state.miniMapExpanded
     ? Math.max(groundSize.width, groundSize.height) * 0.56
     : Math.max(16, Math.max(groundSize.width, groundSize.height) * 0.34);
+  const miniHalfSize = state.miniMapExpanded ? baseHalfSize / state.miniMapZoom : baseHalfSize;
+  const halfWidth = aspect >= 1 ? miniHalfSize * aspect : miniHalfSize;
+  const halfHeight = aspect >= 1 ? miniHalfSize : miniHalfSize / aspect;
   const centerX = state.miniMapExpanded
     ? 0
     : THREE.MathUtils.clamp(car.position.x, -mapHalfWidth, mapHalfWidth);
@@ -2043,11 +2105,13 @@ function updateMiniMapCamera() {
   miniMapViewport.centerX = centerX;
   miniMapViewport.centerZ = centerZ;
   miniMapViewport.halfSize = miniHalfSize;
+  miniMapViewport.halfWidth = halfWidth;
+  miniMapViewport.halfHeight = halfHeight;
 
-  miniMapCamera.left = -miniHalfSize;
-  miniMapCamera.right = miniHalfSize;
-  miniMapCamera.top = miniHalfSize;
-  miniMapCamera.bottom = -miniHalfSize;
+  miniMapCamera.left = -halfWidth;
+  miniMapCamera.right = halfWidth;
+  miniMapCamera.top = halfHeight;
+  miniMapCamera.bottom = -halfHeight;
   miniMapCamera.position.set(centerX, 80, centerZ);
   miniMapCamera.lookAt(centerX, 0, centerZ);
   miniMapCamera.updateProjectionMatrix();
@@ -2067,6 +2131,11 @@ function renderMiniMap() {
 }
 
 function handleMiniMapClick(event) {
+  if (state.miniMapGestureActive) {
+    state.miniMapGestureActive = false;
+    return;
+  }
+
   if (!state.miniMapExpanded) {
     setMiniMapExpanded(true);
     return;
@@ -2075,12 +2144,50 @@ function handleMiniMapClick(event) {
   const rect = miniMapEl.getBoundingClientRect();
   const normalizedX = (event.clientX - rect.left) / rect.width;
   const normalizedY = (event.clientY - rect.top) / rect.height;
-  const worldX = miniMapViewport.centerX + (normalizedX - 0.5) * miniMapViewport.halfSize * 2;
-  const worldZ = miniMapViewport.centerZ + (normalizedY - 0.5) * miniMapViewport.halfSize * 2;
+  const worldX = miniMapViewport.centerX + (normalizedX - 0.5) * miniMapViewport.halfWidth * 2;
+  const worldZ = miniMapViewport.centerZ + (normalizedY - 0.5) * miniMapViewport.halfHeight * 2;
   teleportCarTo(worldX, worldZ);
 }
 
 miniMapEl.addEventListener('click', handleMiniMapClick);
+miniMapEl.addEventListener('wheel', (event) => {
+  if (!state.miniMapExpanded) return;
+  event.preventDefault();
+  const direction = event.deltaY > 0 ? -1 : 1;
+  setMiniMapZoom(state.miniMapZoom * (direction > 0 ? MINI_MAP_ZOOM_STEP : 1 / MINI_MAP_ZOOM_STEP));
+}, { passive: false });
+const miniMapPointers = new Map();
+miniMapEl.addEventListener('pointerdown', (event) => {
+  if (!state.miniMapExpanded || event.pointerType === 'mouse') return;
+  miniMapEl.setPointerCapture?.(event.pointerId);
+  miniMapPointers.set(event.pointerId, { x: event.clientX, y: event.clientY });
+  if (miniMapPointers.size === 2) {
+    const points = Array.from(miniMapPointers.values());
+    state.miniMapPointerDistance = Math.hypot(points[0].x - points[1].x, points[0].y - points[1].y);
+  }
+});
+miniMapEl.addEventListener('pointermove', (event) => {
+  if (!state.miniMapExpanded || event.pointerType === 'mouse' || !miniMapPointers.has(event.pointerId)) return;
+  miniMapPointers.set(event.pointerId, { x: event.clientX, y: event.clientY });
+  if (miniMapPointers.size < 2) return;
+  event.preventDefault();
+  const points = Array.from(miniMapPointers.values());
+  const distance = Math.hypot(points[0].x - points[1].x, points[0].y - points[1].y);
+  if (state.miniMapPointerDistance > 0) {
+    setMiniMapZoom(state.miniMapZoom * (distance / state.miniMapPointerDistance));
+    state.miniMapGestureActive = true;
+  }
+  state.miniMapPointerDistance = distance;
+});
+function releaseMiniMapPointer(event) {
+  miniMapPointers.delete(event.pointerId);
+  if (miniMapPointers.size < 2) {
+    state.miniMapPointerDistance = 0;
+  }
+}
+miniMapEl.addEventListener('pointerup', releaseMiniMapPointer);
+miniMapEl.addEventListener('pointercancel', releaseMiniMapPointer);
+miniMapEl.addEventListener('lostpointercapture', releaseMiniMapPointer);
 miniMapCloseEl?.addEventListener('click', (event) => {
   event.stopPropagation();
   setMiniMapExpanded(false);
@@ -2254,36 +2361,86 @@ vehicleTypeEl.addEventListener('change', () => {
   setVehicleType(vehicleTypeEl.value);
 });
 
-function applyMapSource(src, shouldReset = true) {
-  showLoading();
-  const img = new Image();
-  img.onload = () => {
+function loadImageElement(src) {
+  return new Promise((resolve, reject) => {
+    const img = new Image();
+    img.onload = () => resolve(img);
+    img.onerror = () => reject(new Error(`Failed to load map image: ${src}`));
+    img.src = src;
+  });
+}
+
+async function fetchBlobWithProgress(src) {
+  const response = await fetch(src);
+  if (!response.ok) {
+    throw new Error(`Failed to fetch ${src}: ${response.status}`);
+  }
+
+  const contentLength = Number(response.headers.get('content-length'));
+  if (!response.body || !Number.isFinite(contentLength) || contentLength <= 0) {
+    updateLoadingStatus(t('loading.unknownSize'), 0.35);
+    return response.blob();
+  }
+
+  const reader = response.body.getReader();
+  const chunks = [];
+  let received = 0;
+
+  while (true) {
+    const { done, value } = await reader.read();
+    if (done) break;
+    chunks.push(value);
+    received += value.byteLength;
+    updateLoadingStatus(`${t('loading.downloading')} ${formatPercent(received / contentLength)}`, received / contentLength * 0.72);
+  }
+
+  return new Blob(chunks, { type: response.headers.get('content-type') || 'application/octet-stream' });
+}
+
+async function resolveMapImageSource(src, onCleanup) {
+  if (src.startsWith('data:') || src.startsWith('blob:')) return src;
+  const blob = await fetchBlobWithProgress(src);
+  const objectUrl = URL.createObjectURL(blob);
+  onCleanup.push(() => URL.revokeObjectURL(objectUrl));
+  return objectUrl;
+}
+
+async function applyMapSource(src, shouldReset = true) {
+  const cleanup = [];
+  showLoading(t('loading.prepare'), 0.02);
+
+  try {
+    const imageSrc = await resolveMapImageSource(src, cleanup);
+    updateLoadingStatus(t('loading.decoding'), 0.82);
+    const img = await loadImageElement(imageSrc);
     const requestedWidth = Number.isFinite(Number(mapWidthEl.value))
       ? THREE.MathUtils.clamp(Number(mapWidthEl.value), MAP_WIDTH_MIN, MAP_WIDTH_MAX)
       : groundSize.width;
     const heightMeters = requestedWidth * (img.height / img.width);
+    const texture = new THREE.Texture(img);
 
-    textureLoader.load(
-      src,
-      (texture) => {
-        applyGroundTexture(texture, requestedWidth, heightMeters);
-        hideLoading();
-        if (shouldReset) {
-          resetCar();
-        } else {
-          placeCarAtStart();
-          if (state.view !== 'orbit') {
-            const pose = getViewPose(state.view);
-            camera.position.copy(pose.position);
-            camera.lookAt(pose.lookTarget);
-          }
-        }
-        saveSettings();
+    updateLoadingStatus(t('loading.applying'), 0.94);
+    texture.needsUpdate = true;
+    applyGroundTexture(texture, requestedWidth, heightMeters);
+    updateLoadingStatus(t('loading.ready'), 1);
+
+    if (shouldReset) {
+      resetCar();
+    } else {
+      placeCarAtStart();
+      if (state.view !== 'orbit') {
+        const pose = getViewPose(state.view);
+        camera.position.copy(pose.position);
+        camera.lookAt(pose.lookTarget);
       }
-    );
-  };
-  img.onerror = () => hideLoading();
-  img.src = src;
+    }
+    saveSettings();
+  } catch (error) {
+    console.error('Map image load failed:', error);
+  } finally {
+    cleanup.forEach((release) => release());
+    hideLoading();
+  }
 }
 
 async function fetchJson(url) {
@@ -2329,7 +2486,7 @@ async function loadBuiltInMap(mapId, shouldReset = true) {
   syncMaxSpeedControl(state.maxSpeed);
   syncPlaytimeMapContext();
 
-  applyMapSource(new URL(mapConfig.image, MAPS_BASE_URL).href, shouldReset);
+  await applyMapSource(new URL(mapConfig.image, MAPS_BASE_URL).href, shouldReset);
   saveSettings();
 }
 
@@ -2410,14 +2567,17 @@ async function initializeMaps() {
     await loadMapCatalog();
     if (state.selectedMapId === 'custom' && state.mapImageDataUrl) {
       syncMapPresetControl('custom');
-      applyMapSource(state.mapImageDataUrl, false);
+      await applyMapSource(state.mapImageDataUrl, false);
+      showFirstRunHintOnce();
       return;
     }
     await loadBuiltInMap(state.selectedMapId, false);
+    showFirstRunHintOnce();
   } catch (error) {
     console.error('Map initialization failed:', error);
     createDefaultGround();
     syncMapControls(groundSize.width);
+    showFirstRunHintOnce();
   }
 }
 

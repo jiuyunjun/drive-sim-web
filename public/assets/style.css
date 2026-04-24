@@ -780,14 +780,16 @@ p {
   pointer-events: auto;
   z-index: var(--z-minimap);
   cursor: zoom-in;
-  transition: width 0.18s ease, border-radius 0.18s ease, box-shadow 0.18s ease;
+  touch-action: none;
+  transition: inset 0.18s ease, width 0.18s ease, border-radius 0.18s ease, box-shadow 0.18s ease;
 }
 
 #miniMap.expanded {
-  right: 20px;
-  bottom: 20px;
-  width: min(42vw, 420px);
-  border-radius: 24px;
+  inset: 12px;
+  width: auto;
+  height: auto;
+  aspect-ratio: auto;
+  border-radius: var(--radius-lg);
   box-shadow: 0 24px 46px rgba(0, 0, 0, 0.34);
   cursor: crosshair;
   z-index: var(--z-minimap-expanded);
@@ -814,6 +816,29 @@ p {
   pointer-events: none;
 }
 
+.miniMapHint {
+  position: absolute;
+  left: 12px;
+  bottom: 10px;
+  max-width: calc(100% - 24px);
+  padding: 5px 10px;
+  border-radius: var(--radius-pill);
+  background: rgba(8, 14, 20, 0.58);
+  color: rgba(238, 248, 255, 0.92);
+  font-size: 12px;
+  line-height: 1.35;
+  pointer-events: none;
+  opacity: 0;
+  transform: translateY(4px);
+  transition: opacity 0.16s ease, transform 0.16s ease;
+  z-index: 2;
+}
+
+#miniMap.expanded .miniMapHint {
+  opacity: 1;
+  transform: translateY(0);
+}
+
 #miniMapClose {
   position: absolute;
   top: 10px;
@@ -837,11 +862,6 @@ p {
   display: inline-flex;
 }
 
-#miniMap.expanded .miniMapLabel::after {
-  content: " 点击地点瞬移 / Esc 或右键收起";
-  letter-spacing: normal;
-}
-
 body.minimap-expanded #mobileControls,
 body.minimap-expanded #wheelHud,
 body.minimap-expanded #mirrorHud,
@@ -852,6 +872,68 @@ body.minimap-expanded #ui {
 body.minimap-expanded .mobileClusterRight {
   opacity: 0.18;
   z-index: 1;
+}
+
+/* ===== First Run Hint ===== */
+.firstRunHint {
+  position: fixed;
+  left: 50%;
+  bottom: 24px;
+  z-index: 35;
+  width: min(520px, calc(100vw - 32px));
+  transform: translateX(-50%);
+  display: grid;
+  gap: 6px;
+  padding: 14px 44px 14px 16px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: var(--radius-lg);
+  background: rgba(8, 14, 20, 0.82);
+  color: #eef8ff;
+  box-shadow: 0 18px 40px rgba(0, 0, 0, 0.32);
+  backdrop-filter: blur(10px);
+}
+
+.firstRunHint[hidden] {
+  display: none;
+}
+
+.firstRunHint strong {
+  font-size: 14px;
+}
+
+.firstRunHint span {
+  font-size: 13px;
+  line-height: 1.45;
+  color: rgba(238, 248, 255, 0.86);
+}
+
+.firstRunMobile {
+  display: none;
+}
+
+#firstRunHintClose {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  width: 28px;
+  height: 28px;
+  padding: 0;
+  border-radius: var(--radius-pill);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  background: rgba(255, 255, 255, 0.08);
+  color: #eef8ff;
+  font-size: 18px;
+  line-height: 1;
+}
+
+@media (hover: none), (pointer: coarse), (max-width: 900px) {
+  .firstRunDesktop {
+    display: none;
+  }
+
+  .firstRunMobile {
+    display: inline;
+  }
 }
 
 /* ===== Mobile Controls (hidden on desktop) ===== */
@@ -1114,10 +1196,11 @@ body.minimap-expanded .mobileClusterRight {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: var(--gap-lg);
+  gap: 12px;
   color: rgba(210, 230, 245, 0.9);
   font-size: 14px;
   letter-spacing: 0.05em;
+  min-width: min(320px, calc(100vw - 48px));
 }
 
 .loadingSpinner {
@@ -1131,6 +1214,29 @@ body.minimap-expanded .mobileClusterRight {
 
 @keyframes loadingSpin {
   to { transform: rotate(360deg); }
+}
+
+.loadingDetail {
+  min-height: 18px;
+  color: rgba(210, 230, 245, 0.72);
+  font-size: 12px;
+  letter-spacing: 0;
+}
+
+.loadingProgress {
+  width: 100%;
+  height: 6px;
+  overflow: hidden;
+  border-radius: var(--radius-pill);
+  background: rgba(255, 255, 255, 0.12);
+}
+
+.loadingProgressBar {
+  width: 0%;
+  height: 100%;
+  border-radius: inherit;
+  background: linear-gradient(90deg, rgba(126, 211, 255, 0.95), rgba(134, 239, 172, 0.95));
+  transition: width 0.16s ease;
 }
 
 /* ==========================================================
@@ -1168,7 +1274,9 @@ body.minimap-expanded .mobileClusterRight {
   }
 
   #miniMap.expanded {
-    width: min(42vw, 320px);
+    inset: 12px;
+    width: auto;
+    height: auto;
   }
 }
 
@@ -1618,10 +1726,10 @@ body.minimap-expanded .mobileClusterRight {
   }
 
   #miniMap.expanded {
-    right: calc(var(--gap-md) + var(--sar));
-    top: calc(72px + var(--sat));
-    bottom: auto;
-    width: min(52vw, 300px);
+    inset: calc(8px + var(--sat)) calc(8px + var(--sar)) calc(8px + var(--sab)) calc(8px + var(--sal));
+    width: auto;
+    height: auto;
+    border-radius: 16px;
   }
 
   #mirrorHud.cockpit-layout ~ #miniMap {
@@ -1629,7 +1737,7 @@ body.minimap-expanded .mobileClusterRight {
   }
 
   #mirrorHud.cockpit-layout ~ #miniMap.expanded {
-    top: calc(110px + var(--sat));
+    top: calc(8px + var(--sat));
   }
 
   .miniMapLabel {
