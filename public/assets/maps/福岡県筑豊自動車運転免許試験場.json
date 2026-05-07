@@ -1,0 +1,10 @@
+{
+  "image": "福岡県筑豊自動車運転免許試験場.webp",
+  "mapWidth": 500,
+  "maxSpeed": 10,
+  "startPose": {
+    "x": 81.4,
+    "z": 101.5,
+    "heading": 2.236674
+  }
+}
