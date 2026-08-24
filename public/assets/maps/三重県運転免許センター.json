@@ -1,0 +1,10 @@
+{
+  "image": "三重県運転免許センター.webp",
+  "mapWidth": 700,
+  "maxSpeed": 17,
+  "startPose": {
+    "x": 0,
+    "z": 0,
+    "heading": 0
+  }
+}
