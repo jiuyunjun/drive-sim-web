@@ -188,6 +188,17 @@ function getAnalyticsTracker() {
   return typeof window.gtag === 'function' ? window.gtag : null;
 }
 
+function getDeviceAnalyticsMeta() {
+  const isMobile = isMobileLikeDevice();
+  return {
+    device_type: isMobile ? 'mobile' : 'desktop',
+    device_orientation: window.innerWidth >= window.innerHeight ? 'landscape' : 'portrait',
+    screen_resolution: `${window.screen?.width || 0}x${window.screen?.height || 0}`,
+    viewport_size: `${window.innerWidth}x${window.innerHeight}`,
+    device_pixel_ratio: window.devicePixelRatio || 1,
+  };
+}
+
 function trackAnalyticsEvent(eventName, params = {}) {
   const gtag = getAnalyticsTracker();
   if (!gtag) return;
@@ -196,6 +207,7 @@ function trackAnalyticsEvent(eventName, params = {}) {
     page_path: window.location.pathname,
     page_title: document.title,
     language: document.documentElement.lang || navigator.language || 'unknown',
+    ...getDeviceAnalyticsMeta(),
     ...params,
   });
 }
@@ -2744,6 +2756,11 @@ async function loadBuiltInMap(mapId, shouldReset = true) {
   syncMapControls(mapConfig.mapWidth ?? groundSize.width);
   syncMaxSpeedControl(state.maxSpeed);
   syncPlaytimeMapContext();
+  trackAnalyticsEvent('select_map', {
+    map_id: resolvedMapId,
+    map_label: state.currentMapImage || resolvedMapId,
+    map_source: 'built_in',
+  });
 
   await applyMapSource(new URL(mapConfig.image, MAPS_BASE_URL).href, shouldReset);
   saveSettings();
@@ -2759,6 +2776,11 @@ function handleMapUpload(file) {
     state.currentMapImage = file.name || 'custom-map';
     syncPlaytimeMapContext();
     syncMapPresetControl('custom');
+    trackAnalyticsEvent('select_map', {
+      map_id: 'custom',
+      map_label: state.currentMapImage,
+      map_source: 'custom',
+    });
     applyMapSource(reader.result);
   };
   reader.readAsDataURL(file);
@@ -2774,6 +2796,12 @@ mapPresetEl?.addEventListener('change', () => {
   if (selected === 'custom') {
     if (state.mapImageDataUrl) {
       state.selectedMapId = 'custom';
+      syncPlaytimeMapContext();
+      trackAnalyticsEvent('select_map', {
+        map_id: 'custom',
+        map_label: state.currentMapImage || 'custom-map',
+        map_source: 'custom',
+      });
       applyMapSource(state.mapImageDataUrl);
     } else {
       syncMapPresetControl(state.selectedMapId);

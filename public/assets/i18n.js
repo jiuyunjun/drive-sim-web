@@ -137,6 +137,23 @@ const TRANSLATIONS = {
     option: {
       custom: '自定义',
     },
+    about: {
+      title: '关于这个驾驶模拟器',
+      intro: '这是一个模拟驾驶考试中心 / 试验场路线的免费网页驾驶模拟器游戏。无需安装 App，打开浏览器就能开始联系四轮或摩托车驾驶。',
+      faqTitle: '常见问题',
+      faqQ1: '这个模拟器免费吗？',
+      faqA1: '完全免费，直接在浏览器里打开就能玩，不需要下载或安装任何 App。',
+      faqQ2: '可以还原试验场或免许中心的实际路线吗？',
+      faqA2: '可以。上传一张俯视角度的地图图片作为地面贴图，就能按照你所在地区试验场的路线布局来练习。',
+      faqQ3: '手机上可以玩吗？',
+      faqA3: '可以，手机端支持横屏触控操作，可以滑动转向，并用屏幕按钮控制油门和刹车。',
+      faqQ4: '支持哪些车辆类型？',
+      faqA4: '目前支持轿车（卡罗拉）和摩托车两种车型，可以在车型菜单中切换，感受不同的转向手感。',
+    },
+    nav: {
+      home: '首页',
+      otherLanguages: '其他语言',
+    },
   },
   en: {
     meta: {
@@ -274,6 +291,23 @@ const TRANSLATIONS = {
     option: {
       custom: 'Custom',
     },
+    about: {
+      title: 'About This Driving Simulator',
+      intro: 'A free browser driving simulator game modeled on driving test center and license course routes. No install required — open it in your browser and start practicing sedan or motorcycle driving right away.',
+      faqTitle: 'Frequently Asked Questions',
+      faqQ1: 'Is this simulator free to play?',
+      faqA1: 'Yes, it is completely free and runs directly in your browser. No download or app install is needed.',
+      faqQ2: 'Can I recreate the actual course from my local test center?',
+      faqA2: 'Yes. Upload a top-down map image as the ground texture, and you can practice on a layout close to your local driving test center course.',
+      faqQ3: 'Does it work on mobile phones?',
+      faqA3: 'Yes, the mobile layout supports landscape touch controls — swipe to steer and use on-screen buttons for throttle and brake.',
+      faqQ4: 'What vehicle types are supported?',
+      faqA4: 'A sedan (Corolla) and a motorcycle are currently supported. Switch between them from the vehicle menu to feel the different steering behavior.',
+    },
+    nav: {
+      home: 'Home',
+      otherLanguages: 'Other Languages',
+    },
   },
   ja: {
     meta: {
@@ -410,6 +444,23 @@ const TRANSLATIONS = {
     },
     option: {
       custom: 'カスタム',
+    },
+    about: {
+      title: 'このドライビングシミュレーターについて',
+      intro: '免許センター・運転試験場のコースをイメージした、無料のブラウザ運転シミュレーター・ゲームです。インストール不要で、ブラウザを開けばすぐに四輪・バイクの運転練習を始められます。',
+      faqTitle: 'よくある質問',
+      faqQ1: '無料で使えますか？',
+      faqA1: 'はい、完全無料です。ブラウザで開くだけで遊べます。アプリのインストールは不要です。',
+      faqQ2: 'お住まいの地域の免許センターのコースを再現できますか？',
+      faqA2: '可能です。上から見た地図画像をアップロードして地面テクスチャにすることで、実際のコースに近いレイアウトで練習できます。',
+      faqQ3: 'スマホでも遊べますか？',
+      faqA3: 'はい、スマホの横画面タッチ操作に対応しています。スワイプでハンドル操作、画面のボタンでアクセルとブレーキを操作できます。',
+      faqQ4: '対応している車種は何ですか？',
+      faqA4: '現在はセダン（カローラ）とバイクに対応しています。車種メニューで切り替えて、それぞれの操舵感覚を試せます。',
+    },
+    nav: {
+      home: 'ホーム',
+      otherLanguages: '他の言語',
     },
   },
 };

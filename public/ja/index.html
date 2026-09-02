@@ -187,6 +187,33 @@
         <button id="copyMapJsonBtn" class="subtleUtilityBtn" type="button" data-i18n="controls.copyMapJson">現在の JSON をコピー</button>
       </div>
 
+      <section class="aboutSection">
+        <h2 data-i18n="about.title">このドライビングシミュレーターについて</h2>
+        <p data-i18n="about.intro">免許センター・運転試験場のコースをイメージした、無料のブラウザ運転シミュレーター・ゲームです。インストール不要で、ブラウザを開けばすぐに四輪・バイクの運転練習を始められます。</p>
+        <h3 class="faqTitle" data-i18n="about.faqTitle">よくある質問</h3>
+        <details class="faqItem">
+          <summary data-i18n="about.faqQ1">無料で使えますか？</summary>
+          <p data-i18n="about.faqA1">はい、完全無料です。ブラウザで開くだけで遊べます。アプリのインストールは不要です。</p>
+        </details>
+        <details class="faqItem">
+          <summary data-i18n="about.faqQ2">お住まいの地域の免許センターのコースを再現できますか？</summary>
+          <p data-i18n="about.faqA2">可能です。上から見た地図画像をアップロードして地面テクスチャにすることで、実際のコースに近いレイアウトで練習できます。</p>
+        </details>
+        <details class="faqItem">
+          <summary data-i18n="about.faqQ3">スマホでも遊べますか？</summary>
+          <p data-i18n="about.faqA3">はい、スマホの横画面タッチ操作に対応しています。スワイプでハンドル操作、画面のボタンでアクセルとブレーキを操作できます。</p>
+        </details>
+        <details class="faqItem">
+          <summary data-i18n="about.faqQ4">対応している車種は何ですか？</summary>
+          <p data-i18n="about.faqA4">現在はセダン（カローラ）とバイクに対応しています。車種メニューで切り替えて、それぞれの操舵感覚を試せます。</p>
+        </details>
+        <nav class="footerNav" aria-label="Site navigation">
+          <a href="../index.html" data-i18n="nav.home">ホーム</a>
+          <a href="../en/index.html">English</a>
+          <a href="../zh/index.html">中文</a>
+        </nav>
+      </section>
+
     </div>
   </div>
 
@@ -348,6 +375,34 @@
       "inLanguage": "ja",
       "url": "https://drive-sim-web.web.app/ja/index.html",
       "description": "免許センター コース シミュレーター 練習に使える、2Dマップ対応のブラウザ版ドライブシミュレーター。"
+    }
+  </script>
+  <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "FAQPage",
+      "mainEntity": [
+        {
+          "@type": "Question",
+          "name": "無料で使えますか？",
+          "acceptedAnswer": { "@type": "Answer", "text": "はい、完全無料です。ブラウザで開くだけで遊べます。アプリのインストールは不要です。" }
+        },
+        {
+          "@type": "Question",
+          "name": "お住まいの地域の免許センターのコースを再現できますか？",
+          "acceptedAnswer": { "@type": "Answer", "text": "可能です。上から見た地図画像をアップロードして地面テクスチャにすることで、実際のコースに近いレイアウトで練習できます。" }
+        },
+        {
+          "@type": "Question",
+          "name": "スマホでも遊べますか？",
+          "acceptedAnswer": { "@type": "Answer", "text": "はい、スマホの横画面タッチ操作に対応しています。スワイプでハンドル操作、画面のボタンでアクセルとブレーキを操作できます。" }
+        },
+        {
+          "@type": "Question",
+          "name": "対応している車種は何ですか？",
+          "acceptedAnswer": { "@type": "Answer", "text": "現在はセダン（カローラ）とバイクに対応しています。車種メニューで切り替えて、それぞれの操舵感覚を試せます。" }
+        }
+      ]
     }
   </script>
 </body>
