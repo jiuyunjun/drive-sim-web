@@ -187,6 +187,33 @@
         <button id="copyMapJsonBtn" class="subtleUtilityBtn" type="button" data-i18n="controls.copyMapJson">复制当前位置 JSON</button>
       </div>
 
+      <section class="aboutSection">
+        <h2 data-i18n="about.title">关于这个驾驶模拟器</h2>
+        <p data-i18n="about.intro">这是一个模拟驾驶考试中心 / 试验场路线的免费网页驾驶模拟器游戏。无需安装 App，打开浏览器就能开始联系四轮或摩托车驾驶。</p>
+        <h3 class="faqTitle" data-i18n="about.faqTitle">常见问题</h3>
+        <details class="faqItem">
+          <summary data-i18n="about.faqQ1">这个模拟器免费吗？</summary>
+          <p data-i18n="about.faqA1">完全免费，直接在浏览器里打开就能玩，不需要下载或安装任何 App。</p>
+        </details>
+        <details class="faqItem">
+          <summary data-i18n="about.faqQ2">可以还原试验场或免许中心的实际路线吗？</summary>
+          <p data-i18n="about.faqA2">可以。上传一张俯视角度的地图图片作为地面贴图，就能按照你所在地区试验场的路线布局来练习。</p>
+        </details>
+        <details class="faqItem">
+          <summary data-i18n="about.faqQ3">手机上可以玩吗？</summary>
+          <p data-i18n="about.faqA3">可以，手机端支持横屏触控操作，可以滑动转向，并用屏幕按钮控制油门和刹车。</p>
+        </details>
+        <details class="faqItem">
+          <summary data-i18n="about.faqQ4">支持哪些车辆类型？</summary>
+          <p data-i18n="about.faqA4">目前支持轿车（卡罗拉）和摩托车两种车型，可以在车型菜单中切换，感受不同的转向手感。</p>
+        </details>
+        <nav class="footerNav" aria-label="Site navigation">
+          <a href="../index.html" data-i18n="nav.home">首页</a>
+          <a href="../ja/index.html">日本語</a>
+          <a href="../en/index.html">English</a>
+        </nav>
+      </section>
+
     </div>
   </div>
 
@@ -348,6 +375,34 @@
       "inLanguage": "zh-CN",
       "url": "https://drive-sim-web.web.app/zh/index.html",
       "description": "支持 2D 路线练习、用户上传地图和手机横屏全屏操作的浏览器驾驶模拟器。"
+    }
+  </script>
+  <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "FAQPage",
+      "mainEntity": [
+        {
+          "@type": "Question",
+          "name": "这个模拟器免费吗？",
+          "acceptedAnswer": { "@type": "Answer", "text": "完全免费，直接在浏览器里打开就能玩，不需要下载或安装任何 App。" }
+        },
+        {
+          "@type": "Question",
+          "name": "可以还原试验场或免许中心的实际路线吗？",
+          "acceptedAnswer": { "@type": "Answer", "text": "可以。上传一张俯视角度的地图图片作为地面贴图，就能按照你所在地区试验场的路线布局来练习。" }
+        },
+        {
+          "@type": "Question",
+          "name": "手机上可以玩吗？",
+          "acceptedAnswer": { "@type": "Answer", "text": "可以，手机端支持横屏触控操作，可以滑动转向，并用屏幕按钮控制油门和刹车。" }
+        },
+        {
+          "@type": "Question",
+          "name": "支持哪些车辆类型？",
+          "acceptedAnswer": { "@type": "Answer", "text": "目前支持轿车（卡罗拉）和摩托车两种车型，可以在车型菜单中切换，感受不同的转向手感。" }
+        }
+      ]
     }
   </script>
 </body>

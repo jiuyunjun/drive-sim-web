@@ -573,6 +573,74 @@ p {
   color: #f3fbff;
 }
 
+/* ===== About / FAQ (SEO content) ===== */
+.aboutSection {
+  margin-top: 18px;
+  padding-top: 16px;
+  border-top: 1px solid var(--border-subtle);
+}
+
+.aboutSection h2 {
+  margin: 0 0 8px;
+  font-size: 16px;
+  color: #f3fbff;
+}
+
+.aboutSection p {
+  font-size: 13px;
+  color: #bcccd6;
+}
+
+.faqTitle {
+  margin: 14px 0 8px;
+  font-size: 14px;
+  color: #f3fbff;
+}
+
+.faqItem {
+  border-radius: var(--radius-sm, 10px);
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid var(--border-subtle);
+  padding: 4px 12px;
+  margin-bottom: 8px;
+}
+
+.faqItem summary {
+  cursor: pointer;
+  font-size: 13px;
+  padding: 8px 0;
+  color: #dbebf5;
+}
+
+.faqItem p {
+  font-size: 12.5px;
+  color: #aebfca;
+  margin: 0 0 10px;
+}
+
+.footerNav {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 14px;
+}
+
+.footerNav a {
+  padding: 6px 10px;
+  border-radius: var(--radius-pill);
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid var(--border-subtle);
+  color: #bcccd6;
+  font-size: 11px;
+  text-decoration: none;
+}
+
+.footerNav a:hover,
+.footerNav a:focus-visible {
+  background: rgba(255, 255, 255, 0.09);
+  color: #f3fbff;
+}
+
 /* ===== Tips ===== */
 .tips {
   display: flex;
