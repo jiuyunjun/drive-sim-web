@@ -1,0 +1,10 @@
+{
+  "image": "静岡県はいなん自動車学校.webp",
+  "mapWidth": 324,
+  "maxSpeed": 10,
+  "startPose": {
+    "x": -155.7,
+    "z": 14,
+    "heading": 3.112868
+  }
+}
