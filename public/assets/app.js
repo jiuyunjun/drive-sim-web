@@ -1,3 +1,4 @@
+import { setupDrivingLayout, createInsetRenderer } from './ui-layout.js';
 import * as THREE from 'three';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import { Reflector } from 'three/addons/objects/Reflector.js';
@@ -5,6 +6,7 @@ import { applyPageTranslations, t } from './i18n.js';
 import { buildCar } from './car-model.js';
 
 applyPageTranslations(document);
+setupDrivingLayout();
 
 const canvas = document.getElementById('app');
 const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, preserveDrawingBuffer: true });
@@ -12,6 +14,7 @@ renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
 renderer.setSize(window.innerWidth, window.innerHeight);
 renderer.shadowMap.enabled = true;
 renderer.outputColorSpace = THREE.SRGBColorSpace;
+const renderInset = createInsetRenderer(renderer);
 
 const scene = new THREE.Scene();
 scene.background = new THREE.Color(0x9fd0ff);
@@ -122,6 +125,7 @@ const quickViewButtons = Array.from(document.querySelectorAll('.quickViewBtn'));
 const setSpawnBtnEl = document.getElementById('setSpawnBtn');
 const copyMapJsonBtnEl = document.getElementById('copyMapJsonBtn');
 const mirrorHudEl = document.getElementById('mirrorHud');
+const touchLayoutQuery = window.matchMedia('(hover: none) and (pointer: coarse)');
 const mirrorLeftEl = document.getElementById('mirrorLeft');
 const mirrorCenterEl = document.getElementById('mirrorCenter');
 const mirrorRightEl = document.getElementById('mirrorRight');
@@ -1724,6 +1728,7 @@ function setVehicleType(nextVehicleType) {
 
 function setView(nextView) {
   state.view = nextView;
+  document.body.dataset.view = nextView;
   document.body.classList.toggle('sedan-cockpit', nextView === 'cockpit' && state.vehicleType === 'sedan');
   document.body.classList.toggle('bike-cockpit', nextView === 'cockpit' && state.vehicleType === 'motorcycle');
   const isOrbit = nextView === 'orbit';
@@ -2301,15 +2306,13 @@ function renderMirrorPane(container, cameraRef, side) {
   }
   updateMirrorCamera(cameraRef, side);
 
-  renderer.clearDepth();
-  renderer.setScissorTest(true);
-  renderer.setViewport(rect.left, window.innerHeight - rect.bottom, rect.width, rect.height);
-  renderer.setScissor(rect.left, window.innerHeight - rect.bottom, rect.width, rect.height);
-  renderer.render(scene, cameraRef);
+  renderInset(container, scene, cameraRef);
 }
 
 function renderRearViewMirrors() {
-  if (state.view === 'orbit') return;
+  // Touch layouts drop the mirrors entirely, so skip the three extra passes.
+  if (touchLayoutQuery.matches) return;
+  if (state.view === 'orbit' || state.miniMapExpanded) return;
   renderMirrorPane(mirrorLeftEl, mirrorCameras.left, 'left');
   renderMirrorPane(mirrorCenterEl, mirrorCameras.center, 'center');
   renderMirrorPane(mirrorRightEl, mirrorCameras.right, 'right');
@@ -2356,12 +2359,7 @@ function renderMiniMap() {
   if (rect.width < 2 || rect.height < 2) return;
 
   updateMiniMapCamera();
-  renderer.clearDepth();
-  renderer.setScissorTest(true);
-  renderer.setViewport(rect.left, window.innerHeight - rect.bottom, rect.width, rect.height);
-  renderer.setScissor(rect.left, window.innerHeight - rect.bottom, rect.width, rect.height);
-  renderer.render(scene, miniMapCamera);
-  renderer.setScissorTest(false);
+  renderInset(miniMapEl, scene, miniMapCamera);
 }
 
 function handleMiniMapClick(event) {
@@ -2889,11 +2887,11 @@ function animate() {
   updateSpeedEffects();
   updateCamera(dt);
 
+  renderRearViewMirrors();
+  renderMiniMap();
   renderer.setViewport(0, 0, window.innerWidth, window.innerHeight);
   renderer.setScissorTest(false);
   renderer.render(scene, camera);
-  renderRearViewMirrors();
-  renderMiniMap();
   requestAnimationFrame(animate);
 }
 
