@@ -142,17 +142,19 @@ export function buildCB400(THREE, car, chrome, Reflector) {
   box(motorcycleRoot,'plateBracket',.13,.15,.015,black,0,.69,-1.045).rotation.x=-.32;
   function makeBar(parent,label,y,z) {
     const g=group(parent,label);g.position.set(0,y,z);
-    tube(g,'chromeHandlebar',[[-.36,0,-.06],[-.24,.014,-.04],[-.12,-.035,.025],[.12,-.035,.025],[.24,.014,-.04],[.36,0,-.06]],.012,chrome);
+    tube(g,'chromeHandlebar',[[-.36,0,-.06],[-.24,.014,-.04],[-.16,.005,-.01],[-.10,-.035,.025],[.10,-.035,.025],[.16,.005,-.01],[.24,.014,-.04],[.36,0,-.06]],.012,chrome);
     for(const side of [-1,1]) {
       rod(g,`grip${side}`,[side*.26,.009,-.05],[side*.37,0,-.065],.022,rubber);
       box(g,`switchBlock${side}`,.045,.041,.052,black,side*.235,.013,-.04);
       tube(g,`lever${side}`,[[side*.21,.013,-.006],[side*.30,.019,.017],[side*.37,.014,-.005]],.0065,silver);
-      rod(g,`mirrorStem${side}`,[side*.21,.027,-.006],[side*.31,.22,.025],.006,chrome);
-      const mirror=ellipsoid(g,`ovalMirror${side}`,.05,.069,.014,chrome,side*.32,.255,.025);mirror.rotation.z=side*.23;
+      // Short riser from the switch housing, then a long outward diagonal stalk.
+      rod(g,`mirrorBoot${side}`,[side*.235,.02,-.025],[side*.245,.075,-.02],.012,black);
+      tube(g,`mirrorStem${side}`,[[side*.245,.07,-.02],[side*.26,.115,.008],[side*.34,.165,.04],[side*.425,.22,.075]],.0055,polished);
+      ellipsoid(g,`roundMirror${side}`,.059,.059,.012,black,side*.465,.245,.085);
       const geo=new THREE.CircleGeometry(1,40);
       const mirrorSurface=named(Reflector?new Reflector(geo,{color:0xb6b6b6,textureWidth:256,textureHeight:256,multisample:0,clipBias:.001}):new THREE.Mesh(geo,material(0xa7bbc8,.08,.8)),`mirrorGlass${side}`);
-      mirrorSurface.position.set(side*.32,.255,.005);mirrorSurface.scale.set(.044,.061,1);mirrorSurface.rotation.set(0,Math.PI,-side*.23);g.add(mirrorSurface);mirrorSurfaces.push(mirrorSurface);
-      const bezel=mesh(g,`mirrorBezel${side}`,new THREE.RingGeometry(1,1.1,40),alloy,side*.32,.255,.003);
+      mirrorSurface.position.set(side*.465,.245,.071);mirrorSurface.scale.set(.055,.055,1);mirrorSurface.rotation.set(0,Math.PI,0);g.add(mirrorSurface);mirrorSurfaces.push(mirrorSurface);
+      const bezel=mesh(g,`mirrorBezel${side}`,new THREE.RingGeometry(1,1.07,40),polished,side*.465,.245,.07);
       bezel.scale.copy(mirrorSurface.scale);bezel.rotation.copy(mirrorSurface.rotation);
       if(Reflector){const reflect=mirrorSurface.onBeforeRender;mirrorSurface.onBeforeRender=function(renderer,scene,camera){
         if(camera.userData.skipCarMirrors)return;
@@ -161,7 +163,16 @@ export function buildCB400(THREE, car, chrome, Reflector) {
         try{reflect.call(this,renderer,scene,camera);}finally{mirrorSurfaces.forEach((m,i)=>m.visible=visible[i]);renderer.setViewport(viewport);renderer.setScissor(scissor);renderer.setScissorTest(test);}
       };}
     }
-    box(g,'barClamp',.12,.037,.045,alloy,0,-.03,.026);
+    // Continuous mechanical connection: fork crowns -> upper yoke -> risers -> bar.
+    box(g,'upperTripleClamp',.25,.028,.105,black,0,-.10,.055);
+    for(const side of [-1,1]){
+      rod(g,`forkCrown${side}`,[side*.105,-.18,.071],[side*.105,-.075,.071],.026,polished);
+      rod(g,`barRiser${side}`,[side*.055,-.088,.025],[side*.055,-.031,.025],.014,polished);
+      box(g,`barClamp${side}`,.031,.025,.042,alloy,side*.055,-.025,.025);
+      for(const dz of [-.012,.012])mesh(g,`clampBolt${side}:${dz}`,new THREE.CylinderGeometry(.005,.005,.005,6),silver,side*.055,-.009,.025+dz);
+    }
+    const ignition=mesh(g,'ignitionSwitch',new THREE.CylinderGeometry(.019,.019,.012,24),alloy,0,-.055,.071);
+    box(ignition,'keySlot',.013,.003,.003,black,0,.008,0);
     return g;
   }
   const bikeHandlebar=makeBar(motorcycleRoot,'bikeHandlebar',1.035,.40);
@@ -180,12 +191,29 @@ export function buildCB400(THREE, car, chrome, Reflector) {
     displays.push({ctx,texture,max,isRpm});
     return g;
   }
-  meter(motorcycleRoot,'speedometer',-.079,1.071,.515,180,false);meter(motorcycleRoot,'tachometer',.079,1.071,.515,13,true);
+  function mountedMeters(parent,prefix){
+    // Instruments share the steering assembly, so supports cannot drift apart.
+    box(parent,`${prefix}InstrumentBridge`,.245,.034,.067,black,0,-.005,.124);
+    for(const side of [-1,1]){
+      rod(parent,`${prefix}MeterBracket${side}`,[side*.095,-.092,.065],[side*.084,.013,.128],.014,black);
+      box(parent,`${prefix}MeterRubberMount${side}`,.042,.035,.047,rubber,side*.083,.012,.132);
+    }
+    box(parent,`${prefix}CenterPod`,.05,.081,.049,black,0,.051,.137);
+    box(parent,`${prefix}IndicatorGlass`,.035,.04,.003,material(0x163d46,.3),0,.06,.11);
+    // +X appears on the rider's left looking forward (+Z).
+    meter(parent,`${prefix}Speedometer`,.079,.064,.143,180,false);
+    meter(parent,`${prefix}Tachometer`,-.079,.064,.143,13,true);
+    tube(parent,`${prefix}CableLoom`,[[0,-.012,.137],[.035,-.09,.14],[.055,-.18,.18]],.011,black);
+  }
+  mountedMeters(bikeHandlebar,'exterior');
   // Same sculpted tank and detailed controls are used in the close rider view.
   const cockpitTank=tank.clone();cockpitTank.name='cockpitTank';cockpitTank.userData.partName='cockpitTank';cockpitTank.position.set(0,.16,.08);bikeCockpitRoot.add(cockpitTank);
   const cockpitCap=named(fuelCap.clone(),'cockpitFuelCap');cockpitCap.position.add(new THREE.Vector3(0,.16,.08));bikeCockpitRoot.add(cockpitCap);
+  for(const child of motorcycleRoot.children.filter(o=>/^(whitePinstripe|blackSweep|silverPanel)/.test(o.name))){
+    const decal=named(child.clone(),`cockpit${child.name}`);decal.position.add(new THREE.Vector3(0,.16,.08));bikeCockpitRoot.add(decal);
+  }
   const bikeCockpitBar=makeBar(bikeCockpitRoot,'bikeCockpitBar',1.17,.52);
-  meter(bikeCockpitRoot,'cockpitSpeedometer',-.083,1.205,.665,180,false);meter(bikeCockpitRoot,'cockpitTachometer',.083,1.205,.665,13,true);
+  mountedMeters(bikeCockpitBar,'cockpit');
   let old='';
   function updateBikeCockpit(ms,rpmRatio) {
     speed=Math.round(Math.abs(ms)*3.6);rpm=Math.round(rpmRatio*40)/40;const key=`${speed}/${rpm}`;if(key===old)return;old=key;
