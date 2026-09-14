@@ -29,14 +29,6 @@ export function buildCar(THREE, sedanBuilder = buildCorolla, Reflector, bikeBuil
   const sedanParts = sedanBuilder(THREE, car, bodyMat, chromeMat, trimBlackMat, Reflector);
   const bikeParts = bikeBuilder(THREE, car, chromeMat, Reflector);
 
-  /* 方向箭头 */
-  const arrow = new THREE.ArrowHelper(
-    new THREE.Vector3(0, 0, 1),
-    new THREE.Vector3(0, 2.2, 0),
-    3.6, 0x00bfff, 0.8, 0.5
-  );
-  car.add(arrow);
-
   /* 自动命名（供预览页面部件列表使用） */
   car.traverse((child) => {
     if (child === car) return;
@@ -52,7 +44,6 @@ export function buildCar(THREE, sedanBuilder = buildCorolla, Reflector, bikeBuil
     parts: {
       ...sedanParts,
       ...bikeParts,
-      arrow,
       vehicles: {
         sedan: {
           root: sedanParts.sedanRoot,
