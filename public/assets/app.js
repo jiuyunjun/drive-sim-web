@@ -1553,11 +1553,11 @@ function getViewPose(view) {
     if (state.vehicleType === 'motorcycle') {
       const position = car.position.clone()
         .add(new THREE.Vector3(0, 1.42, 0))
-        .add(forward.clone().multiplyScalar(0.18));
+        .add(forward.clone().multiplyScalar(-0.08));
       const lookTarget = position.clone()
         .add(viewForward.clone().multiplyScalar(30))
         .add(viewRight.clone().multiplyScalar(0.04))
-        .add(new THREE.Vector3(0, -0.08, 0));
+        .add(new THREE.Vector3(0, -1.3, 0));
       return { position, lookTarget };
     }
     // Seated eye point behind the wheel; leave the cluster and road in view.
@@ -1708,6 +1708,7 @@ function setVehicleType(nextVehicleType) {
   camera.fov = state.view === 'cockpit' ? getCockpitFov() : DEFAULT_CAMERA_FOV;
   camera.updateProjectionMatrix();
   document.body.classList.toggle('sedan-cockpit', state.view === 'cockpit' && state.vehicleType === 'sedan');
+  document.body.classList.toggle('bike-cockpit', state.view === 'cockpit' && state.vehicleType === 'motorcycle');
   motorcycleRoot.rotation.z = 0;
   bikeCockpitRoot.rotation.z = 0;
   bikeHandlebar.rotation.y = state.steer;
@@ -1727,6 +1728,7 @@ function setVehicleType(nextVehicleType) {
 function setView(nextView) {
   state.view = nextView;
   document.body.classList.toggle('sedan-cockpit', nextView === 'cockpit' && state.vehicleType === 'sedan');
+  document.body.classList.toggle('bike-cockpit', nextView === 'cockpit' && state.vehicleType === 'motorcycle');
   const isOrbit = nextView === 'orbit';
   camera.fov = nextView === 'cockpit' ? getCockpitFov() : DEFAULT_CAMERA_FOV;
   camera.updateProjectionMatrix();
@@ -2160,8 +2162,8 @@ function updateCar(dt) {
     assembly.wheel.rotation.x += (state.speed * dt) / assembly.radius;
   });
   bikeFrontWheelPivot.rotation.y = state.steer;
-  bikeFrontWheelAssembly.group.rotation.x -= (state.speed * dt) / 0.48;
-  bikeRearWheelAssembly.group.rotation.x -= (state.speed * dt) / 0.48;
+  bikeFrontWheelAssembly.group.rotation.x += (state.speed * dt) / 0.315;
+  bikeRearWheelAssembly.group.rotation.x += (state.speed * dt) / 0.315;
 
   steeringWheel.rotation.z = -state.steeringWheelAngle;
   bikeHandlebar.rotation.y = state.steer;
@@ -2181,6 +2183,7 @@ function updateCar(dt) {
   speedEl.textContent = (Math.abs(state.speed) * 3.6).toFixed(1);
   gearEl.textContent = state.speed > 0.2 ? `D${state.virtualGearIndex + 1}` : state.speed < -0.2 ? 'R' : 'N';
   if (state.vehicleType === 'sedan') carParts.updateCockpit(state.speed, state.virtualRpm, gearEl.textContent, state.signalBlinkVisible ? state.turnSignal : 'off');
+  if (state.vehicleType === 'motorcycle') carParts.updateBikeCockpit(state.speed, state.virtualRpm);
   positionEl.textContent = `${car.position.x.toFixed(1)}, ${car.position.z.toFixed(1)}`;
   headingEl.textContent = formatHeadingValue(state.heading);
 }

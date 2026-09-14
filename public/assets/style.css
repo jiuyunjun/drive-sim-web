@@ -1961,3 +1961,4 @@ body.minimap-expanded #firstRunHint {
 
 /* The physical steering wheel already shows the angle inside the sedan. */
 body.sedan-cockpit #wheelHud { display: none; }
+body.bike-cockpit #wheelHud { display: none; }
