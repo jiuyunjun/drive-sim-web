@@ -1,5 +1,6 @@
 import * as THREE from 'three';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+import { Reflector } from 'three/addons/objects/Reflector.js';
 import { applyPageTranslations, t } from './i18n.js';
 import { buildCar } from './car-model.js';
 
@@ -61,6 +62,8 @@ const mirrorCameras = {
   center: new THREE.PerspectiveCamera(52, 2.25, 0.1, 500),
   right: new THREE.PerspectiveCamera(56, 1.38, 0.1, 500),
 };
+// Auxiliary views reuse the main view's reflections instead of generating more passes.
+[miniMapCamera, ...Object.values(mirrorCameras)].forEach(c => { c.userData.skipCarMirrors = true; });
 
 const controls = new OrbitControls(camera, renderer.domElement);
 controls.enabled = false;
@@ -825,7 +828,7 @@ function createDefaultGround() {
 }
 
 /* ── 从 car-model.js 导入车模 ── */
-const { group: car, parts: carParts } = buildCar(THREE);
+const { group: car, parts: carParts } = buildCar(THREE, undefined, Reflector);
 scene.add(car);
 
 const {
@@ -1643,10 +1646,10 @@ function setCockpitBodyVisibility(isVisible) {
   }
 
   // Keep the hollow cabin, bonnet and mirrors to frame the seated view.
-  body.visible = isVisible;
-  shoulderShell.visible = isVisible;
+  body.visible = true;
+  shoulderShell.visible = true;
   hood.visible = true;
-  trunk.visible = isVisible;
+  trunk.visible = true;
   frontBumper.visible = isVisible;
   rearBumper.visible = isVisible;
   grille.visible = isVisible;

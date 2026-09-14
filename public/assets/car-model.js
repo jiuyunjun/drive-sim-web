@@ -1070,7 +1070,7 @@ const PREVIEW_OVERRIDES = {
 };
 /* PREVIEW_OVERRIDES_END */
 
-export function buildCar(THREE, sedanBuilder = buildCorolla) {
+export function buildCar(THREE, sedanBuilder = buildCorolla, Reflector) {
   const car = new THREE.Group();
 
   /* ══════════════════════════════════════
@@ -1080,7 +1080,7 @@ export function buildCar(THREE, sedanBuilder = buildCorolla) {
   const chromeMat = new THREE.MeshStandardMaterial({ color: 0xd8dee3, metalness: 0.92, roughness: 0.16 });
   const trimBlackMat = new THREE.MeshStandardMaterial({ color: 0x14181d, metalness: 0.38, roughness: 0.58 });
 
-  const sedanParts = sedanBuilder(THREE, car, bodyMat, chromeMat, trimBlackMat);
+  const sedanParts = sedanBuilder(THREE, car, bodyMat, chromeMat, trimBlackMat, Reflector);
   const bikeParts = buildMotorcycle(THREE, car, chromeMat);
 
   /* 方向箭头 */

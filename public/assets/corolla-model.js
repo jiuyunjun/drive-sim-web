@@ -1,12 +1,14 @@
 // Procedural E210 Corolla sedan. Metres, +Z forward, right-hand-drive.
 // Styling reference: Toyota 2025 Corolla brochure (exterior and interior).
 // All details are local geometry/canvas textures; no remote model dependency.
-export function buildCorolla(THREE, car, paint, chrome, black) {
+export function buildCorolla(THREE, car, paint, chrome, black, Reflector) {
   const root = new THREE.Group();
   root.name = 'sedanRoot';
   root.userData.previewPathAlias = 'corolla';
   car.add(root);
   const parts = { sedanRoot: root };
+  const mirrors = [];
+  parts.mirrorSurfaces = mirrors;
   const mat = (color, roughness = 0.65, metalness = 0) => new THREE.MeshStandardMaterial({ color, roughness, metalness });
   const leather = mat(0x25282c, 0.88);
   const soft = mat(0x41454a, 0.96);
@@ -76,6 +78,41 @@ export function buildCorolla(THREE, car, paint, chrome, black) {
       ring.scale.set(sx, sy, 1);
     }
     return b;
+  }
+  function mirrorFace(parent, label, w, h, position, rearDirection) {
+    const mount = group(label, parent);
+    mount.position.set(...position);
+    // The surface normal bisects the directions toward the seated eye and road.
+    const eyeDirection = new THREE.Vector3(-0.36, 1.245, -0.38).sub(mount.position).normalize();
+    const normal = eyeDirection.add(new THREE.Vector3(...rearDirection).normalize()).normalize();
+    // Keep the mirror's vertical axis upright even when its normal faces -Z.
+    mount.quaternion.setFromRotationMatrix(new THREE.Matrix4().lookAt(normal, new THREE.Vector3(), new THREE.Vector3(0, 1, 0)));
+    box(mount, 'mirrorFrame', w + 0.022, h + 0.022, 0.024, black, 0, 0, -0.015, 0.006);
+    const geometry = new THREE.PlaneGeometry(w, h);
+    const surface = name(Reflector
+      ? new Reflector(geometry, { color: 0xb6b6b6, textureWidth: 512, textureHeight: 512, clipBias: 0.001, multisample: 0 })
+      : new THREE.Mesh(geometry, mat(0xa1b4c2, 0.08, 0.85)), 'reflectiveGlass');
+    mount.add(surface);
+    mirrors.push(surface);
+    if (Reflector) {
+      const renderReflection = surface.onBeforeRender;
+      surface.onBeforeRender = function(renderer, scene, camera) {
+        if (camera.userData.skipCarMirrors) return;
+        // Suppress mirror-in-mirror passes and preserve the caller's viewport.
+        const visibility = mirrors.map(m => m.visible);
+        const viewport = renderer.getViewport(new THREE.Vector4());
+        const scissor = renderer.getScissor(new THREE.Vector4());
+        const scissorTest = renderer.getScissorTest();
+        mirrors.forEach(m => { if (m !== surface) m.visible = false; });
+        renderer.setScissorTest(false);
+        try { renderReflection.call(this, renderer, scene, camera); }
+        finally {
+          mirrors.forEach((m, i) => { m.visible = visibility[i]; });
+          renderer.setViewport(viewport); renderer.setScissor(scissor); renderer.setScissorTest(scissorTest);
+        }
+      };
+    }
+    return mount;
   }
 
   const body = part('body');
@@ -182,12 +219,20 @@ export function buildCorolla(THREE, car, paint, chrome, black) {
   for (const [label, side] of [['sideMirrorL', -1], ['sideMirrorR', 1]]) {
     const p = part(label);
     box(p, 'mirrorStalk', 0.17, 0.032, 0.054, black, side * 0.866, 1.027, 0.72);
-    box(p, 'mirrorCap', 0.19, 0.10, 0.22, paint, side * 0.97, 1.069, 0.72, 0.027);
-    box(p, 'mirrorGasket', 0.17, 0.079, 0.019, black, side * 0.97, 1.06, 0.602, 0.006);
-    box(p, 'mirrorGlass', 0.15, 0.061, 0.005, mat(0xa1b4c2, 0.08, 0.85), side * 0.97, 1.064, 0.59, 0.001);
+    const face = mirrorFace(p, 'sideMirrorFace', 0.15, 0.061, [side * 0.97, 1.064, 0.582], [side * 0.15, -0.05, -1]);
+    box(face, 'mirrorCap', 0.19, 0.10, 0.19, paint, 0, 0, -0.12, 0.027);
   }
 
   const dashboard = part('dashboard');
+  // A sealed passenger compartment stays visible even when the driver seat is hidden.
+  box(dashboard, 'cabinFloor', 1.58, 0.08, 2.58, leather, 0, 0.335, -0.28);
+  box(dashboard, 'firewall', 1.55, 0.56, 0.09, leather, 0, 0.615, 0.90);
+  for (const side of [-1, 1]) {
+    box(dashboard, 'lowerDoorLining', 0.075, 0.23, 2.15, leather, side * 0.766, 0.46, -0.13);
+    box(dashboard, 'carpetMat', 0.53, 0.018, 0.80, black, side * 0.39, 0.383, 0.10, 0.004);
+  }
+  box(dashboard, 'mirrorStem', 0.025, 0.09, 0.035, black, 0.03, 1.354, 0.405, 0.007);
+  mirrorFace(dashboard, 'centerMirror', 0.245, 0.083, [0.03, 1.287, 0.39], [0, -0.02, -1]);
   box(dashboard, 'softDashTop', 1.56, 0.13, 0.56, leather, 0, 0.915, 0.69, 0.035);
   box(dashboard, 'lowerDash', 1.51, 0.17, 0.26, soft, 0, 0.797, 0.60, 0.034);
   line(dashboard, 'satinDashAccent', [[-0.74, 0.86, 0.408], [-0.43, 0.863, 0.399], [0, 0.862, 0.397], [0.46, 0.864, 0.398], [0.74, 0.885, 0.414]], satin, 0.007);
