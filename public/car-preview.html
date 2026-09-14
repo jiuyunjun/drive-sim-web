@@ -340,7 +340,8 @@
         const moduleURL = `./assets/car-model.js?t=${Date.now()}`;
         const module = await import(moduleURL);
         const sedanModule = await import(`./assets/corolla-model.js?t=${Date.now()}`);
-        const result = module.buildCar(THREE, sedanModule.buildCorolla, Reflector);
+        const bikeModule = await import(`./assets/cb400-model.js?t=${Date.now()}`);
+        const result = module.buildCar(THREE, sedanModule.buildCorolla, Reflector, bikeModule.buildCB400);
         carGroup = result.group;
         carPartsRef = result.parts;
         scene.add(carGroup);
@@ -645,7 +646,8 @@
           try {
             const resp = await fetch(`./assets/car-model.js?t=${Date.now()}`);
             const sedanResponse = await fetch(`./assets/corolla-model.js?t=${Date.now()}`);
-            const text = await resp.text() + await sedanResponse.text();
+            const bikeResponse = await fetch(`./assets/cb400-model.js?t=${Date.now()}`);
+            const text = await resp.text() + await sedanResponse.text() + await bikeResponse.text();
             if (lastModuleText && text !== lastModuleText) {
               console.log('检测到车模文件变化，自动刷新');
               loadCarModel();
