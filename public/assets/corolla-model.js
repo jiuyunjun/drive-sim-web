@@ -98,6 +98,10 @@ export function buildCorolla(THREE, car, paint, chrome, black, Reflector) {
       const renderReflection = surface.onBeforeRender;
       surface.onBeforeRender = function(renderer, scene, camera) {
         if (camera.userData.skipCarMirrors) return;
+        // Views where the glass is a few pixels refresh it at a reduced rate.
+        const now = performance.now(), interval = camera.userData.carMirrorInterval || 0;
+        if (interval && now - (this.userData.reflectedAt || 0) < interval) return;
+        this.userData.reflectedAt = now;
         // Suppress mirror-in-mirror passes and preserve the caller's viewport.
         const visibility = mirrors.map(m => m.visible);
         const viewport = renderer.getViewport(new THREE.Vector4());

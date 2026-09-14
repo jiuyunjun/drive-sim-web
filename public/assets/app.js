@@ -9,10 +9,16 @@ applyPageTranslations(document);
 setupDrivingLayout();
 
 const canvas = document.getElementById('app');
-const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, preserveDrawingBuffer: true });
-renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+// Phones pay per pixel and per pass; everything below that branches on this keeps
+// desktop visuals unchanged.
+const isTouchPerf = window.matchMedia('(hover: none) and (pointer: coarse)').matches;
+// Insets copy the drawing buffer in the same task it was rendered, so it need not be preserved.
+const renderer = new THREE.WebGLRenderer({ canvas, antialias: true });
+renderer.setPixelRatio(Math.min(window.devicePixelRatio, isTouchPerf ? 1.5 : 2));
 renderer.setSize(window.innerWidth, window.innerHeight);
 renderer.shadowMap.enabled = true;
+// The first render of each frame refreshes shadows; later passes reuse that map.
+renderer.shadowMap.autoUpdate = false;
 renderer.outputColorSpace = THREE.SRGBColorSpace;
 const renderInset = createInsetRenderer(renderer);
 
@@ -81,14 +87,17 @@ scene.add(hemiLight);
 const sun = new THREE.DirectionalLight(0xffffff, 1.35);
 sun.position.set(20, 40, 10);
 sun.castShadow = true;
-sun.shadow.mapSize.set(2048, 2048);
+sun.shadow.mapSize.setScalar(isTouchPerf ? 1024 : 2048);
 sun.shadow.camera.near = 1;
 sun.shadow.camera.far = 150;
 sun.shadow.camera.left = -60;
 sun.shadow.camera.right = 60;
 sun.shadow.camera.top = 60;
 sun.shadow.camera.bottom = -60;
-scene.add(sun);
+scene.add(sun, sun.target);
+const SUN_OFFSET = sun.position.clone();
+const SHADOW_HALF_EXTENT = 10;
+updateSunShadowBounds();
 
 const speedVignetteEl = document.getElementById('speedVignette');
 const speedBlurEl = document.getElementById('speedBlur');
@@ -716,7 +725,7 @@ function playIndicatorClick(isAccent = true) {
 }
 
 function updateSunShadowBounds() {
-  const half = Math.max(groundSize.width, groundSize.height) * 0.7;
+  const half = SHADOW_HALF_EXTENT;
   sun.shadow.camera.left = -half;
   sun.shadow.camera.right = half;
   sun.shadow.camera.top = half;
@@ -834,6 +843,18 @@ function createDefaultGround() {
 /* ── 从 car-model.js 导入车模 ── */
 const { group: car, parts: carParts } = buildCar(THREE, undefined, Reflector);
 scene.add(car);
+{
+  const size = new THREE.Vector3();
+  car.updateMatrixWorld(true);
+  car.traverse((o) => {
+    // Bolts, drill holes and trim this small never register in the shadow map.
+    if (o.isMesh && o.castShadow && new THREE.Box3().setFromObject(o).getSize(size).length() < 0.06) o.castShadow = false;
+    // Each point light joins every lit shader, including the full-screen ground.
+    // The emissive lamp meshes carry the look; the objects stay so state updates still apply.
+    if (isTouchPerf && o.isPointLight) queueMicrotask(() => o.removeFromParent());
+    if (isTouchPerf && o.isReflector) o.getRenderTarget().setSize(256, 256);
+  });
+}
 
 const {
   sedanRoot,
@@ -1729,6 +1750,7 @@ function setVehicleType(nextVehicleType) {
 function setView(nextView) {
   state.view = nextView;
   document.body.dataset.view = nextView;
+  camera.userData.carMirrorInterval = nextView === 'cockpit' ? (isTouchPerf ? 33 : 0) : 250;
   document.body.classList.toggle('sedan-cockpit', nextView === 'cockpit' && state.vehicleType === 'sedan');
   document.body.classList.toggle('bike-cockpit', nextView === 'cockpit' && state.vehicleType === 'motorcycle');
   const isOrbit = nextView === 'orbit';
@@ -2354,9 +2376,13 @@ function updateMiniMapCamera() {
   miniMapCamera.updateProjectionMatrix();
 }
 
+let lastMiniMapRender = 0;
 function renderMiniMap() {
+  const now = performance.now();
+  if (isTouchPerf && !state.miniMapExpanded && now - lastMiniMapRender < 100) return;
   const rect = miniMapEl.getBoundingClientRect();
   if (rect.width < 2 || rect.height < 2) return;
+  lastMiniMapRender = now;
 
   updateMiniMapCamera();
   renderInset(miniMapEl, scene, miniMapCamera);
@@ -2887,6 +2913,9 @@ function animate() {
   updateSpeedEffects();
   updateCamera(dt);
 
+  sun.position.copy(car.position).add(SUN_OFFSET);
+  sun.target.position.copy(car.position);
+  renderer.shadowMap.needsUpdate = true;
   renderRearViewMirrors();
   renderMiniMap();
   renderer.setViewport(0, 0, window.innerWidth, window.innerHeight);

@@ -158,6 +158,9 @@ export function buildCB400(THREE, car, chrome, Reflector) {
       bezel.scale.copy(mirrorSurface.scale);bezel.rotation.copy(mirrorSurface.rotation);
       if(Reflector){const reflect=mirrorSurface.onBeforeRender;mirrorSurface.onBeforeRender=function(renderer,scene,camera){
         if(camera.userData.skipCarMirrors)return;
+        const now=performance.now(),interval=camera.userData.carMirrorInterval||0;
+        if(interval&&now-(this.userData.reflectedAt||0)<interval)return;
+        this.userData.reflectedAt=now;
         const visible=mirrorSurfaces.map(m=>m.visible),viewport=renderer.getViewport(new THREE.Vector4()),scissor=renderer.getScissor(new THREE.Vector4()),test=renderer.getScissorTest();
         mirrorSurfaces.forEach(m=>{if(m!==mirrorSurface)m.visible=false;});renderer.setScissorTest(false);
         try{reflect.call(this,renderer,scene,camera);}finally{mirrorSurfaces.forEach((m,i)=>m.visible=visible[i]);renderer.setViewport(viewport);renderer.setScissor(scissor);renderer.setScissorTest(test);}
