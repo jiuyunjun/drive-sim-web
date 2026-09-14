@@ -1962,3 +1962,161 @@ body.minimap-expanded #firstRunHint {
 /* The physical steering wheel already shows the angle inside the sedan. */
 body.sedan-cockpit #wheelHud { display: none; }
 body.bike-cockpit #wheelHud { display: none; }
+
+/* Driving workspace: compact setup, persistent view controls, quiet telemetry. */
+.insetCanvas { position: absolute; inset: 0; width: 100%; height: 100%; display: block; pointer-events: none; }
+.mirrorPane, #miniMap { isolation: isolate; overflow: hidden; background: #14212a; border: 2px solid #b4c8d6; }
+.mirrorLabel, .miniMapLabel, .miniMapHint, #miniMapClose { z-index: 1; }
+#miniMap::after, .mirrorPane::after { pointer-events: none; }
+#ui { gap: 10px; max-width: calc(100vw - 32px); }
+#collapsedQuickActions, #ui.collapsed #collapsedQuickActions { display: flex; gap: 4px; padding: 4px; border-radius: 14px; background: #14202eef; border: 1px solid #ffffff20; max-width: 360px; }
+.quickViewBtn { border-radius: 10px; box-shadow: none; background: transparent; font-size: 12px; padding: 8px 10px; }
+.quickViewBtn.is-active { background: #26546e; border-color: #75c9ed; }
+.cycleView { display: none; }
+.panel { width: min(360px, calc(100vw - 32px)); max-height: calc(100dvh - 130px); padding: 20px; border-radius: 18px; background: #101c29f5; border-color: #b4c8d62b; box-shadow: 0 16px 50px #0005; }
+.panel .appBrand { font-size: 11px; font-weight: 500; letter-spacing: .04em; color: #97adbf; margin-bottom: 14px; }
+.setupTitle { font-size: 23px; margin: 0 0 8px; color: #f2f7fb; }
+.setupLead { font-size: 13px; line-height: 1.5; color: #acbfce; }
+.panel .controlsSection { margin: 18px 0; gap: 12px; }
+.panel .controlGrid { grid-template-columns: minmax(0, 1fr); gap: 10px; }
+.panel .controlGrid > * { grid-column: auto; min-width: 0; }
+.panel .control-field { display: flex; flex-direction: column; align-items: stretch; gap: 7px; }
+.panel select, .panel input[type=number] { width: 100%; min-height: 42px; }
+.driveActions { display: grid; grid-template-columns: 1fr auto; gap: 8px; }
+.driveActions button { grid-column: auto; min-width: 0; min-height: 44px; border-radius: 11px; }
+.startDriving { background: #70d1ac; color: #082b22; font-weight: 750; border: 0; cursor: pointer; }
+.startDriving:hover { background: #94e6c6; }
+.driveActions #resetBtn { padding: 8px 12px; font-size: 12px; }
+.settingsFold { border-top: 1px solid #b4c8d624; }
+.settingsFold > summary { padding: 15px 2px; color: #cedce7; cursor: pointer; font-size: 13px; font-weight: 600; }
+.settingsFold[open] > summary { color: #83d8f5; }
+.settingsFoldBody { display: grid; gap: 12px; padding: 0 0 16px; min-width: 0; font-size: 12px; }
+.settingsFoldBody .tips { display: grid; gap: 9px; margin: 0; font-size: 12px; line-height: 1.5; }
+.settingsFoldBody .aboutSection { margin: 0; padding: 0; border: 0; }
+.settingsFoldBody .curveCard { margin: 0; }
+.panel { scrollbar-width: thin; scrollbar-color: #536c80 transparent; overscroll-behavior: contain; }
+#ui:not(.collapsed) ~ #hud, #ui:not(.collapsed) ~ #wheelHud,
+#ui:not(.collapsed) ~ #cockpitSignalHud { visibility: hidden; }
+.settingsFoldBody > div:has(#heading) { overflow-wrap: anywhere; }
+button:focus-visible, summary:focus-visible, select:focus-visible, #miniMap:focus-visible { outline: 2px solid #90e3ff; outline-offset: 3px; }
+#hud { right: auto; max-width: calc(100vw - 240px); }
+#hud .status { gap: 6px; align-items: center; }
+#hud .status > div { padding: 8px 12px; border-radius: 12px; font-size: 12px; background: #12212eed; }
+#hud .speedCard { display: flex; align-items: baseline; gap: 6px; }
+#hud .speedCard > span:first-child { display: none; }
+#speed { font-size: 30px; line-height: 1; font-weight: 750; font-variant-numeric: tabular-nums; }
+#gear { font-size: 20px; font-weight: 700; }
+#audioStatusBox[data-audio=on], #signalStatusBox[data-signal=off] { display: none; }
+#wheelHud { width: 98px; height: 98px; bottom: 20px; opacity: .8; }
+.mirrorPane { width: min(13vw, 142px); aspect-ratio: 1.65; border-radius: 14px; }
+.mirrorCenter { width: min(18vw, 190px); aspect-ratio: 2.5; }
+.mirrorLabel { left: 7px; bottom: 6px; font-size: 10px; padding: 3px 7px; letter-spacing: 0; }
+#mirrorHud.cockpit-layout #mirrorLeft, #mirrorHud.cockpit-layout #mirrorRight { top: 116px; }
+#cockpitSignalHud { top: 100px; }
+#miniMap:not(.expanded) { width: min(18vw, 190px); border-radius: 18px; bottom: 16px; }
+@media (min-width: 1000px) {
+  #ui:not(.collapsed) ~ #mirrorHud { visibility: hidden; }
+}
+@media (max-width: 999px) {
+  #ui:not(.collapsed) ~ #mirrorHud, #ui:not(.collapsed) ~ #cockpitSignalHud { visibility: hidden; }
+  .panel { max-height: calc(100dvh - 122px); }
+  #mirrorHud:not(.cockpit-layout) { left: auto; right: 12px; transform: none; gap: 6px; }
+  .mirrorPane { width: min(15vw, 110px); }
+  .mirrorCenter { width: min(19vw, 150px); }
+}
+@media (hover: none) and (pointer: coarse) {
+  .panel { width: min(360px, calc(100vw - 24px)); padding: 16px; }
+  #collapsedQuickActions { max-width: 310px; }
+  #hud { display: none; }
+  #wheelHud { width: 52px; height: 52px; }
+  #miniMap:not(.expanded) { width: min(17vw, 108px); top: calc(108px + var(--sat)); bottom: auto; }
+  #mirrorHud.cockpit-layout #mirrorLeft, #mirrorHud.cockpit-layout #mirrorRight { top: calc(58px + var(--sat)); }
+  #cockpitSignalHud { top: calc(60px + var(--sat)); }
+}
+@media (max-width: 600px) {
+  #ui { left: 10px; top: 10px; max-width: calc(100vw - 20px); }
+  .panel { width: min(360px, calc(100vw - 20px)); }
+  #hud { max-width: calc(100vw - 116px); left: 10px; bottom: 10px; }
+  #hud .status > div { padding: 6px 8px; }
+  #speed { font-size: 24px; }
+  #miniMap:not(.expanded) { width: 96px; }
+  #mirrorHud:not(.cockpit-layout) { top: 110px; }
+}
+
+/* Panel: pinned start bar over a scrolling body. */
+.panel { display: flex; flex-direction: column; overflow: hidden; }
+.panelScroll { flex: 1 1 auto; min-height: 0; overflow: auto; overscroll-behavior: contain; -webkit-overflow-scrolling: touch; scrollbar-width: thin; scrollbar-color: #536c80 transparent; }
+.panel > .driveActions { flex: 0 0 auto; margin-top: 12px; padding-top: 12px; border-top: 1px solid #b4c8d624; }
+/* #ui only positions its children; taps fall through the empty space around them. */
+#ui { pointer-events: none; }
+#ui > * { pointer-events: auto; }
+
+/* ---------- Touch layout ---------- */
+@media (hover: none) and (pointer: coarse) {
+  /* The setup sheet owns the screen; the driving layer never shows through it. */
+  #ui:not(.collapsed) ~ #mobileControls,
+  #ui:not(.collapsed) ~ #firstRunHint,
+  #ui:not(.collapsed) ~ #miniMap { visibility: hidden; }
+
+  #ui { top: calc(8px + var(--sat)); left: calc(10px + var(--sal)); right: calc(10px + var(--sar)); gap: 8px; }
+  #uiToggle { min-height: 38px; padding: 8px 14px; }
+  #collapsedQuickActions { max-width: min(320px, calc(100vw - 20px - var(--sal) - var(--sar))); }
+  .quickViewBtn { padding: 9px 12px; min-height: 38px; }
+  .setupLead { font-size: 12px; margin-bottom: 0; }
+  .panel .controlsSection { margin: 14px 0 0; }
+  .settingsFold > summary { padding: 13px 2px; }
+  /* The key guide lives in this fold now, so it must stay readable on touch too. */
+  .settingsFoldBody .tips { display: grid; }
+
+  /* Mirrors are dropped on phones: too much furniture for one small screen. */
+  #mirrorHud { display: none !important; }
+
+  /* Dash cluster: speed and gear sit directly above the steering wheel. */
+  #hud { display: block; left: 50%; right: auto; top: auto; bottom: calc(6px + var(--sab)); transform: translateX(-50%); max-width: none; }
+  #hud .status { display: flex; gap: 4px; justify-content: center; margin-bottom: 4px; }
+  #hud .status > div { display: none; padding: 3px 10px; border-radius: 9px; }
+  #hud .status > .speedCard, #hud .status > .gearCard { display: flex; }
+  #hud .status > .gearCard > span:first-child { display: none; }
+  #speed { font-size: 18px; }
+  #gear { font-size: 14px; }
+  /* The wheel joins the cluster in flow instead of floating on its own. */
+  #wheelHud { position: relative; inset: auto; transform: none; margin: 0 auto; width: 46px; height: 46px; }
+  .wheelHudTopMark { top: 3px; width: 5px; height: 12px; margin-left: -2.5px; }
+  /* Cockpit views already carry real gauges and a real wheel. */
+  body.sedan-cockpit #hud, body.bike-cockpit #hud, body.mobile-portrait #hud { display: none; }
+
+  /* Mini map: top-right corner, nothing above or below it. */
+  #miniMap:not(.expanded) { right: calc(10px + var(--sar)); top: calc(8px + var(--sat)); bottom: auto; width: min(22vw, 104px); }
+  #mirrorHud.cockpit-layout ~ #miniMap:not(.expanded) { top: calc(8px + var(--sat)); }
+
+  /* The menu opens as a full sheet: a floating panel cannot fit this screen. */
+  #ui:not(.collapsed) { inset: 0; max-width: none; z-index: calc(var(--z-ui-toggle) + 1); }
+  #ui:not(.collapsed) #collapsedQuickActions { display: none; }
+  #ui:not(.collapsed) #uiToggle { position: fixed; top: calc(8px + var(--sat)); right: calc(10px + var(--sar)); min-height: 34px; padding: 6px 12px; font-size: 12px; }
+  #ui:not(.collapsed) .panel {
+    position: fixed; inset: 0; width: 100%; max-width: none; max-height: none;
+    border: 0; border-radius: 0; background: #0c1724fb;
+    padding: calc(10px + var(--sat)) calc(14px + var(--sar)) calc(10px + var(--sab)) calc(14px + var(--sal));
+  }
+  /* Centre the sheet body and let a landscape screen carry two fields per row. */
+  .panelScroll > *, .panel > .driveActions { max-width: 620px; margin-inline: auto; }
+  .panel .appBrand { display: none; }
+  .setupTitle { font-size: 18px; margin-bottom: 4px; padding-right: 124px; }
+  .panel .controlGrid { grid-template-columns: repeat(auto-fit, minmax(148px, 1fr)); }
+  .settingsFoldBody .controlGrid { grid-template-columns: repeat(auto-fit, minmax(148px, 1fr)); }
+}
+
+@media (hover: none) and (pointer: coarse) and (max-width: 420px) {
+  #wheelHud { display: block !important; width: 40px; height: 40px; }
+  #speed { font-size: 16px; }
+  body.sedan-cockpit #wheelHud, body.bike-cockpit #wheelHud, body.mobile-portrait #wheelHud { display: none !important; }
+}
+
+@media (hover: none) and (pointer: coarse) and (max-height: 400px) {
+  /* Short landscape phones: spend the height on controls, not on prose. */
+  .setupLead { display: none; }
+  .setupTitle { font-size: 16px; margin-bottom: 2px; }
+  .panel .controlsSection { margin: 10px 0 0; }
+  .settingsFold > summary { padding: 11px 2px; }
+  #ui { gap: 6px; }
+}
