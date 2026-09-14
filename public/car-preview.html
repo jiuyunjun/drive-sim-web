@@ -309,7 +309,6 @@
         carPartsRef.bikeSignalLamps.right.forEach(l => { l.mesh.visible = isBike; l.light.visible = isBike; });
       }
       if (carPartsRef.bikeBrakeLamp) { carPartsRef.bikeBrakeLamp.mesh.visible = isBike; carPartsRef.bikeBrakeLamp.light.visible = isBike; }
-      if (carPartsRef.arrow) carPartsRef.arrow.visible = true;
     }
     let partRegistry = [];  // { name, obj }
     let selectedObj = null;

@@ -846,7 +846,6 @@ const {
   bikeHandlebar,
   bikeFrontWheelPivot, bikeFrontWheelAssembly, bikeRearWheelAssembly, bikeRearWheelMount,
   bikeSignalLamps, bikeBrakeLamp,
-  arrow,
 } = carParts;
 
 /* ── 灯光运行时控制函数 ── */
@@ -1629,7 +1628,6 @@ function setCockpitBodyVisibility(isVisible) {
     });
     bikeFrontWheelPivot.visible = isVisible;
     bikeRearWheelMount.visible = isVisible;
-    arrow.visible = isVisible && state.view !== 'cockpit';
 
     /* 隐藏轿车灯具 mesh（转向灯、刹车灯、倒车灯） */
     sedanSignalLamps.left.forEach((l) => { l.mesh.visible = false; l.light.visible = false; });
@@ -1699,7 +1697,6 @@ function setCockpitBodyVisibility(isVisible) {
   bikeBrakeLamp.mesh.visible = false;
   bikeBrakeLamp.light.visible = false;
 
-  arrow.visible = isVisible && state.view !== 'cockpit';
 }
 
 function setVehicleType(nextVehicleType) {
@@ -1750,7 +1747,6 @@ function setView(nextView) {
   mirrorHudEl.style.display = isOrbit ? 'none' : (nextView === 'cockpit' ? 'block' : 'flex');
   mirrorHudEl.classList.toggle('cockpit-layout', nextView === 'cockpit');
   if (cockpitSignalHudEl) cockpitSignalHudEl.classList.toggle('is-visible', nextView === 'cockpit');
-  arrow.visible = !isOrbit && nextView !== 'cockpit';
 
   if (isOrbit) {
     setCockpitBodyVisibility(true);
