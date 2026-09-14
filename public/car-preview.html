@@ -202,6 +202,7 @@
 
   <script type="module">
     import * as THREE from 'three';
+    import { Reflector } from 'three/addons/objects/Reflector.js';
     import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
     import { TransformControls } from 'three/addons/controls/TransformControls.js';
 
@@ -326,6 +327,7 @@
         scene.remove(carGroup);
         carGroup.traverse((child) => {
           if (child.geometry) child.geometry.dispose();
+          if (child.isReflector) { child.dispose(); return; }
           if (child.material) {
             const materials = Array.isArray(child.material) ? child.material : [child.material];
             materials.forEach(m => { m.map?.dispose(); m.dispose(); });
@@ -338,7 +340,7 @@
         const moduleURL = `./assets/car-model.js?t=${Date.now()}`;
         const module = await import(moduleURL);
         const sedanModule = await import(`./assets/corolla-model.js?t=${Date.now()}`);
-        const result = module.buildCar(THREE, sedanModule.buildCorolla);
+        const result = module.buildCar(THREE, sedanModule.buildCorolla, Reflector);
         carGroup = result.group;
         carPartsRef = result.parts;
         scene.add(carGroup);
