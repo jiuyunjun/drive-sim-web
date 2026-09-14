@@ -2,8 +2,10 @@ import { setupDrivingLayout, createInsetRenderer } from './ui-layout.js';
 import * as THREE from 'three';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import { Reflector } from 'three/addons/objects/Reflector.js';
+import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
 import { applyPageTranslations, t } from './i18n.js';
 import { buildCar } from './car-model.js';
+import { collectBoundaries, mergeStaticMeshes } from './mesh-merge.js';
 
 applyPageTranslations(document);
 setupDrivingLayout();
@@ -854,6 +856,9 @@ scene.add(car);
     if (isTouchPerf && o.isPointLight) queueMicrotask(() => o.removeFromParent());
     if (isTouchPerf && o.isReflector) o.getRenderTarget().setSize(256, 256);
   });
+  // Runs after the caster pass above, so shadow flags are final when meshes are bucketed.
+  // Everything reachable from carParts is animated or toggled and stays its own node.
+  mergeStaticMeshes(THREE, mergeGeometries, car, collectBoundaries(THREE, carParts));
 }
 
 const {
