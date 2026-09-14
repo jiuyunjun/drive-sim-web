@@ -43,7 +43,7 @@ scene.fog = new THREE.Fog(0x9fd0ff, 90, 220);
 }
 
 const DEFAULT_CAMERA_FOV = 60;
-const COCKPIT_CAMERA_FOV = 78;
+const COCKPIT_CAMERA_FOV = 70;
 const camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.05, 1000);
 camera.position.set(0, 18, 20);
 const miniMapCamera = new THREE.OrthographicCamera(-24, 24, 24, -24, 0.1, 300);
@@ -1557,15 +1557,15 @@ function getViewPose(view) {
         .add(new THREE.Vector3(0, -0.08, 0));
       return { position, lookTarget };
     }
-    // Keep the eye point slightly raised and forward to avoid clipping into the dash.
+    // Seated eye point behind the wheel; leave the cluster and road in view.
     const position = car.position.clone()
-      .add(new THREE.Vector3(0, 1.6, 0))
-      .add(forward.clone().multiplyScalar(0.28))
-      .add(right.clone().multiplyScalar(-0.3));
+      .add(new THREE.Vector3(0, 1.245, 0))
+      .add(forward.clone().multiplyScalar(-0.38))
+      .add(right.clone().multiplyScalar(-0.36));
     const lookTarget = position.clone()
       .add(viewForward.clone().multiplyScalar(28))
       .add(viewRight.clone().multiplyScalar(-0.04))
-      .add(new THREE.Vector3(0, -0.12, 0));
+      .add(new THREE.Vector3(0, -1.1, 0));
     return { position, lookTarget };
   }
 
@@ -1580,6 +1580,10 @@ function getViewPose(view) {
   const lookTarget = car.position.clone()
     .add(new THREE.Vector3(0, state.vehicleType === 'motorcycle' ? 1.28 : 1.6, 0));
   return { position, lookTarget };
+}
+
+function getCockpitFov() {
+  return state.vehicleType === 'motorcycle' ? 78 : COCKPIT_CAMERA_FOV;
 }
 
 function setCockpitBodyVisibility(isVisible) {
@@ -1638,31 +1642,31 @@ function setCockpitBodyVisibility(isVisible) {
     return;
   }
 
-  // Exterior parts: hidden in cockpit
+  // Keep the hollow cabin, bonnet and mirrors to frame the seated view.
   body.visible = isVisible;
   shoulderShell.visible = isVisible;
-  hood.visible = isVisible;
+  hood.visible = true;
   trunk.visible = isVisible;
   frontBumper.visible = isVisible;
   rearBumper.visible = isVisible;
   grille.visible = isVisible;
-  cabin.visible = isVisible;
-  roofPanel.visible = isVisible;
+  cabin.visible = true;
+  roofPanel.visible = true;
   headlightL.visible = isVisible;
   headlightR.visible = isVisible;
   taillightL.visible = isVisible;
   taillightR.visible = isVisible;
-  sideMirrorL.visible = isVisible;
-  sideMirrorR.visible = isVisible;
+  sideMirrorL.visible = true;
+  sideMirrorR.visible = true;
   roofRailL.visible = isVisible;
   roofRailR.visible = isVisible;
-  rearWindow.visible = isVisible;
+  rearWindow.visible = true;
   driverSeat.visible = isVisible;
-  passengerSeat.visible = isVisible;
+  passengerSeat.visible = true;
 
   // Interior parts: always visible (seen from cockpit)
   dashboard.visible = true;
-  instrumentCluster.visible = isVisible;
+  instrumentCluster.visible = true;
   centerScreen.visible = true;
   steeringWheel.visible = true;
   windshield.visible = true;
@@ -1670,8 +1674,8 @@ function setCockpitBodyVisibility(isVisible) {
   sideWindowR.visible = true;
   aPillarL.visible = true;
   aPillarR.visible = true;
-  cPillarL.visible = !isVisible; // only show C-pillars from cockpit for framing
-  cPillarR.visible = !isVisible;
+  cPillarL.visible = true;
+  cPillarR.visible = true;
   motorcycleRoot.visible = false;
   bikeCockpitRoot.visible = false;
   wheelAssemblies.forEach((assembly) => {
@@ -1698,6 +1702,9 @@ function setCockpitBodyVisibility(isVisible) {
 function setVehicleType(nextVehicleType) {
   state.vehicleType = nextVehicleType === 'motorcycle' ? 'motorcycle' : 'sedan';
   syncVehicleTypeControl(state.vehicleType);
+  camera.fov = state.view === 'cockpit' ? getCockpitFov() : DEFAULT_CAMERA_FOV;
+  camera.updateProjectionMatrix();
+  document.body.classList.toggle('sedan-cockpit', state.view === 'cockpit' && state.vehicleType === 'sedan');
   motorcycleRoot.rotation.z = 0;
   bikeCockpitRoot.rotation.z = 0;
   bikeHandlebar.rotation.y = state.steer;
@@ -1716,8 +1723,9 @@ function setVehicleType(nextVehicleType) {
 
 function setView(nextView) {
   state.view = nextView;
+  document.body.classList.toggle('sedan-cockpit', nextView === 'cockpit' && state.vehicleType === 'sedan');
   const isOrbit = nextView === 'orbit';
-  camera.fov = nextView === 'cockpit' ? COCKPIT_CAMERA_FOV : DEFAULT_CAMERA_FOV;
+  camera.fov = nextView === 'cockpit' ? getCockpitFov() : DEFAULT_CAMERA_FOV;
   camera.updateProjectionMatrix();
   if (nextView !== 'cockpit') {
     state.cockpitLookOffset = 0;
@@ -2146,7 +2154,7 @@ function updateCar(dt) {
   wheelAssemblies.forEach((assembly) => {
     const steerAngle = assembly.steerable ? state.steer : 0;
     assembly.pivot.rotation.y = steerAngle;
-    assembly.wheel.rotation.x -= (state.speed * dt) / 0.48;
+    assembly.wheel.rotation.x += (state.speed * dt) / assembly.radius;
   });
   bikeFrontWheelPivot.rotation.y = state.steer;
   bikeFrontWheelAssembly.group.rotation.x -= (state.speed * dt) / 0.48;
@@ -2169,6 +2177,7 @@ function updateCar(dt) {
 
   speedEl.textContent = (Math.abs(state.speed) * 3.6).toFixed(1);
   gearEl.textContent = state.speed > 0.2 ? `D${state.virtualGearIndex + 1}` : state.speed < -0.2 ? 'R' : 'N';
+  if (state.vehicleType === 'sedan') carParts.updateCockpit(state.speed, state.virtualRpm, gearEl.textContent, state.signalBlinkVisible ? state.turnSignal : 'off');
   positionEl.textContent = `${car.position.x.toFixed(1)}, ${car.position.z.toFixed(1)}`;
   headingEl.textContent = formatHeadingValue(state.heading);
 }
@@ -2238,7 +2247,7 @@ function updateCamera(dt) {
   }
 
   // Widen FOV with absolute speed (follow and cockpit views only)
-  const baseFov = state.view === 'cockpit' ? COCKPIT_CAMERA_FOV : DEFAULT_CAMERA_FOV;
+  const baseFov = state.view === 'cockpit' ? getCockpitFov() : DEFAULT_CAMERA_FOV;
   const fovT = THREE.MathUtils.clamp(Math.abs(state.speed) / 22, 0, 1);
   const targetFov = baseFov + fovT * 14;
   camera.fov = THREE.MathUtils.damp(camera.fov, targetFov, 5, dt);

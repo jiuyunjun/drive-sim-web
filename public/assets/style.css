@@ -1958,3 +1958,6 @@ body.minimap-expanded #firstRunHint {
     max-width: calc(100vw - 180px);
   }
 }
+
+/* The physical steering wheel already shows the angle inside the sedan. */
+body.sedan-cockpit #wheelHud { display: none; }
