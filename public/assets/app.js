@@ -1473,7 +1473,7 @@ const state = {
     STEERING_SENSITIVITY_MAX
   ),
   renderQuality: ['low', 'medium', 'high'].includes(persistedSettings?.renderQuality) ? persistedSettings.renderQuality : (isTouchPerf ? 'medium' : 'high'),
-  hapticMode: ['off', 'events', 'engine'].includes(persistedSettings?.hapticMode) ? persistedSettings.hapticMode : 'engine',
+  hapticMode: ['off', 'events', 'road'].includes(persistedSettings?.hapticMode) ? persistedSettings.hapticMode : 'road',
   vehicleType: persistedSettings?.vehicleType === 'motorcycle' ? 'motorcycle' : 'sedan',
   view: 'follow',
   uiCollapsed: false,
@@ -2964,7 +2964,7 @@ function animate() {
   updateCar(dt);
   updateTurnSignal(dt);
   updateEngineAudio();
-  if (!paused && isTouchPerf && document.hasFocus()) haptics.engine(state.virtualRpm, state.throttleInput, Math.abs(state.speed));
+  if (!paused && isTouchPerf && document.hasFocus()) haptics.road(state.speed);
   updateSpeedEffects();
   updateCamera(dt);
 
