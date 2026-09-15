@@ -1392,7 +1392,11 @@ async function tryEnterFullscreen() {
 
 function updateOrientationUi() {
   const isPortrait = window.innerHeight > window.innerWidth;
-  document.body.classList.toggle('mobile-portrait', isMobileLikeDevice() && isPortrait);
+  const portraitBlocked = isTouchPerf && isPortrait;
+  if (portraitBlocked && !document.body.classList.contains('mobile-portrait')) {
+    document.dispatchEvent(new Event('drivingpause'));
+  }
+  document.body.classList.toggle('mobile-portrait', portraitBlocked);
   if (rotateOverlayEl) {
     rotateOverlayEl.setAttribute('aria-hidden', document.body.classList.contains('mobile-portrait') ? 'false' : 'true');
   }
@@ -2391,7 +2395,7 @@ function updateMiniMapCamera() {
 let lastMiniMapRender = 0;
 function renderMiniMap() {
   const now = performance.now();
-  if (isTouchPerf && !state.uiCollapsed) return;
+  if (isTouchPerf && (!state.uiCollapsed || document.body.classList.contains('mobile-portrait'))) return;
   if (isTouchPerf && !state.miniMapExpanded && now - lastMiniMapRender < 100) return;
   const rect = miniMapEl.getBoundingClientRect();
   if (rect.width < 2 || rect.height < 2) return;
@@ -2935,7 +2939,7 @@ function animate() {
   const elapsed = clock.getDelta();
   if (document.hidden) return;
   const now = performance.now();
-  const paused = isTouchPerf && (!state.uiCollapsed || state.miniMapExpanded);
+  const paused = isTouchPerf && (!state.uiCollapsed || state.miniMapExpanded || document.body.classList.contains('mobile-portrait'));
   if (!paused) adaptiveQuality.sample(elapsed * 1000, now);
   if (paused && now - lastPausedRender < 100) return;
   lastPausedRender = now;
