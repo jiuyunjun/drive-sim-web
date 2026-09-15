@@ -1485,6 +1485,9 @@ body.minimap-expanded #firstRunHint {
     display: flex;
   }
 
+  body.mobile-portrait #mobileControls,
+  body.mobile-portrait #miniMap,
+  body.mobile-portrait #firstRunHint,
   body.mobile-portrait #wheelHud,
   body.mobile-portrait #mirrorHud {
     display: none !important;
@@ -2141,20 +2144,8 @@ button:focus-visible, summary:focus-visible, select:focus-visible, #miniMap:focu
   #ui:not(.collapsed) .driveActions { width: 100%; }
   .panel input, .panel select { font-size: 16px; }
   #hapticHelp { color: #acbfce; line-height: 1.5; }
-  body.mobile-portrait #rotateOverlay { display: none; }
 }
 
-@media (hover: none) and (pointer: coarse) and (orientation: portrait) {
-  body.mobile-portrait #mobileControls { display: block; }
-  body.mobile-portrait #hud { display: block; bottom: calc(190px + var(--sab)); }
-  .mobileClusterLeft { width: calc(44vw - var(--sal)); left: calc(8px + var(--sal)); }
-  .mobileClusterRight { right: calc(8px + var(--sar)); }
-  .mobileDriveStackRight { gap: 5px; }
-  .mobileReverse { min-width: 44px; padding: 0 6px; font-size: 11px; }
-  .mobileBrakePrimary { min-width: 58px; padding: 0 8px; font-size: 12px; }
-  .mobileThrottle, .mobileThrottleLever { width: 44px; min-width: 44px; }
-  .mobileSteerHint { font-size: 11px; }
-}
 
 @media (hover: none) and (pointer: coarse) {
   .firstRunHint { top: calc(120px + var(--sat)); bottom: auto; padding: 12px 48px 12px 14px; width: min(420px, calc(100vw - 24px)); pointer-events: none; }
