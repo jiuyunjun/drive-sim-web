@@ -1,4 +1,4 @@
-import { createHaptics, createAdaptiveQuality } from './mobile-experience.js';
+import { createHaptics, applyRenderQuality } from './mobile-experience.js';
 import { setupDrivingLayout, createInsetRenderer } from './ui-layout.js';
 import * as THREE from 'three';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
@@ -20,11 +20,11 @@ const renderer = new THREE.WebGLRenderer({ canvas, antialias: !isTouchPerf });
 renderer.setPixelRatio(Math.min(window.devicePixelRatio, isTouchPerf ? 1.5 : 2));
 renderer.setSize(window.innerWidth, window.innerHeight);
 renderer.shadowMap.enabled = true;
-// The first render of each frame refreshes shadows; later passes reuse that map.
+renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+// Refresh the shadow map every displayed frame, then reuse it for auxiliary passes.
 renderer.shadowMap.autoUpdate = false;
 renderer.outputColorSpace = THREE.SRGBColorSpace;
 const renderInset = createInsetRenderer(renderer);
-const adaptiveQuality = createAdaptiveQuality(renderer, isTouchPerf);
 const haptics = createHaptics(navigator, () => performance.now());
 
 const scene = new THREE.Scene();
@@ -93,6 +93,8 @@ const sun = new THREE.DirectionalLight(0xffffff, 1.35);
 sun.position.set(20, 40, 10);
 sun.castShadow = true;
 sun.shadow.mapSize.setScalar(isTouchPerf ? 1024 : 2048);
+sun.shadow.bias = -0.0001;
+sun.shadow.normalBias = 0.02;
 sun.shadow.camera.near = 1;
 sun.shadow.camera.far = 150;
 sun.shadow.camera.left = -60;
@@ -382,6 +384,7 @@ function loadSettings() {
 
 function saveSettings() {
   const settings = {
+    renderQuality: state.renderQuality,
     hapticMode: state.hapticMode,
     maxSpeed: state.maxSpeed,
     masterVolume: state.masterVolume,
@@ -942,17 +945,17 @@ const browserControlKeys = new Set([' ', 'arrowup', 'arrowdown', 'arrowleft', 'a
 const keys = new Set();
 const activeTouchPointers = new Map();
 const MOBILE_HAPTIC = Object.freeze({
-  tap: 14,
+  tap: 28,
   tapStrong: [18, 10, 24],
   holdBrake: [20, 12, 28],
-  holdDrive: [14, 10, 18],
+  holdDrive: [30, 20, 40],
   holdPulse: 10,
   holdIntervalMs: 170,
-  steerStart: 12,
-  steerTick: 8,
+  steerStart: 25,
+  steerTick: 20,
   steerStepCount: 8,
   signalToggle: [18, 10, 26],
-  release: 8,
+  release: 25,
 });
 
 function activateKey(key) {
@@ -1469,7 +1472,8 @@ const state = {
     STEERING_SENSITIVITY_MIN,
     STEERING_SENSITIVITY_MAX
   ),
-  hapticMode: ['off', 'events', 'engine'].includes(persistedSettings?.hapticMode) ? persistedSettings.hapticMode : 'events',
+  renderQuality: ['low', 'medium', 'high'].includes(persistedSettings?.renderQuality) ? persistedSettings.renderQuality : (isTouchPerf ? 'medium' : 'high'),
+  hapticMode: ['off', 'events', 'engine'].includes(persistedSettings?.hapticMode) ? persistedSettings.hapticMode : 'engine',
   vehicleType: persistedSettings?.vehicleType === 'motorcycle' ? 'motorcycle' : 'sedan',
   view: 'follow',
   uiCollapsed: false,
@@ -2012,7 +2016,7 @@ function updateVirtualTransmission(dt, throttleAmount, reverseAmount) {
   }
 
   if (state.virtualGearIndex !== previousGear) {
-    triggerMobileVibration([45, 25, 65], 3);
+    triggerMobileVibration([70, 35, 110], 3);
     state.shiftTimer = state.vehicleType === 'motorcycle' ? 0.2 : 0.34;
   } else {
     state.shiftTimer = Math.max(0, state.shiftTimer - dt);
@@ -2865,6 +2869,20 @@ mapPresetEl?.addEventListener('change', () => {
   void loadBuiltInMap(selected);
 });
 
+const renderQualityEl = document.getElementById('renderQuality');
+renderQualityEl.value = state.renderQuality;
+applyRenderQuality(renderer, state.renderQuality, window.devicePixelRatio);
+renderQualityEl.addEventListener('change', () => {
+  state.renderQuality = renderQualityEl.value;
+  applyRenderQuality(renderer, state.renderQuality, window.devicePixelRatio);
+  saveSettings();
+});
+const hapticTestEl = document.getElementById('hapticTest');
+hapticTestEl.disabled = !haptics.supported;
+hapticTestEl.addEventListener('click', () => {
+  const accepted = haptics.test();
+  document.getElementById('hapticHelp').textContent = t(accepted ? 'controls.hapticTestSent' : 'controls.hapticBlocked');
+});
 const hapticModeEl = document.getElementById('hapticMode');
 hapticModeEl.value = state.hapticMode;
 haptics.setMode(state.hapticMode);
@@ -2873,6 +2891,7 @@ document.getElementById('hapticHelp').textContent = t(haptics.supported ? 'contr
 hapticModeEl.addEventListener('change', () => {
   state.hapticMode = hapticModeEl.value;
   haptics.setMode(state.hapticMode);
+  document.getElementById('hapticHelp').textContent = t('controls.hapticHelp');
   saveSettings();
 });
 bindMobileControls();
@@ -2932,7 +2951,6 @@ async function initializeMaps() {
 }
 
 let lastPausedRender = 0;
-let lastShadowRender = 0;
 const clock = new THREE.Clock();
 function animate() {
   requestAnimationFrame(animate);
@@ -2940,7 +2958,6 @@ function animate() {
   if (document.hidden) return;
   const now = performance.now();
   const paused = isTouchPerf && (!state.uiCollapsed || state.miniMapExpanded || document.body.classList.contains('mobile-portrait'));
-  if (!paused) adaptiveQuality.sample(elapsed * 1000, now);
   if (paused && now - lastPausedRender < 100) return;
   lastPausedRender = now;
   const dt = paused ? 0 : Math.min(elapsed, 0.05);
@@ -2953,10 +2970,8 @@ function animate() {
 
   sun.position.copy(car.position).add(SUN_OFFSET);
   sun.target.position.copy(car.position);
-  if (!isTouchPerf || now - lastShadowRender >= 66) {
-    renderer.shadowMap.needsUpdate = true;
-    lastShadowRender = now;
-  }
+  // The light follows the car, so its map and transform must advance together.
+  renderer.shadowMap.needsUpdate = true;
   renderRearViewMirrors();
   renderMiniMap();
   renderer.setViewport(0, 0, window.innerWidth, window.innerHeight);
