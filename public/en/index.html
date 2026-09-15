@@ -143,15 +143,11 @@
             </select>
             <small data-i18n="controls.qualityHelp">Sets vehicle and scene resolution. Changes apply immediately and are saved. High uses more power.</small>
           </label>
-          <label class="control-field span-12">
-            <span data-i18n="controls.hapticMode">Haptic feedback</span>
-            <select id="hapticMode">
-              <option value="off" data-i18n="controls.hapticOff">Off</option>
-              <option value="events" data-i18n="controls.hapticEvents">Driving events</option>
-              <option value="road" data-i18n="controls.hapticRoad">Road bumps + driving events</option>
-            </select>
-            <small id="hapticHelp" role="status" data-i18n="controls.hapticHelp">Light road bumps while moving. Frequency increases linearly with speed; pulse strength stays the same. No bumps at rest; shift feedback remains.</small>
+          <label class="toggle-card span-12">
+            <input id="hapticEnabled" type="checkbox" />
+            <span data-i18n="controls.hapticMode">Enable haptic feedback</span>
           </label>
+          <small id="hapticHelp" class="span-12" role="status" data-i18n="controls.hapticHelp">Light road bumps increase linearly with speed; steering and brake release do not vibrate.</small>
           <button id="hapticTest" type="button" class="action-btn span-12" data-i18n="controls.hapticTest">Test vibration</button>
           <label class="toggle-card span-12">
             <input id="mobileLinearThrottle" type="checkbox" />

@@ -1,4 +1,4 @@
-import { createHaptics, applyRenderQuality } from './mobile-experience.js';
+import { createHaptics, applyRenderQuality, shouldVibrateOnRelease } from './mobile-experience.js';
 import { setupDrivingLayout, createInsetRenderer } from './ui-layout.js';
 import * as THREE from 'three';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
@@ -385,7 +385,7 @@ function loadSettings() {
 function saveSettings() {
   const settings = {
     renderQuality: state.renderQuality,
-    hapticMode: state.hapticMode,
+    hapticEnabled: state.hapticEnabled,
     maxSpeed: state.maxSpeed,
     masterVolume: state.masterVolume,
     steeringSensitivity: state.steeringSensitivity,
@@ -538,7 +538,9 @@ function releaseActiveTouchBinding(pointerId, shouldVibrate = true) {
   if (binding.key) deactivateKey(binding.key);
   binding.button.classList.remove('active');
   activeTouchPointers.delete(pointerId);
-  if (shouldVibrate) triggerMobileVibration(MOBILE_HAPTIC.release);
+  if (shouldVibrate && shouldVibrateOnRelease(binding.button)) {
+    triggerMobileVibration(MOBILE_HAPTIC.release);
+  }
 }
 
 function clearMobileThrottleButtonBindings() {
@@ -951,9 +953,7 @@ const MOBILE_HAPTIC = Object.freeze({
   holdDrive: [30, 20, 40],
   holdPulse: 10,
   holdIntervalMs: 170,
-  steerStart: 25,
-  steerTick: 20,
-  steerStepCount: 8,
+  throttleTick: 20,
   signalToggle: [18, 10, 26],
   release: 25,
 });
@@ -1118,7 +1118,6 @@ window.addEventListener('beforeunload', () => finalizePlaytimeTracking('beforeun
 
 function bindMobileControls() {
   if (!mobileControlsEl) return;
-  let steerHapticStep = 0;
 
   const suppressMobileUiDefault = (element) => {
     if (!element) return;
@@ -1188,7 +1187,7 @@ function bindMobileControls() {
       const nextHapticStep = Math.round(nextLevel * 8);
       if (nextHapticStep !== throttleHapticStep) {
         throttleHapticStep = nextHapticStep;
-        triggerMobileVibration(MOBILE_HAPTIC.steerTick);
+        triggerMobileVibration(MOBILE_HAPTIC.throttleTick);
       }
     };
 
@@ -1231,13 +1230,11 @@ function bindMobileControls() {
       e.preventDefault();
       void ensureAudioRunning();
       void requestMobileImmersiveMode();
-      triggerMobileVibration(MOBILE_HAPTIC.steerStart);
       state.touchSteerActive = true;
       state.touchSteerPointerId = e.pointerId;
       state.touchSteerStartX = e.clientX;
       state.touchSteerStartAngle = state.steeringWheelAngle;
       state.touchSteerTargetAngle = state.steeringWheelAngle;
-      steerHapticStep = Math.round((state.steeringWheelAngle / STEERING_WHEEL_MAX) * MOBILE_HAPTIC.steerStepCount);
       mobileSteerZoneEl.setPointerCapture(e.pointerId);
       mobileSteerZoneEl.classList.add('active');
     });
@@ -1255,11 +1252,6 @@ function bindMobileControls() {
         -STEERING_WHEEL_MAX,
         STEERING_WHEEL_MAX
       );
-      const nextHapticStep = Math.round((state.touchSteerTargetAngle / STEERING_WHEEL_MAX) * MOBILE_HAPTIC.steerStepCount);
-      if (nextHapticStep !== steerHapticStep) {
-        steerHapticStep = nextHapticStep;
-        triggerMobileVibration(MOBILE_HAPTIC.steerTick);
-      }
       const pct = Math.round((state.touchSteerTargetAngle / STEERING_WHEEL_MAX) * -100);
       mobileSteerZoneEl.setAttribute('aria-valuenow', pct);
     });
@@ -1270,7 +1262,6 @@ function bindMobileControls() {
       state.touchSteerPointerId = null;
       state.touchSteerTargetAngle = state.steeringWheelAngle;
       mobileSteerZoneEl.classList.remove('active');
-      triggerMobileVibration(MOBILE_HAPTIC.release);
     };
     mobileSteerZoneEl.addEventListener('pointerup', endSteer);
     mobileSteerZoneEl.addEventListener('pointercancel', endSteer);
@@ -1473,7 +1464,9 @@ const state = {
     STEERING_SENSITIVITY_MAX
   ),
   renderQuality: ['low', 'medium', 'high'].includes(persistedSettings?.renderQuality) ? persistedSettings.renderQuality : (isTouchPerf ? 'medium' : 'high'),
-  hapticMode: ['off', 'events', 'road'].includes(persistedSettings?.hapticMode) ? persistedSettings.hapticMode : 'road',
+  hapticEnabled: persistedSettings?.hapticEnabled !== undefined
+    ? Boolean(persistedSettings.hapticEnabled)
+    : persistedSettings?.hapticMode !== 'off',
   vehicleType: persistedSettings?.vehicleType === 'motorcycle' ? 'motorcycle' : 'sedan',
   view: 'follow',
   uiCollapsed: false,
@@ -2878,19 +2871,20 @@ renderQualityEl.addEventListener('change', () => {
   saveSettings();
 });
 const hapticTestEl = document.getElementById('hapticTest');
-hapticTestEl.disabled = !haptics.supported;
+hapticTestEl.disabled = !haptics.supported || !state.hapticEnabled;
 hapticTestEl.addEventListener('click', () => {
   const accepted = haptics.test();
   document.getElementById('hapticHelp').textContent = t(accepted ? 'controls.hapticTestSent' : 'controls.hapticBlocked');
 });
-const hapticModeEl = document.getElementById('hapticMode');
-hapticModeEl.value = state.hapticMode;
-haptics.setMode(state.hapticMode);
-hapticModeEl.disabled = !haptics.supported;
+const hapticEnabledEl = document.getElementById('hapticEnabled');
+hapticEnabledEl.checked = state.hapticEnabled;
+haptics.setMode(state.hapticEnabled ? 'road' : 'off');
+hapticEnabledEl.disabled = !haptics.supported;
 document.getElementById('hapticHelp').textContent = t(haptics.supported ? 'controls.hapticHelp' : 'controls.hapticUnavailable');
-hapticModeEl.addEventListener('change', () => {
-  state.hapticMode = hapticModeEl.value;
-  haptics.setMode(state.hapticMode);
+hapticEnabledEl.addEventListener('change', () => {
+  state.hapticEnabled = hapticEnabledEl.checked;
+  haptics.setMode(state.hapticEnabled ? 'road' : 'off');
+  hapticTestEl.disabled = !haptics.supported || !state.hapticEnabled;
   document.getElementById('hapticHelp').textContent = t('controls.hapticHelp');
   saveSettings();
 });
