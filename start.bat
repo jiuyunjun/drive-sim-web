@@ -1,5 +1,4 @@
 @echo off
 cd /d "%~dp0"
-start "drive-sim server" cmd /k python -m http.server 8000 --directory public
-timeout /t 2 /nobreak >nul
-start "" http://localhost:8000/
+python scripts\serve.py
+if errorlevel 1 pause
