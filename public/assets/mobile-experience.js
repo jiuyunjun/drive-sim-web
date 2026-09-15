@@ -25,9 +25,10 @@ export function createHaptics(device, now) {
       // Speed is metres/second; resting and revving in place produce no bumps.
       const travelSpeed = Math.abs(speed);
       if (mode !== 'road' || !Number.isFinite(travelSpeed) || travelSpeed < 0.3 || now() < nextRoad) return;
-      // Light, brief bumps: about 1.9 Hz at crawl speed, capped at 3.1 Hz.
+      // Frequency grows linearly: 2 Hz + 0.01 Hz per km/h.
       // Keep pulse length fixed so higher speed changes cadence, not strength.
-      if (pulse(12, 0)) nextRoad = now() + 520 - Math.min(travelSpeed / 30, 1) * 200;
+      const frequencyHz = 2 + travelSpeed * 3.6 * 0.01;
+      if (pulse(12, 0)) nextRoad = now() + 1000 / frequencyHz;
     },
   };
 }

@@ -20,13 +20,13 @@ h.setMode('off');
 assert.equal(h.test(), true, 'explicit test works even when driving vibration is off');
 assert.deepEqual(pulses.at(-1), [200, 100, 200]);
 assert.equal(createHaptics({ vibrate: () => false }, () => time).test(), false);
-// Cadence depends on speed only, stays capped, and works in reverse.
+// Cadence depends linearly on speed and works in reverse.
 function roadPulses(speed, mode = 'road') {
   let clock = 0;
   const events = [];
   const feedback = createHaptics({ vibrate: p => { if (p) events.push([clock, p]); return true; } }, () => clock);
   feedback.setMode(mode);
-  for (clock = 0; clock <= 3000; clock += 10) feedback.road(speed);
+  for (clock = 0; clock <= 3000; clock += 1) feedback.road(speed);
   return events;
 }
 assert.equal(roadPulses(0).length, 0, 'stationary vehicles do not vibrate');
@@ -37,7 +37,15 @@ assert.ok(fast.length > slow.length, 'speed gently raises bump frequency');
 assert.ok(fast.length < slow.length * 2, 'frequency increase remains modest');
 assert.ok([...slow, ...fast].every(([, duration]) => duration === 12), 'speed never raises pulse strength');
 assert.deepEqual(roadPulses(-30), fast, 'reverse uses the same road feedback');
-assert.deepEqual(roadPulses(100), fast, 'cap high-speed cadence');
+// Measure emitted pulses, not just the formula, across the full 0–40 m/s range.
+let previousFrequency = null;
+for (const speed of [5, 10, 15, 20, 25, 30, 35, 40]) {
+  const events = roadPulses(speed);
+  const measuredHz = 1000 / (events[1][0] - events[0][0]);
+  assert.ok(Math.abs(measuredHz - (2 + speed * 0.036)) < 0.012, 'linear frequency at ' + speed);
+  if (previousFrequency !== null) assert.ok(Math.abs(measuredHz - previousFrequency - 0.18) < 0.012, 'equal speed increments give equal frequency increments');
+  previousFrequency = measuredHz;
+}
 assert.deepEqual(roadPulses(30, 'engine'), fast, 'migrate existing engine mode');
 assert.equal(roadPulses(30, 'off').length, 0);
 assert.equal(roadPulses(30, 'events').length, 0);
