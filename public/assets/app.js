@@ -2016,7 +2016,7 @@ function updateVirtualTransmission(dt, throttleAmount, reverseAmount) {
   }
 
   if (state.virtualGearIndex !== previousGear) {
-    triggerMobileVibration([70, 35, 110], 3);
+    triggerMobileVibration(28, 3);
     state.shiftTimer = state.vehicleType === 'motorcycle' ? 0.2 : 0.34;
   } else {
     state.shiftTimer = Math.max(0, state.shiftTimer - dt);

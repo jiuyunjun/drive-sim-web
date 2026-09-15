@@ -6,10 +6,10 @@ const h = createHaptics({ vibrate: p => { pulses.push(p); return true; } }, () =
 h.setMode('road'); time += 400;
 h.road(10);
 assert.equal(pulses.at(-1), 12);
-assert.equal(h.pulse([45, 25, 65], 3), true);
+assert.equal(h.pulse(28, 3), true);
 assert.equal(h.pulse(8), false, 'steering must not interrupt shifting');
 h.road(10);
-assert.deepEqual(pulses.at(-1), [45, 25, 65]);
+assert.deepEqual(pulses.at(-1), 28);
 h.stop(); assert.equal(pulses.at(-1), 0);
 h.setMode('off'); time += 1000; assert.equal(h.pulse(20, 3), false);
 h.setMode('events'); time += 1000; const count = pulses.length;
