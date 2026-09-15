@@ -1485,8 +1485,6 @@ body.minimap-expanded #firstRunHint {
     display: flex;
   }
 
-  body.mobile-portrait #mobileControls,
-  body.mobile-portrait #miniMap,
   body.mobile-portrait #wheelHud,
   body.mobile-portrait #mirrorHud {
     display: none !important;
@@ -2119,4 +2117,51 @@ button:focus-visible, summary:focus-visible, select:focus-visible, #miniMap:focu
   .panel .controlsSection { margin: 10px 0 0; }
   .settingsFold > summary { padding: 11px 2px; }
   #ui { gap: 6px; }
+}
+
+/* Phone cockpit: separate the top navigation from the two thumb zones. */
+@media (hover: none) and (pointer: coarse) {
+  #speedBlur { display: none; }
+  #uiToggle, .quickViewBtn, .mobileControl, .mobileThrottleLever, .panel {
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+  }
+  html { overscroll-behavior: none; }
+  #app { touch-action: none; }
+  #ui.collapsed { width: calc(100% - 134px - var(--sal) - var(--sar)); }
+  #uiToggle, .quickViewBtn, #miniMapClose { min-height: 44px; }
+  #miniMapClose { min-width: 44px; }
+  #ui.collapsed #collapsedQuickActions { flex-wrap: nowrap; max-width: 100%; overflow-x: auto; }
+  #collapsedQuickActions .quickViewBtn { flex: 0 0 auto; }
+  .mobileViewResetStack { display: none; }
+  .mobileSteerRow { grid-template-columns: minmax(0, 1fr); }
+  .mobileClusterLeft { width: min(36vw, 280px); max-width: none; }
+  .mobileSteerZone { min-height: clamp(84px, 24dvh, 116px); }
+  .mobileReverse { min-height: 64px; }
+  #ui:not(.collapsed) .driveActions { width: 100%; }
+  .panel input, .panel select { font-size: 16px; }
+  #hapticHelp { color: #acbfce; line-height: 1.5; }
+  body.mobile-portrait #rotateOverlay { display: none; }
+}
+
+@media (hover: none) and (pointer: coarse) and (orientation: portrait) {
+  body.mobile-portrait #mobileControls { display: block; }
+  body.mobile-portrait #hud { display: block; bottom: calc(190px + var(--sab)); }
+  .mobileClusterLeft { width: calc(44vw - var(--sal)); left: calc(8px + var(--sal)); }
+  .mobileClusterRight { right: calc(8px + var(--sar)); }
+  .mobileDriveStackRight { gap: 5px; }
+  .mobileReverse { min-width: 44px; padding: 0 6px; font-size: 11px; }
+  .mobileBrakePrimary { min-width: 58px; padding: 0 8px; font-size: 12px; }
+  .mobileThrottle, .mobileThrottleLever { width: 44px; min-width: 44px; }
+  .mobileSteerHint { font-size: 11px; }
+}
+
+@media (hover: none) and (pointer: coarse) {
+  .firstRunHint { top: calc(120px + var(--sat)); bottom: auto; padding: 12px 48px 12px 14px; width: min(420px, calc(100vw - 24px)); pointer-events: none; }
+  .firstRunHint strong { font-size: 13px; }
+  .firstRunHint span { font-size: 12px; }
+  #firstRunHintClose { pointer-events: auto; min-width: 44px; min-height: 44px; }
+  .mobileSignalLever { height: 64px; width: 64px; backdrop-filter: none; -webkit-backdrop-filter: none; }
+  .signalLeverKnob { width: 18px; height: 18px; }
+  .signalLeverLabel { color: #d2dce4; }
 }

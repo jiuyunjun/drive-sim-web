@@ -134,6 +134,15 @@
           </label>
         </div>
         <div class="controlGrid">
+          <label class="control-field span-12">
+            <span data-i18n="controls.hapticMode">振動フィードバック</span>
+            <select id="hapticMode">
+              <option value="off" data-i18n="controls.hapticOff">オフ</option>
+              <option value="events" data-i18n="controls.hapticEvents">操作時のみ</option>
+              <option value="engine" data-i18n="controls.hapticEngine">エンジン + 操作</option>
+            </select>
+            <small id="hapticHelp" data-i18n="controls.hapticHelp">走行中の短い振動でエンジン、長めの振動で変速を表現します。感触は端末により異なります。</small>
+          </label>
           <label class="toggle-card span-12">
             <input id="mobileLinearThrottle" type="checkbox" />
             <span data-i18n="controls.mobileLinearThrottle">モバイルで線形アクセルレバーを使う</span>

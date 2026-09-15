@@ -134,6 +134,15 @@
           </label>
         </div>
         <div class="controlGrid">
+          <label class="control-field span-12">
+            <span data-i18n="controls.hapticMode">震动反馈</span>
+            <select id="hapticMode">
+              <option value="off" data-i18n="controls.hapticOff">关闭</option>
+              <option value="events" data-i18n="controls.hapticEvents">操作反馈</option>
+              <option value="engine" data-i18n="controls.hapticEngine">引擎 + 操作反馈</option>
+            </select>
+            <small id="hapticHelp" data-i18n="controls.hapticHelp">行驶时短脉冲模拟引擎，换挡时较长脉冲。震感取决于设备。</small>
+          </label>
           <label class="toggle-card span-12">
             <input id="mobileLinearThrottle" type="checkbox" />
             <span data-i18n="controls.mobileLinearThrottle">手机模式启用线性油门拉杆</span>
