@@ -1,3 +1,4 @@
+import { createHaptics, createAdaptiveQuality } from './mobile-experience.js';
 import { setupDrivingLayout, createInsetRenderer } from './ui-layout.js';
 import * as THREE from 'three';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
@@ -15,7 +16,7 @@ const canvas = document.getElementById('app');
 // desktop visuals unchanged.
 const isTouchPerf = window.matchMedia('(hover: none) and (pointer: coarse)').matches;
 // Insets copy the drawing buffer in the same task it was rendered, so it need not be preserved.
-const renderer = new THREE.WebGLRenderer({ canvas, antialias: true });
+const renderer = new THREE.WebGLRenderer({ canvas, antialias: !isTouchPerf });
 renderer.setPixelRatio(Math.min(window.devicePixelRatio, isTouchPerf ? 1.5 : 2));
 renderer.setSize(window.innerWidth, window.innerHeight);
 renderer.shadowMap.enabled = true;
@@ -23,6 +24,8 @@ renderer.shadowMap.enabled = true;
 renderer.shadowMap.autoUpdate = false;
 renderer.outputColorSpace = THREE.SRGBColorSpace;
 const renderInset = createInsetRenderer(renderer);
+const adaptiveQuality = createAdaptiveQuality(renderer, isTouchPerf);
+const haptics = createHaptics(navigator, () => performance.now());
 
 const scene = new THREE.Scene();
 scene.background = new THREE.Color(0x9fd0ff);
@@ -379,6 +382,7 @@ function loadSettings() {
 
 function saveSettings() {
   const settings = {
+    hapticMode: state.hapticMode,
     maxSpeed: state.maxSpeed,
     masterVolume: state.masterVolume,
     steeringSensitivity: state.steeringSensitivity,
@@ -955,9 +959,9 @@ function activateKey(key) {
   keys.add(key);
 }
 
-function triggerMobileVibration(pattern) {
-  if (!isMobileLikeDevice()) return;
-  navigator.vibrate?.(pattern);
+function triggerMobileVibration(pattern, priority = 1) {
+  if (!isTouchPerf || document.hidden || !state.uiCollapsed || state.miniMapExpanded) return;
+  haptics.pulse(pattern, priority);
 }
 
 function syncMapPresetControl(mapId) {
@@ -1120,15 +1124,7 @@ function bindMobileControls() {
     });
   };
 
-  const startHoldHaptic = (pointerId) => {
-    const binding = activeTouchPointers.get(pointerId);
-    if (!binding) return;
-    if (binding.hapticTimer) window.clearInterval(binding.hapticTimer);
-    binding.hapticTimer = window.setInterval(() => {
-      triggerMobileVibration(MOBILE_HAPTIC.holdPulse);
-    }, MOBILE_HAPTIC.holdIntervalMs);
-  };
-
+  mobileControlsEl.addEventListener('pointerdown', dismissFirstRunHint, { passive: true });
   suppressMobileUiDefault(mobileControlsEl);
   suppressMobileUiDefault(mobileSteerZoneEl);
   suppressMobileUiDefault(mobileThrottleLeverEl);
@@ -1153,7 +1149,6 @@ function bindMobileControls() {
         button.setPointerCapture?.(event.pointerId);
         const isBrakeButton = button.classList.contains('mobileBrake') || button.classList.contains('mobileHandbrake');
         triggerMobileVibration(isBrakeButton ? MOBILE_HAPTIC.holdBrake : MOBILE_HAPTIC.holdDrive);
-        startHoldHaptic(event.pointerId);
         return;
       }
 
@@ -1338,7 +1333,9 @@ function bindMobileControls() {
     signalLeverEl.addEventListener('lostpointercapture', endLever);
   }
 
-  window.addEventListener('blur', () => {
+  const releaseDrivingInputs = () => {
+    haptics.stop();
+    keys.clear();
     activeTouchPointers.forEach((binding, pointerId) => {
       if (binding.hapticTimer) {
         window.clearInterval(binding.hapticTimer);
@@ -1355,8 +1352,14 @@ function bindMobileControls() {
     state.mobileThrottlePointerId = null;
     state.mobileThrottleLeverTarget = 0;
     if (mobileSteerZoneEl) mobileSteerZoneEl.classList.remove('active');
+    state.mobileThrottleLeverValue = 0;
+    state.throttleInput = 0;
     updateMobileThrottleLeverUi();
-  });
+  };
+  window.addEventListener('blur', releaseDrivingInputs);
+  document.addEventListener('visibilitychange', () => { if (document.hidden) releaseDrivingInputs(); });
+  window.addEventListener('pagehide', releaseDrivingInputs);
+  document.addEventListener('drivingpause', releaseDrivingInputs);
 }
 
 function isMobileLikeDevice() {
@@ -1462,6 +1465,7 @@ const state = {
     STEERING_SENSITIVITY_MIN,
     STEERING_SENSITIVITY_MAX
   ),
+  hapticMode: ['off', 'events', 'engine'].includes(persistedSettings?.hapticMode) ? persistedSettings.hapticMode : 'events',
   vehicleType: persistedSettings?.vehicleType === 'motorcycle' ? 'motorcycle' : 'sedan',
   view: 'follow',
   uiCollapsed: false,
@@ -1518,6 +1522,7 @@ const state = {
 
 function setUiCollapsed(collapsed) {
   state.uiCollapsed = collapsed;
+  if (!collapsed) document.dispatchEvent(new Event('drivingpause'));
   uiEl.classList.toggle('collapsed', collapsed);
   uiToggleEl.textContent = collapsed ? t('ui.showMenu') : t('ui.hideMenu');
   saveSettings();
@@ -1809,6 +1814,7 @@ function placeCarAtStart() {
 }
 
 function setMiniMapExpanded(expanded) {
+  if (expanded) document.dispatchEvent(new Event('drivingpause'));
   state.miniMapExpanded = expanded;
   if (expanded) {
     state.miniMapZoom = 1;
@@ -2002,6 +2008,7 @@ function updateVirtualTransmission(dt, throttleAmount, reverseAmount) {
   }
 
   if (state.virtualGearIndex !== previousGear) {
+    triggerMobileVibration([45, 25, 65], 3);
     state.shiftTimer = state.vehicleType === 'motorcycle' ? 0.2 : 0.34;
   } else {
     state.shiftTimer = Math.max(0, state.shiftTimer - dt);
@@ -2163,7 +2170,7 @@ function updateCar(dt) {
     if (gripFactor < 0.98) {
       const scrubDecel = (1.0 - gripFactor) * dynamics.scrubFactor;
       state.speed -= Math.sign(state.speed) * scrubDecel * dt;
-      if (!state.gripExceededLast) navigator.vibrate?.([18, 8, 18]);
+      if (!state.gripExceededLast) triggerMobileVibration([24, 18, 35], 3);
       state.gripExceededLast = true;
     } else {
       state.gripExceededLast = false;
@@ -2198,7 +2205,7 @@ function updateCar(dt) {
   bikeCockpitBar.rotation.y = state.steer;
   wheelHudDialEl.style.transform = `rotate(${-state.steeringWheelAngle}rad)`;
   steerAngleEl.textContent = Math.round(THREE.MathUtils.radToDeg(-state.steeringWheelAngle)).toString();
-  updateAccelCurveMarker(state.throttleInput);
+  if (!state.uiCollapsed) updateAccelCurveMarker(state.throttleInput);
   updateMobileThrottleLeverUi();
 
   // 更新触控转向区域的指示点位置
@@ -2384,6 +2391,7 @@ function updateMiniMapCamera() {
 let lastMiniMapRender = 0;
 function renderMiniMap() {
   const now = performance.now();
+  if (isTouchPerf && !state.uiCollapsed) return;
   if (isTouchPerf && !state.miniMapExpanded && now - lastMiniMapRender < 100) return;
   const rect = miniMapEl.getBoundingClientRect();
   if (rect.width < 2 || rect.height < 2) return;
@@ -2853,6 +2861,16 @@ mapPresetEl?.addEventListener('change', () => {
   void loadBuiltInMap(selected);
 });
 
+const hapticModeEl = document.getElementById('hapticMode');
+hapticModeEl.value = state.hapticMode;
+haptics.setMode(state.hapticMode);
+hapticModeEl.disabled = !haptics.supported;
+document.getElementById('hapticHelp').textContent = t(haptics.supported ? 'controls.hapticHelp' : 'controls.hapticUnavailable');
+hapticModeEl.addEventListener('change', () => {
+  state.hapticMode = hapticModeEl.value;
+  haptics.setMode(state.hapticMode);
+  saveSettings();
+});
 bindMobileControls();
 updateOrientationUi();
 refreshMobileShellState();
@@ -2909,24 +2927,37 @@ async function initializeMaps() {
   }
 }
 
+let lastPausedRender = 0;
+let lastShadowRender = 0;
 const clock = new THREE.Clock();
 function animate() {
-  const dt = Math.min(clock.getDelta(), 0.05);
+  requestAnimationFrame(animate);
+  const elapsed = clock.getDelta();
+  if (document.hidden) return;
+  const now = performance.now();
+  const paused = isTouchPerf && (!state.uiCollapsed || state.miniMapExpanded);
+  if (!paused) adaptiveQuality.sample(elapsed * 1000, now);
+  if (paused && now - lastPausedRender < 100) return;
+  lastPausedRender = now;
+  const dt = paused ? 0 : Math.min(elapsed, 0.05);
   updateCar(dt);
   updateTurnSignal(dt);
   updateEngineAudio();
+  if (!paused && isTouchPerf && document.hasFocus()) haptics.engine(state.virtualRpm, state.throttleInput, Math.abs(state.speed));
   updateSpeedEffects();
   updateCamera(dt);
 
   sun.position.copy(car.position).add(SUN_OFFSET);
   sun.target.position.copy(car.position);
-  renderer.shadowMap.needsUpdate = true;
+  if (!isTouchPerf || now - lastShadowRender >= 66) {
+    renderer.shadowMap.needsUpdate = true;
+    lastShadowRender = now;
+  }
   renderRearViewMirrors();
   renderMiniMap();
   renderer.setViewport(0, 0, window.innerWidth, window.innerHeight);
   renderer.setScissorTest(false);
   renderer.render(scene, camera);
-  requestAnimationFrame(animate);
 }
 
 void initializeMaps();

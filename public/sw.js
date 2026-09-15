@@ -1,7 +1,8 @@
-const CACHE_NAME = 'drive-sim-runtime-v20';
+const CACHE_NAME = 'drive-sim-runtime-v21';
 const APP_SHELL_CACHE = [
   '/assets/style.css',
   '/assets/app.js',
+  '/assets/mobile-experience.js',
   '/assets/ui-layout.js',
   '/assets/mesh-merge.js',
   '/assets/car-model.js',

@@ -134,6 +134,15 @@
           </label>
         </div>
         <div class="controlGrid">
+          <label class="control-field span-12">
+            <span data-i18n="controls.hapticMode">Haptic feedback</span>
+            <select id="hapticMode">
+              <option value="off" data-i18n="controls.hapticOff">Off</option>
+              <option value="events" data-i18n="controls.hapticEvents">Driving events</option>
+              <option value="engine" data-i18n="controls.hapticEngine">Engine + driving events</option>
+            </select>
+            <small id="hapticHelp" data-i18n="controls.hapticHelp">Short pulses while driving simulate the engine; longer pulses mark shifts. Feel varies by device.</small>
+          </label>
           <label class="toggle-card span-12">
             <input id="mobileLinearThrottle" type="checkbox" />
             <span data-i18n="controls.mobileLinearThrottle">Use linear throttle lever on mobile</span>
