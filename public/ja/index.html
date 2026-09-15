@@ -135,14 +135,24 @@
         </div>
         <div class="controlGrid">
           <label class="control-field span-12">
+            <span data-i18n="controls.renderQuality">画質（車両・シーン）</span>
+            <select id="renderQuality">
+              <option value="low" data-i18n="controls.qualityLow">低 · 省電力</option>
+              <option value="medium" data-i18n="controls.qualityMedium">中 · バランス</option>
+              <option value="high" data-i18n="controls.qualityHigh">高 · 鮮明</option>
+            </select>
+            <small data-i18n="controls.qualityHelp">車両とシーンの描画解像度を変更します。即時反映・保存されます。高画質は消費電力が増えます。</small>
+          </label>
+          <label class="control-field span-12">
             <span data-i18n="controls.hapticMode">振動フィードバック</span>
             <select id="hapticMode">
               <option value="off" data-i18n="controls.hapticOff">オフ</option>
               <option value="events" data-i18n="controls.hapticEvents">操作時のみ</option>
               <option value="engine" data-i18n="controls.hapticEngine">エンジン + 操作</option>
             </select>
-            <small id="hapticHelp" data-i18n="controls.hapticHelp">走行中の短い振動でエンジン、長めの振動で変速を表現します。感触は端末により異なります。</small>
+            <small id="hapticHelp" role="status" data-i18n="controls.hapticHelp">走行中の短い振動でエンジン、長めの振動で変速を表現します。感触は端末により異なります。</small>
           </label>
+          <button id="hapticTest" type="button" class="action-btn span-12" data-i18n="controls.hapticTest">振動をテスト</button>
           <label class="toggle-card span-12">
             <input id="mobileLinearThrottle" type="checkbox" />
             <span data-i18n="controls.mobileLinearThrottle">モバイルで線形アクセルレバーを使う</span>

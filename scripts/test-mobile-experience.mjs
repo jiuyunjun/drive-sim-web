@@ -1,11 +1,11 @@
 import assert from 'node:assert/strict';
-import { createHaptics, createAdaptiveQuality } from '../public/assets/mobile-experience.js';
+import { createHaptics, applyRenderQuality } from '../public/assets/mobile-experience.js';
 let time = 1000;
 const pulses = [];
 const h = createHaptics({ vibrate: p => { pulses.push(p); return true; } }, () => time);
 h.setMode('engine'); time += 400;
 h.engine(0.8, 1, 10);
-assert.equal(pulses.at(-1), 12);
+assert.equal(pulses.at(-1), 41);
 assert.equal(h.pulse([45, 25, 65], 3), true);
 assert.equal(h.pulse(8), false, 'steering must not interrupt shifting');
 h.engine(1, 1, 10);
@@ -16,10 +16,16 @@ h.setMode('events'); time += 1000; const count = pulses.length;
 h.engine(1, 1, 10); assert.equal(pulses.length, count);
 assert.equal(createHaptics({}, () => time).pulse(10), false);
 assert.equal(createHaptics({ vibrate() { throw Error('blocked'); } }, () => time).pulse(10), false);
+h.setMode('off');
+assert.equal(h.test(), true, 'explicit test works even when driving vibration is off');
+assert.deepEqual(pulses.at(-1), [200, 100, 200]);
+assert.equal(createHaptics({ vibrate: () => false }, () => time).test(), false);
 let ratio = 1.5;
-const q = createAdaptiveQuality({ getPixelRatio: () => ratio, setPixelRatio: r => { ratio = r; } }, true);
-for (let i = 1; i <= 400; i++) q.sample(34, i * 34);
-assert.equal(ratio, 0.75, 'sustained slow frames reduce resolution to floor');
-for (let i = 1; i <= 1800; i++) q.sample(16, 14000 + i * 16);
-assert.equal(ratio, 1.5, 'sustained fast frames restore original ceiling');
-console.log('Haptic priority, modes, cancellation, unsupported devices and adaptive resolution passed.');
+const renderer = { setPixelRatio: r => { ratio = r; } };
+for (const [quality, expected] of [['low', 0.75], ['medium', 1.25], ['high', 2]]) {
+  applyRenderQuality(renderer, quality, 3);
+  assert.equal(ratio, expected);
+}
+assert.equal(applyRenderQuality(renderer, 'high', 1), 1, 'do not oversample standard DPI');
+assert.equal(applyRenderQuality(renderer, 'invalid', 3), 1.25);
+console.log('Haptic priority, modes, cancellation, test feedback and fixed quality tiers passed.');

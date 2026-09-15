@@ -19,31 +19,21 @@ export function createHaptics(device, now) {
   };
   return {
     supported, pulse, stop,
+    test() { stop(); return vibrate([200, 100, 200]); },
     setMode(value) { stop(); mode = value; },
     engine(rpm, throttle, speed) {
       if (mode !== 'engine' || (throttle < 0.05 && speed < 0.3) || now() < nextEngine) return;
       const load = Math.max(0, Math.min(1, rpm || 0));
-      pulse(Math.round(6 + load * 8), 0);
-      nextEngine = now() + 280 - load * 130;
+      pulse(Math.round(25 + load * 20), 0);
+      nextEngine = now() + 240 - load * 100;
     },
   };
 }
 
-// Sample sustained frame time; change resolution slowly to avoid oscillation.
-export function createAdaptiveQuality(renderer, enabled) {
-  const ceiling = renderer.getPixelRatio();
-  let total = 0, count = 0, lastChange = 0;
-  return {
-    sample(ms, now) {
-      if (!enabled || ms <= 0 || ms > 100) return;
-      total += ms; count++;
-      if (now - lastChange < 3000 || count < 90) return;
-      const average = total / count;
-      const current = renderer.getPixelRatio();
-      const next = average > 23 ? Math.max(0.75, current - 0.25)
-        : average < 17.5 ? Math.min(ceiling, current + 0.25) : current;
-      if (next !== current) renderer.setPixelRatio(next);
-      total = 0; count = 0; lastChange = now;
-    },
-  };
+// Fixed user-selected resolution: driving never silently lowers the chosen tier.
+export function applyRenderQuality(renderer, quality, devicePixelRatio = 1) {
+  const cap = { low: 0.75, medium: 1.25, high: 2 }[quality] ?? 1.25;
+  const ratio = Math.min(Math.max(devicePixelRatio || 1, 0.5), cap);
+  renderer.setPixelRatio(ratio);
+  return ratio;
 }
