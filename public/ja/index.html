@@ -143,15 +143,11 @@
             </select>
             <small data-i18n="controls.qualityHelp">車両とシーンの描画解像度を変更します。即時反映・保存されます。高画質は消費電力が増えます。</small>
           </label>
-          <label class="control-field span-12">
-            <span data-i18n="controls.hapticMode">振動フィードバック</span>
-            <select id="hapticMode">
-              <option value="off" data-i18n="controls.hapticOff">オフ</option>
-              <option value="events" data-i18n="controls.hapticEvents">操作時のみ</option>
-              <option value="road" data-i18n="controls.hapticRoad">路面の振動 + 操作</option>
-            </select>
-            <small id="hapticHelp" role="status" data-i18n="controls.hapticHelp">走行中は軽い振動で路面の凹凸を表現。振動の頻度は速度に比例して増え、1回の強さは変わりません。停車中は振動せず、変速時の振動は維持します。</small>
+          <label class="toggle-card span-12">
+            <input id="hapticEnabled" type="checkbox" />
+            <span data-i18n="controls.hapticMode">振動フィードバックを有効にする</span>
           </label>
+          <small id="hapticHelp" class="span-12" role="status" data-i18n="controls.hapticHelp">路面の振動頻度は速度に比例して増えます。ステアリング操作とブレーキを離した時は振動しません。</small>
           <button id="hapticTest" type="button" class="action-btn span-12" data-i18n="controls.hapticTest">振動をテスト</button>
           <label class="toggle-card span-12">
             <input id="mobileLinearThrottle" type="checkbox" />

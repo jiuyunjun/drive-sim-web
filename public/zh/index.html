@@ -143,15 +143,11 @@
             </select>
             <small data-i18n="controls.qualityHelp">调整车辆与场景的渲染分辨率，立即生效并保存。高画质耗电更多。</small>
           </label>
-          <label class="control-field span-12">
-            <span data-i18n="controls.hapticMode">震动反馈</span>
-            <select id="hapticMode">
-              <option value="off" data-i18n="controls.hapticOff">关闭</option>
-              <option value="events" data-i18n="controls.hapticEvents">操作反馈</option>
-              <option value="road" data-i18n="controls.hapticRoad">路面颠簸 + 操作反馈</option>
-            </select>
-            <small id="hapticHelp" role="status" data-i18n="controls.hapticHelp">行驶时用轻微短震动模拟路面颠簸，频率随车速线性增加，单次震感不变；停车不震动，换挡反馈保留。</small>
+          <label class="toggle-card span-12">
+            <input id="hapticEnabled" type="checkbox" />
+            <span data-i18n="controls.hapticMode">启用震动反馈</span>
           </label>
+          <small id="hapticHelp" class="span-12" role="status" data-i18n="controls.hapticHelp">行驶时用轻微短震动模拟路面颠簸，频率随车速线性增加；转向和松开刹车不震动。</small>
           <button id="hapticTest" type="button" class="action-btn span-12" data-i18n="controls.hapticTest">测试震动</button>
           <label class="toggle-card span-12">
             <input id="mobileLinearThrottle" type="checkbox" />

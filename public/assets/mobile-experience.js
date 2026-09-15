@@ -19,7 +19,11 @@ export function createHaptics(device, now) {
   };
   return {
     supported, pulse, stop,
-    test() { stop(); return vibrate([200, 100, 200]); },
+    test() {
+      if (mode === 'off') return false;
+      stop();
+      return vibrate([200, 100, 200]);
+    },
     setMode(value) { stop(); mode = value === 'engine' ? 'road' : value; },
     road(speed) {
       // Speed is metres/second; resting and revving in place produce no bumps.
@@ -31,6 +35,11 @@ export function createHaptics(device, now) {
       if (pulse(12, 0)) nextRoad = now() + 1000 / frequencyHz;
     },
   };
+}
+
+export function shouldVibrateOnRelease(button) {
+  return !button?.classList?.contains('mobileBrake')
+    && !button?.classList?.contains('mobileHandbrake');
 }
 
 // Fixed user-selected resolution: driving never silently lowers the chosen tier.

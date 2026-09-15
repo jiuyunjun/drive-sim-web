@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import { createHaptics, applyRenderQuality } from '../public/assets/mobile-experience.js';
+import { createHaptics, applyRenderQuality, shouldVibrateOnRelease } from '../public/assets/mobile-experience.js';
 let time = 1000;
 const pulses = [];
 const h = createHaptics({ vibrate: p => { pulses.push(p); return true; } }, () => time);
@@ -17,9 +17,15 @@ h.road(10); assert.equal(pulses.length, count);
 assert.equal(createHaptics({}, () => time).pulse(10), false);
 assert.equal(createHaptics({ vibrate() { throw Error('blocked'); } }, () => time).pulse(10), false);
 h.setMode('off');
-assert.equal(h.test(), true, 'explicit test works even when driving vibration is off');
+assert.equal(h.test(), false, 'global switch also disables test vibration');
+h.setMode('road');
+assert.equal(h.test(), true, 'explicit test works when vibration is enabled');
 assert.deepEqual(pulses.at(-1), [200, 100, 200]);
 assert.equal(createHaptics({ vibrate: () => false }, () => time).test(), false);
+const button = (...classes) => ({ classList: { contains: value => classes.includes(value) } });
+assert.equal(shouldVibrateOnRelease(button('mobileBrake')), false);
+assert.equal(shouldVibrateOnRelease(button('mobileHandbrake')), false);
+assert.equal(shouldVibrateOnRelease(button('mobileThrottle')), true);
 // Cadence depends linearly on speed and works in reverse.
 function roadPulses(speed, mode = 'road') {
   let clock = 0;
