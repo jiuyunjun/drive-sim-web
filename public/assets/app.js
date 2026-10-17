@@ -2928,6 +2928,11 @@ startPlaytimeHeartbeat();
 async function initializeMaps() {
   try {
     await loadMapCatalog();
+    // Course links on the page use ?map=<name> to open a specific built-in map.
+    const requestedMapId = new URLSearchParams(window.location.search).get('map');
+    if (requestedMapId && availableMaps.includes(requestedMapId)) {
+      state.selectedMapId = requestedMapId;
+    }
     if (state.selectedMapId === 'custom' && state.mapImageDataUrl) {
       syncMapPresetControl('custom');
       await applyMapSource(state.mapImageDataUrl, false);

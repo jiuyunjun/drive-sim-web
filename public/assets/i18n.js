@@ -3,7 +3,7 @@ const SUPPORTED_LOCALES = ['zh', 'en', 'ja'];
 const TRANSLATIONS = {
   zh: {
     meta: {
-      title: '驾驶考试中心 3D 模拟驾驶',
+      title: '日本驾照考场路线 3D 模拟驾驶 | Drive Sim Web',
       appleTitle: '驾驶考试中心',
     },
     ui: {
@@ -150,7 +150,9 @@ const TRANSLATIONS = {
     },
     about: {
       title: '关于这个驾驶模拟器',
-      intro: '这是一个模拟驾驶考试中心 / 试验场路线的免费网页驾驶模拟器游戏。无需安装 App，打开浏览器就能开始联系四轮或摩托车驾驶。',
+      intro: '这是一个模拟驾驶考试中心 / 试验场路线的免费网页驾驶模拟器游戏。无需安装 App，打开浏览器就能开始练习四轮或摩托车驾驶。',
+      coursesTitle: '内置考场路线',
+      coursesIntro: '收录日本 26 个驾照考试场、驾照中心和驾校的真实路线，点击名称即可直接在该路线上驾驶。',
       faqTitle: '常见问题',
       faqQ1: '这个模拟器免费吗？',
       faqA1: '完全免费，直接在浏览器里打开就能玩，不需要下载或安装任何 App。',
@@ -168,7 +170,7 @@ const TRANSLATIONS = {
   },
   en: {
     meta: {
-      title: 'Driving Test Center 3D Driving Simulator',
+      title: 'Japan Driving Test Course Simulator 3D | Drive Sim Web',
       appleTitle: 'Drive Sim Web',
     },
     ui: {
@@ -316,6 +318,8 @@ const TRANSLATIONS = {
     about: {
       title: 'About This Driving Simulator',
       intro: 'A free browser driving simulator game modeled on driving test center and license course routes. No install required — open it in your browser and start practicing sedan or motorcycle driving right away.',
+      coursesTitle: 'Built-in Test Center Courses',
+      coursesIntro: '26 real driving test center and driving school course layouts are built in. Tap a course to start driving it.',
       faqTitle: 'Frequently Asked Questions',
       faqQ1: 'Is this simulator free to play?',
       faqA1: 'Yes, it is completely free and runs directly in your browser. No download or app install is needed.',
@@ -333,7 +337,7 @@ const TRANSLATIONS = {
   },
   ja: {
     meta: {
-      title: '運転試験センター 3D シミュレーター',
+      title: '免許センター・試験場コース練習 3D運転シミュレーター | Drive Sim Web',
       appleTitle: '運転試験センター',
     },
     ui: {
@@ -481,6 +485,8 @@ const TRANSLATIONS = {
     about: {
       title: 'このドライビングシミュレーターについて',
       intro: '免許センター・運転試験場のコースをイメージした、無料のブラウザ運転シミュレーター・ゲームです。インストール不要で、ブラウザを開けばすぐに四輪・バイクの運転練習を始められます。',
+      coursesTitle: '収録コース一覧',
+      coursesIntro: '全国26か所の運転免許試験場・免許センター・自動車学校のコースを収録しています。コース名をタップすると、そのコースで運転を始められます。',
       faqTitle: 'よくある質問',
       faqQ1: '無料で使えますか？',
       faqA1: 'はい、完全無料です。ブラウザで開くだけで遊べます。アプリのインストールは不要です。',
