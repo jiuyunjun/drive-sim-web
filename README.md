@@ -6,7 +6,7 @@ A browser-based 3D driving simulator for practicing Japanese driving test course
 
 浏览器里的 3D 驾驶模拟器，用于练习日本驾照考试场地路线。无需安装、无需后端——选择内置考场地图（或上传自己的俯视图）即可开车。
 
-**Live demo / 在线体验:** https://drive-sim-web.web.app/
+**Live demo / 在线体验:** https://drive.lazydoglab.com
 
 ---
 
