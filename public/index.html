@@ -80,6 +80,12 @@
       font-size: 12px;
       letter-spacing: 0.08em;
       text-transform: uppercase;
+      text-decoration: none;
+    }
+
+    .brandBadge:hover,
+    .brandBadge:focus-visible {
+      background: rgba(255, 255, 255, 0.12);
     }
 
     h1,
@@ -235,6 +241,11 @@
       justify-items: start;
     }
 
+    .brandFooter > a {
+      display: block;
+      width: 100%;
+    }
+
     .brandFooter img {
       width: 100%;
       height: auto;
@@ -382,7 +393,8 @@
       "url": "https://drive.lazydoglab.com/",
       "publisher": {
         "@type": "Organization",
-        "name": "LazyDogLab"
+        "name": "LazyDogLab",
+        "url": "https://lazydoglab.com/"
       },
       "inLanguage": ["en", "ja", "zh-CN"]
     }
@@ -406,6 +418,8 @@
         copyWechatFailed: 'Copy failed',
         promoTitle: 'We also make an extremely useful browser plugin for translation, replies, and language learning.',
         promoBody: 'Open Linguabridge',
+        labTitle: 'More small projects from LazyDogLab',
+        labBody: 'Visit lazydoglab.com',
         bullets: [
           'Practice driving test center and license course style maps directly in the browser without installing an app.',
           'Switch between sedan and motorcycle modes for different training styles and steering behavior.',
@@ -430,6 +444,8 @@
         copyWechatFailed: 'コピーに失敗しました',
         promoTitle: '超超超超超スーパー使いやすい、翻訳・返信・語学学習用ブラウザ拡張も作っています。',
         promoBody: 'Linguabridge を見る',
+        labTitle: 'LazyDogLab のほかのプロジェクトもどうぞ',
+        labBody: 'lazydoglab.com を見る',
         bullets: [
           '試験場・免許センターのコース練習を、インストール不要でブラウザからすぐ始められます。',
           '四輪・バイクを切り替えて、それぞれの練習スタイルや操舵感覚に対応できます。',
@@ -454,6 +470,8 @@
         copyWechatFailed: '复制失败',
         promoTitle: '我们还做了超超超超超超级好用的浏览器外语翻译 / 回复 / 学习插件！',
         promoBody: '打开 Linguabridge',
+        labTitle: '看看 LazyDogLab 的更多小项目',
+        labBody: '访问 lazydoglab.com',
         bullets: [
           '不用安装 App，就能直接练习试验场、免许中心风格或自定义路线。',
           '支持四轮和摩托切换，适合不同练习场景和转向手感。',
@@ -544,6 +562,8 @@
       document.getElementById('rootWechatCopyHint').textContent = copy.copyWechatHint;
       document.getElementById('rootPromoTitle').textContent = copy.promoTitle;
       document.getElementById('rootPromoBody').textContent = copy.promoBody;
+      document.getElementById('rootLabTitle').textContent = copy.labTitle;
+      document.getElementById('rootLabBody').textContent = copy.labBody;
 
       const languageLinks = document.querySelectorAll('[data-root-link]');
       languageLinks.forEach((link, index) => {
@@ -563,6 +583,18 @@
           outbound: true,
           locale: copy.lang,
           transport_type: 'beacon',
+        });
+      });
+
+      document.querySelectorAll('[data-lab-link]').forEach((labLink) => {
+        labLink.addEventListener('click', () => {
+          trackRootAnalyticsEvent('lazydoglab_click', {
+            link_url: labLink.href,
+            placement: labLink.dataset.labLink,
+            outbound: true,
+            locale: copy.lang,
+            transport_type: 'beacon',
+          });
         });
       });
 
@@ -590,7 +622,7 @@
 <body>
   <main>
     <section class="heroCard">
-      <div class="brandBadge"><span id="rootBrandBadge">by LazyDogLab</span></div>
+      <a class="brandBadge" href="https://lazydoglab.com/" target="_blank" rel="noopener" data-lab-link="root_badge"><span id="rootBrandBadge">by LazyDogLab</span></a>
       <h1 id="rootHeroTitle">試験場・免許センター向け運転シミュレーター・ゲーム</h1>
       <p class="heroLead" id="rootHeroLead">試験場・免許センターのコース練習を、ブラウザですぐ始められる運転シミュレーター・ゲームです。</p>
       <div class="links">
@@ -615,10 +647,16 @@
           <span id="rootPromoBody">Open Linguabridge</span>
         </div>
       </a>
+      <a class="promoLink" href="https://lazydoglab.com/" target="_blank" rel="noopener" data-lab-link="root_card">
+        <div>
+          <strong id="rootLabTitle">LazyDogLab のほかのプロジェクトもどうぞ</strong>
+          <span id="rootLabBody">lazydoglab.com を見る</span>
+        </div>
+      </a>
     </section>
 
     <section class="copyCard brandFooter">
-      <img src="./assets/logos/lazydoglablogo.png" alt="lazydoglab" />
+      <a href="https://lazydoglab.com/" target="_blank" rel="noopener" data-lab-link="root_logo"><img src="./assets/logos/lazydoglablogo.png" alt="LazyDogLab" /></a>
       <div class="contactStack">
         <p class="contactLine"><span id="rootContactEmailLabel">Email</span>: <a href="mailto:jiu.yun@foxmail.com">jiu.yun@foxmail.com</a></p>
         <button id="rootWechatCopyBtn" class="contactCopyBtn" type="button" data-copy-state="idle">
