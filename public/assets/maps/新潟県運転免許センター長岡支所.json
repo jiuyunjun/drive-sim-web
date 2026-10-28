@@ -1,0 +1,10 @@
+{
+  "image": "新潟県運転免許センター長岡支所.webp",
+  "mapWidth": 232,
+  "maxSpeed": 17,
+  "startPose": {
+    "x": -70.1,
+    "z": 13.8,
+    "heading": 1.570796
+  }
+}
