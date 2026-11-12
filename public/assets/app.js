@@ -1,4 +1,4 @@
-import { createHaptics, applyRenderQuality, shouldVibrateOnRelease } from './mobile-experience.js';
+import { createHaptics, applyRenderQuality, getQualityTier, createAdaptiveScaler, shouldVibrateOnRelease } from './mobile-experience.js';
 import { setupDrivingLayout, createInsetRenderer } from './ui-layout.js';
 import * as THREE from 'three';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
@@ -7,6 +7,8 @@ import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
 import { applyPageTranslations, t } from './i18n.js';
 import { buildCar } from './car-model.js';
 import { collectBoundaries, mergeStaticMeshes } from './mesh-merge.js';
+import { createDrivingAudio } from './audio-engine.js';
+import { createSky, SKY_HORIZON_COLOR } from './sky.js';
 
 applyPageTranslations(document);
 setupDrivingLayout();
@@ -16,7 +18,8 @@ const canvas = document.getElementById('app');
 // desktop visuals unchanged.
 const isTouchPerf = window.matchMedia('(hover: none) and (pointer: coarse)').matches;
 // Insets copy the drawing buffer in the same task it was rendered, so it need not be preserved.
-const renderer = new THREE.WebGLRenderer({ canvas, antialias: !isTouchPerf });
+// Laptops with two GPUs otherwise hand a WebGL page to the integrated one.
+const renderer = new THREE.WebGLRenderer({ canvas, antialias: !isTouchPerf, powerPreference: 'high-performance' });
 renderer.setPixelRatio(Math.min(window.devicePixelRatio, isTouchPerf ? 1.5 : 2));
 renderer.setSize(window.innerWidth, window.innerHeight);
 renderer.shadowMap.enabled = true;
@@ -24,38 +27,18 @@ renderer.shadowMap.type = THREE.PCFSoftShadowMap;
 // Refresh the shadow map every displayed frame, then reuse it for auxiliary passes.
 renderer.shadowMap.autoUpdate = false;
 renderer.outputColorSpace = THREE.SRGBColorSpace;
+// Neutral tone mapping rolls off paint and chrome highlights but leaves mid-tones
+// alone, so the course map keeps the colours it was drawn with.
+renderer.toneMapping = THREE.NeutralToneMapping;
+renderer.toneMappingExposure = 1;
 const renderInset = createInsetRenderer(renderer);
+const adaptiveScaler = createAdaptiveScaler();
 const haptics = createHaptics(navigator, () => performance.now());
 
 const scene = new THREE.Scene();
-scene.background = new THREE.Color(0x9fd0ff);
-scene.fog = new THREE.Fog(0x9fd0ff, 90, 220);
-
-// Clouds
-{
-  const cloudMat = new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 1, metalness: 0, transparent: true, opacity: 0.9 });
-  function makeCloud(x, y, z, s) {
-    const g = new THREE.Group();
-    const puffs = [[0,0,0,5],[-4,-1,0,3.5],[4,-1,0,3.5],[-2,1.5,0,2.8],[2.5,1.5,0,2.8],[-6,-2,0,2],[6,-2,0,2]];
-    for (const [px,py,pz,pr] of puffs) {
-      const m = new THREE.Mesh(new THREE.SphereGeometry(pr, 7, 5), cloudMat);
-      m.position.set(px, py, pz);
-      m.castShadow = false;
-      m.receiveShadow = false;
-      g.add(m);
-    }
-    g.position.set(x, y, z);
-    g.scale.setScalar(s);
-    scene.add(g);
-  }
-  makeCloud(-80, 48, -60, 1.2);
-  makeCloud(60, 42, -90, 1.0);
-  makeCloud(-30, 52, -110, 0.85);
-  makeCloud(110, 46, -70, 1.15);
-  makeCloud(10, 55, -130, 0.95);
-  makeCloud(-120, 44, -80, 1.3);
-  makeCloud(70, 50, -150, 1.1);
-}
+// Fog and the fallback background share the sky's horizon colour so distance fades into it.
+scene.background = new THREE.Color(SKY_HORIZON_COLOR);
+scene.fog = new THREE.Fog(SKY_HORIZON_COLOR, 90, 220);
 
 const DEFAULT_CAMERA_FOV = 60;
 const COCKPIT_CAMERA_FOV = 70;
@@ -92,7 +75,8 @@ scene.add(hemiLight);
 const sun = new THREE.DirectionalLight(0xffffff, 1.35);
 sun.position.set(20, 40, 10);
 sun.castShadow = true;
-sun.shadow.mapSize.setScalar(isTouchPerf ? 1024 : 2048);
+// Sized per quality tier in applyQualitySettings().
+sun.shadow.mapSize.setScalar(1024);
 sun.shadow.bias = -0.0001;
 sun.shadow.normalBias = 0.02;
 sun.shadow.camera.near = 1;
@@ -105,6 +89,19 @@ scene.add(sun, sun.target);
 const SUN_OFFSET = sun.position.clone();
 const SHADOW_HALF_EXTENT = 10;
 updateSunShadowBounds();
+
+// The cabin shuts out most of the sky; without this the dashboard glows.
+const ENVIRONMENT_INTENSITY = Object.freeze({ exterior: 0.45, cockpit: 0.18 });
+const sky = createSky(THREE, { sunDirection: SUN_OFFSET, lowDetail: isTouchPerf });
+scene.add(sky.mesh);
+try {
+  // Image-based light for the vehicle's paint, chrome and glass. The ground is Lambert
+  // and ignores it, so the map stays exactly as bright as before.
+  scene.environment = sky.bakeEnvironment(renderer);
+  scene.environmentIntensity = ENVIRONMENT_INTENSITY.exterior;
+} catch (error) {
+  console.warn('Sky environment bake failed; continuing without reflections:', error);
+}
 
 const speedVignetteEl = document.getElementById('speedVignette');
 const speedBlurEl = document.getElementById('speedBlur');
@@ -335,19 +332,7 @@ let groundMesh;
 let groundSize = { width: 80, height: 45 };
 let groundAspect = 45 / 80;
 let activeGroundTexture = null;
-const audioState = {
-  supported: Boolean(AudioContextClass),
-  context: null,
-  masterGain: null,
-  engineGain: null,
-  engineOscSub: null,
-  engineOscLow: null,
-  engineOscMid: null,
-  engineOscHigh: null,
-  engineFilter: null,
-  engineNoiseGain: null,
-  engineNoiseFilter: null,
-};
+const drivingAudio = createDrivingAudio(AudioContextClass);
 const persistedSettings = loadSettings();
 let attemptedAddressBarHide = false;
 let availableMaps = [];
@@ -425,7 +410,7 @@ function syncVolumeControl(volume) {
   const sliderVal = Math.round(clamped * 100);
   if (masterVolumeEl) masterVolumeEl.value = String(sliderVal);
   if (masterVolumeValueEl) masterVolumeValueEl.textContent = `${sliderVal}%`;
-  if (audioState.masterGain) audioState.masterGain.gain.value = clamped * 0.4;
+  drivingAudio.setVolume(clamped);
 }
 
 function syncSteeringSensitivityControl(sensitivity) {
@@ -511,9 +496,14 @@ function isMobileLinearThrottleEnabled() {
   return Boolean(state.mobileLinearThrottleEnabled);
 }
 
+let lastThrottleLeverUi = '';
 function updateMobileThrottleLeverUi() {
   if (!mobileThrottleLeverEl) return;
   const clampedValue = THREE.MathUtils.clamp(state.mobileThrottleLeverValue, 0, 1);
+  // Called every frame; the lever is usually at rest.
+  const uiKey = `${clampedValue.toFixed(4)}|${state.mobileThrottlePointerId !== null}`;
+  if (uiKey === lastThrottleLeverUi) return;
+  lastThrottleLeverUi = uiKey;
   mobileThrottleLeverEl.style.setProperty('--throttle-level', clampedValue.toFixed(4));
   mobileThrottleLeverEl.setAttribute('aria-valuenow', String(Math.round(clampedValue * 100)));
   mobileThrottleLeverEl.dataset.active = state.mobileThrottlePointerId !== null ? 'true' : 'false';
@@ -586,119 +576,14 @@ function setAudioStatus(mode, label) {
   audioStatusEl.textContent = label;
 }
 
-function setupAudioGraph() {
-  if (!audioState.supported || audioState.context) return audioState.context;
-
-  const context = new AudioContextClass();
-  const masterGain = context.createGain();
-  const engineGain = context.createGain();
-
-  // Highpass removes subsonic mud; lowpass with slight resonance shapes engine growl
-  const engineHpFilter = context.createBiquadFilter();
-  const engineFilter = context.createBiquadFilter();
-
-  // 4 oscillators: sub rumble (sine), fundamental (sawtooth), 2nd harmonic (sawtooth), 3rd harmonic (square)
-  const engineOscSub = context.createOscillator();
-  const engineOscLow = context.createOscillator();
-  const engineOscMid = context.createOscillator();
-  const engineOscHigh = context.createOscillator();
-  const subMix = context.createGain();
-  const lowMix = context.createGain();
-  const midMix = context.createGain();
-  const highMix = context.createGain();
-
-  // Noise source simulates induction / exhaust breathiness
-  const noiseBuffer = context.createBuffer(1, context.sampleRate, context.sampleRate);
-  const noiseData = noiseBuffer.getChannelData(0);
-  for (let i = 0; i < noiseData.length; i++) noiseData[i] = Math.random() * 2 - 1;
-  const engineNoise = context.createBufferSource();
-  engineNoise.buffer = noiseBuffer;
-  engineNoise.loop = true;
-  const engineNoiseFilter = context.createBiquadFilter();
-  const engineNoiseGain = context.createGain();
-
-  masterGain.gain.value = THREE.MathUtils.clamp(state.masterVolume || 0.55, 0, 1) * 0.4;
-  engineGain.gain.value = 0.0001;
-
-  engineHpFilter.type = 'highpass';
-  engineHpFilter.frequency.value = 44;
-  engineHpFilter.Q.value = 0.7;
-
-  engineFilter.type = 'lowpass';
-  engineFilter.frequency.value = 420;
-  engineFilter.Q.value = 1.3;  // slight resonance adds growl character
-
-  engineOscSub.type = 'sine';
-  engineOscLow.type = 'sawtooth';
-  engineOscMid.type = 'sawtooth';
-  engineOscHigh.type = 'square';
-  engineOscSub.frequency.value = 28;
-  engineOscLow.frequency.value = 55;
-  engineOscMid.frequency.value = 110;
-  engineOscHigh.frequency.value = 165;
-
-  // Slight detuning between oscillators for organic beating effect
-  engineOscLow.detune.value = -4;
-  engineOscMid.detune.value = 6;
-  engineOscHigh.detune.value = -9;
-
-  subMix.gain.value = 0.44;
-  lowMix.gain.value = 0.40;
-  midMix.gain.value = 0.15;
-  highMix.gain.value = 0.05;
-
-  engineNoiseFilter.type = 'bandpass';
-  engineNoiseFilter.frequency.value = 900;
-  engineNoiseFilter.Q.value = 0.9;
-  engineNoiseGain.gain.value = 0.0001;
-
-  engineOscSub.connect(subMix);
-  engineOscLow.connect(lowMix);
-  engineOscMid.connect(midMix);
-  engineOscHigh.connect(highMix);
-  subMix.connect(engineHpFilter);
-  lowMix.connect(engineHpFilter);
-  midMix.connect(engineHpFilter);
-  highMix.connect(engineHpFilter);
-  engineHpFilter.connect(engineFilter);
-  engineFilter.connect(engineGain);
-  engineNoise.connect(engineNoiseFilter);
-  engineNoiseFilter.connect(engineNoiseGain);
-  engineNoiseGain.connect(engineGain);
-  engineGain.connect(masterGain);
-  masterGain.connect(context.destination);
-
-  engineOscSub.start();
-  engineOscLow.start();
-  engineOscMid.start();
-  engineOscHigh.start();
-  engineNoise.start();
-
-  audioState.context = context;
-  audioState.masterGain = masterGain;
-  audioState.engineGain = engineGain;
-  audioState.engineOscSub = engineOscSub;
-  audioState.engineOscLow = engineOscLow;
-  audioState.engineOscMid = engineOscMid;
-  audioState.engineOscHigh = engineOscHigh;
-  audioState.engineFilter = engineFilter;
-  audioState.engineNoiseGain = engineNoiseGain;
-  audioState.engineNoiseFilter = engineNoiseFilter;
-
-  return context;
-}
-
 async function ensureAudioRunning() {
-  if (!audioState.supported) {
+  if (!drivingAudio.supported) {
     setAudioStatus('error', t('audio.unavailable'));
     return false;
   }
 
   try {
-    const context = setupAudioGraph();
-    if (context.state !== 'running') {
-      await context.resume();
-    }
+    await drivingAudio.start();
     setAudioStatus('on', t('audio.enabled'));
     return true;
   } catch (error) {
@@ -709,30 +594,7 @@ async function ensureAudioRunning() {
 }
 
 function playIndicatorClick(isAccent = true) {
-  const context = audioState.context;
-  if (!context || context.state !== 'running' || !audioState.masterGain) return;
-
-  const now = context.currentTime;
-  const oscillator = context.createOscillator();
-  const filter = context.createBiquadFilter();
-  const gain = context.createGain();
-
-  oscillator.type = isAccent ? 'square' : 'triangle';
-  oscillator.frequency.setValueAtTime(isAccent ? 1320 : 920, now);
-  filter.type = 'bandpass';
-  filter.frequency.setValueAtTime(isAccent ? 1850 : 1280, now);
-  filter.Q.setValueAtTime(4.5, now);
-
-  gain.gain.setValueAtTime(0.0001, now);
-  gain.gain.linearRampToValueAtTime(isAccent ? 0.08 : 0.045, now + 0.0035);
-  gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.05);
-
-  oscillator.connect(filter);
-  filter.connect(gain);
-  gain.connect(audioState.masterGain);
-
-  oscillator.start(now);
-  oscillator.stop(now + 0.06);
+  drivingAudio.click(isAccent);
 }
 
 function updateSunShadowBounds() {
@@ -782,11 +644,9 @@ function applyGroundTexture(texture, widthMeters, heightMeters) {
 
   if (!groundMesh) {
     const geometry = new THREE.PlaneGeometry(widthMeters, heightMeters);
-    const material = new THREE.MeshStandardMaterial({
-      map: texture,
-      roughness: 0.95,
-      metalness: 0.0,
-    });
+    // Lambert: the map is a flat drawing, so a full PBR shader on every ground pixel
+    // buys nothing, and Lambert stays out of the environment lighting.
+    const material = new THREE.MeshLambertMaterial({ map: texture });
 
     groundMesh = new THREE.Mesh(geometry, material);
     groundMesh.rotation.x = -Math.PI / 2;
@@ -868,6 +728,46 @@ scene.add(car);
   // Runs after the caster pass above, so shadow flags are final when meshes are bucketed.
   // Everything reachable from carParts is animated or toggled and stays its own node.
   mergeStaticMeshes(THREE, mergeGeometries, car, collectBoundaries(THREE, carParts));
+}
+
+// Soft contact shadow. The sun shadow alone leaves the underside as bright as open
+// ground under the sky light, which makes the vehicle look like it floats.
+const contactShadow = (() => {
+  const blobCanvas = document.createElement('canvas');
+  blobCanvas.width = 128;
+  blobCanvas.height = 256;
+  const ctx = blobCanvas.getContext('2d');
+  // A blurred footprint: solid under the body, fading out over the margin around it.
+  // Drawn as the shadow of an off-canvas rectangle so only the blurred copy lands here.
+  const margin = 26;
+  ctx.shadowColor = '#000';
+  ctx.shadowBlur = 22;
+  ctx.shadowOffsetX = 1000;
+  ctx.fillRect(margin - 1000, margin, blobCanvas.width - margin * 2, blobCanvas.height - margin * 2);
+  const mesh = new THREE.Mesh(
+    new THREE.PlaneGeometry(1, 1),
+    new THREE.MeshBasicMaterial({
+      map: new THREE.CanvasTexture(blobCanvas),
+      color: 0x000000,
+      transparent: true,
+      opacity: 0.5,
+      depthWrite: false,
+      fog: false,
+      toneMapped: false,
+    })
+  );
+  mesh.name = 'contactShadow';
+  mesh.rotation.x = -Math.PI / 2;
+  mesh.position.y = 0.012;
+  mesh.renderOrder = -1;
+  car.add(mesh);
+  return mesh;
+})();
+
+function syncContactShadow() {
+  // Vehicle footprint plus the fade margin baked into the texture.
+  if (state.vehicleType === 'motorcycle') contactShadow.scale.set(1.5, 3.3, 1);
+  else contactShadow.scale.set(3.0, 6.0, 1);
 }
 
 const {
@@ -1104,6 +1004,8 @@ renderer.domElement.addEventListener('pointerup', endLookDrag);
 renderer.domElement.addEventListener('pointercancel', endLookDrag);
 window.addEventListener('fullscreenchange', refreshMobileShellState);
 window.addEventListener('visibilitychange', () => {
+  drivingAudio.setHidden(document.hidden);
+  adaptiveScaler.settle(3);
   if (!document.hidden) {
     refreshMobileShellState();
     beginPlaytimeTracking();
@@ -1463,7 +1365,7 @@ const state = {
     STEERING_SENSITIVITY_MIN,
     STEERING_SENSITIVITY_MAX
   ),
-  renderQuality: ['low', 'medium', 'high'].includes(persistedSettings?.renderQuality) ? persistedSettings.renderQuality : (isTouchPerf ? 'medium' : 'high'),
+  renderQuality: ['low', 'medium', 'high', 'auto'].includes(persistedSettings?.renderQuality) ? persistedSettings.renderQuality : (isTouchPerf ? 'medium' : 'high'),
   hapticEnabled: persistedSettings?.hapticEnabled !== undefined
     ? Boolean(persistedSettings.hapticEnabled)
     : persistedSettings?.hapticMode !== 'off',
@@ -1519,6 +1421,7 @@ const state = {
   mobileThrottleLeverTarget: 0,
   mobileThrottlePointerId: null,
   gripExceededLast: false,
+  tireSlip: 0,
 };
 
 function setUiCollapsed(collapsed) {
@@ -1746,6 +1649,7 @@ function setVehicleType(nextVehicleType) {
   bikeCockpitRoot.rotation.z = 0;
   bikeHandlebar.rotation.y = state.steer;
   bikeCockpitBar.rotation.y = state.steer;
+  syncContactShadow();
   setCockpitBodyVisibility(state.view !== 'cockpit');
   const pose = getViewPose(state.view);
   if (state.view === 'orbit') {
@@ -1761,6 +1665,7 @@ function setVehicleType(nextVehicleType) {
 function setView(nextView) {
   state.view = nextView;
   document.body.dataset.view = nextView;
+  scene.environmentIntensity = nextView === 'cockpit' ? ENVIRONMENT_INTENSITY.cockpit : ENVIRONMENT_INTENSITY.exterior;
   camera.userData.carMirrorInterval = nextView === 'cockpit' ? (isTouchPerf ? 33 : 0) : 250;
   document.body.classList.toggle('sedan-cockpit', nextView === 'cockpit' && state.vehicleType === 'sedan');
   document.body.classList.toggle('bike-cockpit', nextView === 'cockpit' && state.vehicleType === 'motorcycle');
@@ -2027,6 +1932,16 @@ function updateVirtualTransmission(dt, throttleAmount, reverseAmount) {
   return current.torque * shiftDip * THREE.MathUtils.lerp(1.05, 0.88, Math.max(0, state.virtualRpm - 0.75) / 0.25);
 }
 
+// HUD fields rarely change between frames; skipping identical writes spares the
+// browser a style and layout pass on every one of them.
+function setText(el, text) {
+  if (el && el.textContent !== text) el.textContent = text;
+}
+
+let lastWheelDialTransform = '';
+let steerZoneWidth = 0;
+let steerZoneMeasuredAt = -Infinity;
+
 function updateCar(dt) {
   const dynamics = getVehicleDynamics();
   const accel = dynamics.accel;
@@ -2121,7 +2036,7 @@ function updateCar(dt) {
   updateBrakeLights(state.reverseInput > 0.05 || brakePedal);
   updateReverseLights(state.reverseInput > 0.05 || state.speed < -0.2);
 
-  maxSpeedValueEl.textContent = `${state.maxSpeed} m/s`;
+  setText(maxSpeedValueEl, `${state.maxSpeed} m/s`);
   state.speed = THREE.MathUtils.clamp(state.speed, -Math.max(MIN_DRIVE_SPEED * reverseFactor, state.maxSpeed * 0.45), state.maxSpeed);
 
   // 速度敏感转向：高速时同时限制打方向速度和最大前轮角，低速保留揉库/掉头能力。
@@ -2167,6 +2082,8 @@ function updateCar(dt) {
     const lateralAccelNeeded = (state.speed * state.speed) / Math.abs(turnRadius);
     const gripFactor = Math.min(1.0, dynamics.maxLateralAccel / Math.max(lateralAccelNeeded, 0.01));
     state.heading += (state.speed / turnRadius) * gripFactor * dt;
+    // 0 while the tyres hold, rising toward 1 as the corner asks for more than they have.
+    state.tireSlip = THREE.MathUtils.clamp((1 - gripFactor) * 2.5, 0, 1);
     // 超出抓地力时：轮胎摩擦消耗速度 + 触觉反馈
     if (gripFactor < 0.98) {
       const scrubDecel = (1.0 - gripFactor) * dynamics.scrubFactor;
@@ -2178,6 +2095,7 @@ function updateCar(dt) {
     }
   } else {
     state.gripExceededLast = false;
+    state.tireSlip = 0;
   }
 
   car.rotation.y = state.heading;
@@ -2204,66 +2122,64 @@ function updateCar(dt) {
   steeringWheel.rotation.z = -state.steeringWheelAngle;
   bikeHandlebar.rotation.y = state.steer;
   bikeCockpitBar.rotation.y = state.steer;
-  wheelHudDialEl.style.transform = `rotate(${-state.steeringWheelAngle}rad)`;
-  steerAngleEl.textContent = Math.round(THREE.MathUtils.radToDeg(-state.steeringWheelAngle)).toString();
+  const wheelDialTransform = `rotate(${(-state.steeringWheelAngle).toFixed(3)}rad)`;
+  if (wheelDialTransform !== lastWheelDialTransform) {
+    lastWheelDialTransform = wheelDialTransform;
+    wheelHudDialEl.style.transform = wheelDialTransform;
+  }
+  setText(steerAngleEl, Math.round(THREE.MathUtils.radToDeg(-state.steeringWheelAngle)).toString());
   if (!state.uiCollapsed) updateAccelCurveMarker(state.throttleInput);
   updateMobileThrottleLeverUi();
 
   // 更新触控转向区域的指示点位置
   if (mobileSteerIndicatorEl && mobileSteerZoneEl) {
     const ratio = state.steeringWheelAngle / STEERING_WHEEL_MAX;
-    const maxOffset = (mobileSteerZoneEl.offsetWidth - 32) / 2;
-    mobileSteerIndicatorEl.style.transform = `translateX(${-ratio * maxOffset}px)`;
+    // offsetWidth forces a synchronous layout, so measure twice a second rather than every frame.
+    const measureNow = performance.now();
+    if (measureNow - steerZoneMeasuredAt > 500) {
+      steerZoneMeasuredAt = measureNow;
+      steerZoneWidth = mobileSteerZoneEl.offsetWidth;
+    }
+    const maxOffset = (steerZoneWidth - 32) / 2;
+    mobileSteerIndicatorEl.style.transform = `translateX(${(-ratio * maxOffset).toFixed(1)}px)`;
   }
 
-  speedEl.textContent = (Math.abs(state.speed) * 3.6).toFixed(1);
-  gearEl.textContent = state.speed > 0.2 ? `D${state.virtualGearIndex + 1}` : state.speed < -0.2 ? 'R' : 'N';
+  setText(speedEl, (Math.abs(state.speed) * 3.6).toFixed(1));
+  setText(gearEl, state.speed > 0.2 ? `D${state.virtualGearIndex + 1}` : state.speed < -0.2 ? 'R' : 'N');
   if (state.vehicleType === 'sedan') carParts.updateCockpit(state.speed, state.virtualRpm, gearEl.textContent, state.signalBlinkVisible ? state.turnSignal : 'off');
   if (state.vehicleType === 'motorcycle') carParts.updateBikeCockpit(state.speed, state.virtualRpm);
-  positionEl.textContent = `${car.position.x.toFixed(1)}, ${car.position.z.toFixed(1)}`;
-  headingEl.textContent = formatHeadingValue(state.heading);
+  setText(positionEl, `${car.position.x.toFixed(1)}, ${car.position.z.toFixed(1)}`);
+  setText(headingEl, formatHeadingValue(state.heading));
 }
 
 function updateEngineAudio() {
-  const context = audioState.context;
-  if (!context || context.state !== 'running') return;
+  if (!drivingAudio.running) return;
 
-  const now = context.currentTime;
   const accelerating = keys.has('w') || keys.has('arrowup');
   const reversing = keys.has('s') || keys.has('arrowdown');
   const speedRatio = Math.min(Math.abs(state.speed) / Math.max(state.maxSpeed, 1), 1);
   const throttleAmount = Math.max(state.throttleInput, reversing ? 0.55 : accelerating ? 0.35 : 0.12);
-  const rpm = THREE.MathUtils.clamp(state.virtualRpm || 0.22, 0.18, 1);
-  const shiftDip = state.shiftTimer > 0 ? (state.vehicleType === 'motorcycle' ? -10 : -18) : 0;
-  const engineLoad = Math.max(throttleAmount, speedRatio * 0.18);
 
-  // Fundamental frequency mapped from RPM (28 Hz idle → 158 Hz redline)
-  const baseFrequency = 28 + rpm * 130 + engineLoad * 12 + shiftDip;
-
-  // Filter cutoff opens wide at high RPM/load, creating the classic "rev" character
-  const targetCutoff = 290 + rpm * 940 + engineLoad * 300 + speedRatio * 180;
-
-  // Gain has a larger range and is more load-sensitive for audible stress under acceleration
-  const targetGain = 0.010 + rpm * 0.040 + engineLoad * 0.034 + speedRatio * 0.008;
-
-  // Bandpass noise center rises with RPM/throttle to mimic intake induction rush
-  const noiseFreq = 650 + rpm * 1600 + engineLoad * 450;
-  const noiseGain = engineLoad * 0.042 + rpm * 0.018;
-
-  audioState.engineOscSub?.frequency.setTargetAtTime(baseFrequency * 0.5, now, 0.12);
-  audioState.engineOscLow.frequency.setTargetAtTime(baseFrequency, now, 0.08);
-  audioState.engineOscMid?.frequency.setTargetAtTime(baseFrequency * 2.0, now, 0.08);
-  audioState.engineOscHigh.frequency.setTargetAtTime(baseFrequency * 3.1, now, 0.07);
-  audioState.engineFilter.frequency.setTargetAtTime(targetCutoff, now, 0.14);
-  audioState.engineGain.gain.setTargetAtTime(targetGain, now, 0.12);
-  audioState.engineNoiseFilter?.frequency.setTargetAtTime(noiseFreq, now, 0.18);
-  audioState.engineNoiseGain?.gain.setTargetAtTime(noiseGain, now, 0.16);
+  drivingAudio.update({
+    rpm: THREE.MathUtils.clamp(state.virtualRpm || 0.22, 0.18, 1),
+    load: Math.max(throttleAmount, speedRatio * 0.18),
+    speed: state.speed,
+    speedRatio,
+    shiftDip: state.shiftTimer > 0 ? (state.vehicleType === 'motorcycle' ? -10 : -18) : 0,
+    slip: state.tireSlip,
+    vehicle: state.vehicleType,
+    cockpit: state.view === 'cockpit',
+  });
 }
 
+let lastSpeedEffectLevel = '';
 function updateSpeedEffects() {
   const absSpeed = Math.abs(state.speed);
   // Effects start at 6 m/s (~22 km/h), reach full intensity at 22 m/s (~79 km/h)
   const t = Math.pow(THREE.MathUtils.clamp((absSpeed - 6) / 16, 0, 1), 1.8);
+  const level = t.toFixed(3);
+  if (level === lastSpeedEffectLevel) return;
+  lastSpeedEffectLevel = level;
   if (speedVignetteEl) speedVignetteEl.style.opacity = (t * 0.78).toFixed(3);
   if (speedBlurEl) speedBlurEl.style.opacity = (t * 0.92).toFixed(3);
 }
@@ -2348,6 +2264,9 @@ function renderRearViewMirrors() {
   // Touch layouts drop the mirrors entirely, so skip the three extra passes.
   if (touchLayoutQuery.matches) return;
   if (state.view === 'orbit' || state.miniMapExpanded) return;
+  // Each pane is a full scene pass; the low tier refreshes them on alternate frames.
+  // The panes are 2D copies, so a skipped frame simply keeps the previous image.
+  if (frameIndex % getQualityTier(state.renderQuality).mirrorEveryNthFrame !== 0) return;
   renderMirrorPane(mirrorLeftEl, mirrorCameras.left, 'left');
   renderMirrorPane(mirrorCenterEl, mirrorCameras.center, 'center');
   renderMirrorPane(mirrorRightEl, mirrorCameras.right, 'right');
@@ -2393,7 +2312,8 @@ let lastMiniMapRender = 0;
 function renderMiniMap() {
   const now = performance.now();
   if (isTouchPerf && (!state.uiCollapsed || document.body.classList.contains('mobile-portrait'))) return;
-  if (isTouchPerf && !state.miniMapExpanded && now - lastMiniMapRender < 100) return;
+  // The collapsed map is a glanceable overview: 10 Hz on phones, 20 Hz elsewhere.
+  if (!state.miniMapExpanded && now - lastMiniMapRender < (isTouchPerf ? 100 : 50)) return;
   const rect = miniMapEl.getBoundingClientRect();
   if (rect.width < 2 || rect.height < 2) return;
   lastMiniMapRender = now;
@@ -2862,12 +2782,30 @@ mapPresetEl?.addEventListener('change', () => {
   void loadBuiltInMap(selected);
 });
 
+let shadowMapDirty = true;
+function applyQualitySettings() {
+  const quality = state.renderQuality;
+  const isAuto = quality === 'auto';
+  // Auto starts from the resolution this kind of device gets by default, then adapts.
+  const devicePixelRatio = isAuto && isTouchPerf ? Math.min(window.devicePixelRatio, 1.25) : window.devicePixelRatio;
+  applyRenderQuality(renderer, quality, devicePixelRatio, isAuto ? adaptiveScaler.scale : 1);
+
+  const shadowSize = Math.min(getQualityTier(quality).shadowMap, isTouchPerf ? 1024 : 2048, renderer.capabilities.maxTextureSize);
+  if (sun.shadow.mapSize.x !== shadowSize) {
+    sun.shadow.mapSize.setScalar(shadowSize);
+    sun.shadow.map?.dispose();
+    sun.shadow.map = null;
+    shadowMapDirty = true;
+  }
+}
+
 const renderQualityEl = document.getElementById('renderQuality');
 renderQualityEl.value = state.renderQuality;
-applyRenderQuality(renderer, state.renderQuality, window.devicePixelRatio);
+applyQualitySettings();
 renderQualityEl.addEventListener('change', () => {
   state.renderQuality = renderQualityEl.value;
-  applyRenderQuality(renderer, state.renderQuality, window.devicePixelRatio);
+  adaptiveScaler.reset();
+  applyQualitySettings();
   saveSettings();
 });
 const hapticTestEl = document.getElementById('hapticTest');
@@ -2898,14 +2836,16 @@ window.addEventListener('resize', () => {
   camera.aspect = window.innerWidth / window.innerHeight;
   camera.updateProjectionMatrix();
   renderer.setSize(window.innerWidth, window.innerHeight);
+  adaptiveScaler.settle(2);
+  steerZoneMeasuredAt = -Infinity;
   refreshMobileShellState();
 });
 
 window.addEventListener('orientationchange', refreshMobileShellState);
 
 setAudioStatus(
-  audioState.supported ? 'pending' : 'error',
-  audioState.supported ? t('audio.pending') : t('audio.unavailable')
+  drivingAudio.supported ? 'pending' : 'error',
+  drivingAudio.supported ? t('audio.pending') : t('audio.unavailable')
 );
 syncMaxSpeedControl(persistedSettings?.maxSpeed ?? state.maxSpeed);
 syncVolumeControl(state.masterVolume);
@@ -2949,7 +2889,28 @@ async function initializeMaps() {
   }
 }
 
+// The sun follows the vehicle, so the shadow map only goes stale when a caster
+// moves relative to it. Parked, the whole shadow pass is skipped.
+const shadowPose = { x: NaN, z: NaN, heading: NaN, steer: NaN, lean: NaN, mode: '' };
+function shadowCastersMoved() {
+  const mode = state.vehicleType + state.view;
+  const lean = motorcycleRoot.rotation.z;
+  if (
+    !shadowMapDirty
+    && shadowPose.x === car.position.x && shadowPose.z === car.position.z
+    && shadowPose.heading === state.heading && shadowPose.steer === state.steer
+    && shadowPose.lean === lean && shadowPose.mode === mode
+  ) return false;
+  shadowPose.x = car.position.x; shadowPose.z = car.position.z;
+  shadowPose.heading = state.heading; shadowPose.steer = state.steer;
+  shadowPose.lean = lean; shadowPose.mode = mode;
+  shadowMapDirty = false;
+  return true;
+}
+
 let lastPausedRender = 0;
+let lastFrameAt = 0;
+let frameIndex = 0;
 const clock = new THREE.Clock();
 function animate() {
   requestAnimationFrame(animate);
@@ -2959,6 +2920,11 @@ function animate() {
   const paused = isTouchPerf && (!state.uiCollapsed || state.miniMapExpanded || document.body.classList.contains('mobile-portrait'));
   if (paused && now - lastPausedRender < 100) return;
   lastPausedRender = now;
+  if (state.renderQuality === 'auto' && !paused && adaptiveScaler.sample(now - lastFrameAt) !== null) {
+    applyQualitySettings();
+  }
+  lastFrameAt = now;
+  frameIndex += 1;
   const dt = paused ? 0 : Math.min(elapsed, 0.05);
   updateCar(dt);
   updateTurnSignal(dt);
@@ -2966,11 +2932,12 @@ function animate() {
   if (!paused && isTouchPerf && document.hasFocus()) haptics.road(state.speed);
   updateSpeedEffects();
   updateCamera(dt);
+  sky.setTime(now / 1000);
 
   sun.position.copy(car.position).add(SUN_OFFSET);
   sun.target.position.copy(car.position);
   // The light follows the car, so its map and transform must advance together.
-  renderer.shadowMap.needsUpdate = true;
+  if (shadowCastersMoved()) renderer.shadowMap.needsUpdate = true;
   renderRearViewMirrors();
   renderMiniMap();
   renderer.setViewport(0, 0, window.innerWidth, window.innerHeight);

@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import { createHaptics, applyRenderQuality, shouldVibrateOnRelease } from '../public/assets/mobile-experience.js';
+import { createHaptics, applyRenderQuality, createAdaptiveScaler, getQualityTier, shouldVibrateOnRelease } from '../public/assets/mobile-experience.js';
 let time = 1000;
 const pulses = [];
 const h = createHaptics({ vibrate: p => { pulses.push(p); return true; } }, () => time);
@@ -63,4 +63,28 @@ for (const [quality, expected] of [['low', 0.75], ['medium', 1.25], ['high', 2]]
 }
 assert.equal(applyRenderQuality(renderer, 'high', 1), 1, 'do not oversample standard DPI');
 assert.equal(applyRenderQuality(renderer, 'invalid', 3), 1.25);
+assert.equal(applyRenderQuality(renderer, 'auto', 2, 0.6), 1.2, 'auto scales the capped ratio');
+assert.equal(applyRenderQuality(renderer, 'high', 3, 1), 2, 'fixed tiers render at full scale');
+assert.equal(getQualityTier('low').mirrorEveryNthFrame, 2);
+assert.equal(getQualityTier('nope'), getQualityTier('medium'));
+// Adaptive resolution: drops fast on slow frames, recovers slowly, never leaves 0.6-1.
+const feed = (scaler, frameMs, seconds) => {
+  const changes = [];
+  for (let elapsed = 0; elapsed < seconds * 1000; elapsed += frameMs) {
+    const next = scaler.sample(frameMs);
+    if (next !== null) changes.push(next);
+  }
+  return changes;
+};
+const scaler = createAdaptiveScaler();
+assert.deepEqual(feed(scaler, 16.7, 20), [], 'smooth frames at full scale change nothing');
+assert.deepEqual(feed(scaler, 25, 1.5), [0.9], 'mildly slow frames step down one notch per window');
+assert.equal(feed(scaler, 60, 5)[0], 0.6, 'very slow frames jump straight to the floor');
+assert.deepEqual(feed(scaler, 60, 20), [], 'never goes below the floor');
+assert.equal(scaler.sample(5000), null, 'a stalled tab is not a slow frame');
+const recovery = feed(scaler, 16.7, 60);
+assert.equal(recovery.at(-1), 1, 'recovers to full scale');
+assert.ok(recovery.every((value, index) => index === 0 || Math.abs(value - recovery[index - 1] - 0.1) < 1e-9), 'climbs one step at a time');
+scaler.reset();
+assert.equal(scaler.scale, 1);
 console.log('Road cadence, haptic priority, modes, cancellation, test feedback and quality tiers passed.');
