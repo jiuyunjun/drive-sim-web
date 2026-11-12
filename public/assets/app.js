@@ -1756,8 +1756,8 @@ function getVehicleDynamics() {
       accel: 10.2,
       brake: 18.5,
       reverseFactor: 0.3,
-      steeringWheelSpeed: 8.0,
-      steeringReturnSpeed: 6.0,
+      steeringWheelSpeed: 11.5,
+      steeringReturnSpeed: 8.5,
       wheelBase: 1.435,
       rearAxleOffset: 0.715,
       coastDecel: 0.9,
@@ -1766,12 +1766,12 @@ function getVehicleDynamics() {
       reverseRise: 2.1,
       reverseFall: 5.8,
       maxSteer: 0.86,
-      steerSpeedDrop: 0.022,
-      maxLateralAccel: 10.2,
+      steerSpeedDrop: 0.012,
+      maxLateralAccel: 12.0,
       scrubFactor: 2.4,
       leanGain: 0.9,
       leanMax: 0.5,
-      leanResponse: 10,
+      leanResponse: 15,
     };
   }
 
