@@ -119,6 +119,14 @@ foreach ($jpgFile in $jpgFiles) {
     $didWork = $true
   }
 
+  # Phones load this half-size copy instead of the full map (see PREFER_LITE_MAPS in app.js).
+  # The '>' only shrinks, so a source that is already small is copied at its own size.
+  $liteWebpPath = Join-Path $mapsDir ($baseName + '.4096.webp')
+  if (-not (Test-Path $liteWebpPath)) {
+    & magick $jpgFile.FullName -resize '4096x>' -quality 82 $liteWebpPath
+    $didWork = $true
+  }
+
   if (-not (Test-Path $jsonPath)) {
     $config = Get-DefaultMapConfig -ImagePath $jpgFile.FullName
     $jsonContent = Build-MapJsonContent `

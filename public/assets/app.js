@@ -2675,12 +2675,23 @@ async function applyMapSource(src, shouldReset = true) {
       }
     }
     saveSettings();
+    return true;
   } catch (error) {
     console.error('Map image load failed:', error);
+    return false;
   } finally {
     cleanup.forEach((release) => release());
     hideLoading();
   }
+}
+
+// Built-in maps are 8192 px wide: about 200 MB of GPU memory with mipmaps, and more
+// than many phone GPUs accept as one texture. Those devices get the 4096 px copy
+// that generate-map-assets writes next to each map as <name>.4096.webp.
+const PREFER_LITE_MAPS = isTouchPerf || renderer.capabilities.maxTextureSize < 8192;
+
+function getLiteMapImageName(imageName) {
+  return /\.webp$/i.test(imageName) ? imageName.replace(/\.webp$/i, '.4096.webp') : null;
 }
 
 async function fetchJson(url) {
@@ -2731,7 +2742,11 @@ async function loadBuiltInMap(mapId, shouldReset = true) {
     map_source: 'built_in',
   });
 
-  await applyMapSource(new URL(mapConfig.image, MAPS_BASE_URL).href, shouldReset);
+  const liteImageName = PREFER_LITE_MAPS ? getLiteMapImageName(state.currentMapImage) : null;
+  const loadedLite = liteImageName !== null
+    && await applyMapSource(new URL(liteImageName, MAPS_BASE_URL).href, shouldReset);
+  // A map without a small copy still loads; it just costs the full download.
+  if (!loadedLite) await applyMapSource(new URL(mapConfig.image, MAPS_BASE_URL).href, shouldReset);
   saveSettings();
 }
 
