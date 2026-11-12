@@ -1422,6 +1422,9 @@ const state = {
   mobileThrottlePointerId: null,
   gripExceededLast: false,
   tireSlip: 0,
+  brakeInput: 0,
+  bodyRoll: 0,
+  bodyPitch: 0,
 };
 
 function setUiCollapsed(collapsed) {
@@ -1752,11 +1755,12 @@ function getVehicleDynamics() {
     return {
       accel: 10.2,
       brake: 18.5,
-      drag: 2.1,
       reverseFactor: 0.3,
       steeringWheelSpeed: 5.4,
       steeringReturnSpeed: 4.8,
-      wheelBase: 1.62,
+      wheelBase: 1.435,
+      rearAxleOffset: 0.715,
+      coastDecel: 0.9,
       throttleRise: 4.2,
       throttleFall: 6.2,
       reverseRise: 2.1,
@@ -1774,11 +1778,12 @@ function getVehicleDynamics() {
   return {
     accel: 8.5,
     brake: 16.0,
-    drag: 2.8,
     reverseFactor: 0.45,
     steeringWheelSpeed: 3.8,
     steeringReturnSpeed: 3.2,
-    wheelBase: 2.8,
+    wheelBase: 2.7,
+    rearAxleOffset: 1.35,
+    coastDecel: 1.0,
     throttleRise: 3.2,
     throttleFall: 4.6,
     reverseRise: 2.8,
@@ -1799,6 +1804,11 @@ function teleportCarTo(x, z) {
   state.speed = 0;
   state.throttleInput = 0;
   state.reverseInput = 0;
+  state.brakeInput = 0;
+  state.bodyRoll = 0;
+  state.bodyPitch = 0;
+  sedanRoot.rotation.x = 0;
+  sedanRoot.rotation.z = 0;
   state.virtualGearIndex = 0;
   state.virtualRpm = 0.22;
   state.shiftTimer = 0;
@@ -1833,6 +1843,11 @@ function resetCar() {
   state.signalTimer = 0;
   state.throttleInput = 0;
   state.reverseInput = 0;
+  state.brakeInput = 0;
+  state.bodyRoll = 0;
+  state.bodyPitch = 0;
+  sedanRoot.rotation.x = 0;
+  sedanRoot.rotation.z = 0;
   state.virtualGearIndex = 0;
   state.virtualRpm = 0.22;
   state.shiftTimer = 0;
@@ -1938,6 +1953,12 @@ function setText(el, text) {
   if (el && el.textContent !== text) el.textContent = text;
 }
 
+// Damping never quite arrives; land on the target once the difference is invisible
+// so a parked vehicle is truly still (and its shadow pass can be skipped).
+function settle(value, target) {
+  return Math.abs(value - target) < 1e-4 ? target : value;
+}
+
 let lastWheelDialTransform = '';
 let steerZoneWidth = 0;
 let steerZoneMeasuredAt = -Infinity;
@@ -1946,7 +1967,6 @@ function updateCar(dt) {
   const dynamics = getVehicleDynamics();
   const accel = dynamics.accel;
   const brake = dynamics.brake;
-  const drag = dynamics.drag;
   const reverseFactor = dynamics.reverseFactor;
   const steeringWheelSpeed = dynamics.steeringWheelSpeed;
   const steeringReturnSpeed = dynamics.steeringReturnSpeed;
@@ -1973,8 +1993,19 @@ function updateCar(dt) {
   const right = keys.has('d') || keys.has('arrowright');
   const brakePedal = keys.has(' ');
   const touchThrottle = mobileThrottleEnabled ? state.mobileThrottleLeverValue : 0;
-  const throttleTarget = brakePedal ? 0 : Math.max(forward ? 1 : 0, touchThrottle);
-  const reverseTarget = brakePedal ? 0 : (backward ? 1 : 0);
+  // Asking for the opposite direction while still rolling is a brake first; the
+  // vehicle only starts the other way once it has all but stopped.
+  const forwardBrakes = (forward || touchThrottle > 0.05) && state.speed < -0.3;
+  const backwardBrakes = backward && state.speed > 0.3;
+  const throttleTarget = brakePedal || forwardBrakes ? 0 : Math.max(forward ? 1 : 0, touchThrottle);
+  const reverseTarget = brakePedal || backwardBrakes ? 0 : (backward ? 1 : 0);
+  // Brake pressure builds over about a tenth of a second instead of arriving all at
+  // once, which is what lets you roll up to a stop line without a lurch.
+  const brakeTarget = brakePedal ? 1 : (forwardBrakes || backwardBrakes) ? 0.75 : 0;
+  state.brakeInput = THREE.MathUtils.damp(state.brakeInput, brakeTarget, brakeTarget > state.brakeInput ? 9 : 16, dt);
+  if (brakeTarget === 0 && state.brakeInput < 0.01) state.brakeInput = 0;
+  const speedBeforeStep = state.speed;
+  const headingBeforeStep = state.heading;
   const effectiveThrottleFall = brakePedal ? 14.0 : throttleFall;
   const effectiveReverseFall = brakePedal ? 14.0 : reverseFall;
 
@@ -1994,22 +2025,22 @@ function updateCar(dt) {
   const transmissionPower = updateVirtualTransmission(dt, state.throttleInput, state.reverseInput);
 
   if (state.throttleInput > 0.001) {
-    const launchBoost = THREE.MathUtils.lerp(0.38, 1, Math.min(Math.abs(state.speed) / Math.max(state.maxSpeed * 0.4, MIN_DRIVE_SPEED), 1));
+    // Pull-away is softer than mid-range, and speed builds from zero: a short tap
+    // creeps the vehicle forward instead of jumping it to walking pace.
+    const launchBoost = THREE.MathUtils.lerp(0.5, 1, Math.min(Math.abs(state.speed) / Math.max(state.maxSpeed * 0.4, MIN_DRIVE_SPEED), 1));
     state.speed += accel * transmissionPower * Math.pow(state.throttleInput, state.accelCurve) * launchBoost * dt;
-    if (state.speed > 0 && state.speed < MIN_DRIVE_SPEED) state.speed = MIN_DRIVE_SPEED;
   }
   if (state.reverseInput > 0.001) {
     state.speed -= accel * reverseFactor * Math.pow(state.reverseInput, 1.28) * dt;
-    const minReverseSpeed = MIN_DRIVE_SPEED * reverseFactor;
-    if (state.speed < 0 && Math.abs(state.speed) < minReverseSpeed) state.speed = -minReverseSpeed;
   }
 
-  if (state.throttleInput < 0.01 && state.reverseInput < 0.01) {
-    // 滑行阻力 = 滚动阻力（固定）+ 空气阻力（随速度线性增长，近似 v²）
+  {
+    // Rolling resistance and engine braking, plus drag that grows with speed. It fades
+    // in as the pedal comes up rather than waiting for the smoothed input to reach
+    // zero, so lifting off slows the vehicle straight away.
+    const pedal = Math.min(1, Math.max(state.throttleInput, state.reverseInput));
     const v = Math.abs(state.speed);
-    const rollingRes = drag * 0.57;
-    const aeroDrag = 0.09 * v;
-    const coastDecel = (rollingRes + aeroDrag) * dt;
+    const coastDecel = (dynamics.coastDecel + 0.05 * v) * (1 - pedal) * (1 - pedal) * dt;
     if (v <= coastDecel) state.speed = 0;
     else state.speed -= Math.sign(state.speed) * coastDecel;
   }
@@ -2022,18 +2053,18 @@ function updateCar(dt) {
     if (v > contAero) state.speed -= Math.sign(state.speed) * contAero;
   }
 
-  if (brakePedal) {
-    // 脚刹：桌面端空格作为制动踏板，制动力强于手刹
-    const brakeForce = brake * dt;
+  if (state.brakeInput > 0) {
+    const brakeForce = brake * state.brakeInput * dt;
     if (Math.abs(state.speed) <= brakeForce) state.speed = 0;
     else state.speed -= Math.sign(state.speed) * brakeForce;
-
+  }
+  if (brakePedal) {
     // 脚刹踩住时不保留残余推进，避免速度卡在中低速区间
     if (state.throttleInput < 0.02) state.throttleInput = 0;
     if (state.reverseInput < 0.02) state.reverseInput = 0;
   }
 
-  updateBrakeLights(state.reverseInput > 0.05 || brakePedal);
+  updateBrakeLights(state.brakeInput > 0.05);
   updateReverseLights(state.reverseInput > 0.05 || state.speed < -0.2);
 
   setText(maxSpeedValueEl, `${state.maxSpeed} m/s`);
@@ -2041,14 +2072,14 @@ function updateCar(dt) {
 
   // 速度敏感转向：高速时同时限制打方向速度和最大前轮角，低速保留揉库/掉头能力。
   const speedMs = Math.abs(state.speed);
-  const speedRatioForSteer = Math.min(speedMs / Math.max(state.maxSpeed, 1), 1);
-  const highSpeedSteerBlend = THREE.MathUtils.smoothstep(speedMs, 3.5, Math.max(6, state.maxSpeed * 0.82));
-  const reverseSteerRelief = state.speed < -0.2 ? 0.22 : 0;
-  const effectiveMaxSteer = dynamics.maxSteer * THREE.MathUtils.lerp(
-    1,
-    state.vehicleType === 'motorcycle' ? 0.58 : 0.46,
-    Math.max(0, highSpeedSteerBlend - reverseSteerRelief)
-  );
+  // Self-centring and the steering limit follow real speed. They used to follow the
+  // fraction of the map's speed limit, so the same corner felt different on every map.
+  const speedRatioForSteer = Math.min(speedMs / 10, 1);
+  // Full lock is the largest front-wheel angle the tyres can use at this speed, plus a
+  // little: the wheel always has authority, and holding it hard over at speed scrubs
+  // and squeals without ploughing straight on.
+  const gripLimitedSteer = Math.atan((wheelBase * dynamics.maxLateralAccel * 1.12) / Math.max(speedMs * speedMs, 0.01));
+  const effectiveMaxSteer = Math.min(dynamics.maxSteer, gripLimitedSteer);
   const steerSpeedFactor = 1.0 / (1.0 + speedMs * dynamics.steerSpeedDrop * 1.15);
   const effectiveSteeringSpeed = steeringWheelSpeed * state.steeringSensitivity * steerSpeedFactor;
   const steeringAngleRatio = Math.min(Math.abs(state.steeringWheelAngle) / STEERING_WHEEL_MAX, 1);
@@ -2101,14 +2132,34 @@ function updateCar(dt) {
   car.rotation.y = state.heading;
   const moveDirection = new THREE.Vector3(Math.sin(state.heading), 0, Math.cos(state.heading));
   car.position.addScaledVector(moveDirection, state.speed * dt);
+  // The rear axle is what follows the heading; the model's origin sits ahead of it, so
+  // it also swings sideways as the vehicle yaws. Without this the tail sweeps outward
+  // around the middle of the car and tight course sections cannot be judged properly.
+  const yawStep = state.heading - headingBeforeStep;
+  car.position.x += Math.cos(state.heading) * dynamics.rearAxleOffset * yawStep;
+  car.position.z -= Math.sin(state.heading) * dynamics.rearAxleOffset * yawStep;
   clampCarInsideMap();
+
+  // Weight transfer you can see: the body leans out of corners, dips under braking
+  // and squats under power. The motorcycle has its own lean below.
+  if (dt > 0) {
+    const isSedan = state.vehicleType === 'sedan';
+    const lateralAccel = state.speed * yawStep / dt;
+    const longitudinalAccel = (state.speed - speedBeforeStep) / dt;
+    const rollTarget = isSedan ? THREE.MathUtils.clamp(lateralAccel * 0.0042, -0.034, 0.034) : 0;
+    const pitchTarget = isSedan ? THREE.MathUtils.clamp(-longitudinalAccel * 0.002, -0.018, 0.026) : 0;
+    state.bodyRoll = settle(THREE.MathUtils.damp(state.bodyRoll, rollTarget, 5.5, dt), rollTarget);
+    state.bodyPitch = settle(THREE.MathUtils.damp(state.bodyPitch, pitchTarget, 6.5, dt), pitchTarget);
+    sedanRoot.rotation.z = state.bodyRoll;
+    sedanRoot.rotation.x = state.bodyPitch;
+  }
 
   const leanSpeedRatio = Math.min(speedMs / Math.max(state.maxSpeed, 1), 1);
   const bikeLeanTarget = state.vehicleType === 'motorcycle' && speedMs > 0.35
     ? THREE.MathUtils.clamp(-state.steer * (0.22 + leanSpeedRatio * dynamics.leanGain), -dynamics.leanMax, dynamics.leanMax)
     : 0;
-  motorcycleRoot.rotation.z = THREE.MathUtils.damp(motorcycleRoot.rotation.z, bikeLeanTarget, dynamics.leanResponse, dt);
-  bikeCockpitRoot.rotation.z = THREE.MathUtils.damp(bikeCockpitRoot.rotation.z, bikeLeanTarget * 0.45, dynamics.leanResponse, dt);
+  motorcycleRoot.rotation.z = settle(THREE.MathUtils.damp(motorcycleRoot.rotation.z, bikeLeanTarget, dynamics.leanResponse, dt), bikeLeanTarget);
+  bikeCockpitRoot.rotation.z = settle(THREE.MathUtils.damp(bikeCockpitRoot.rotation.z, bikeLeanTarget * 0.45, dynamics.leanResponse, dt), bikeLeanTarget * 0.45);
 
   wheelAssemblies.forEach((assembly) => {
     const steerAngle = assembly.steerable ? state.steer : 0;
@@ -2909,7 +2960,7 @@ async function initializeMaps() {
 const shadowPose = { x: NaN, z: NaN, heading: NaN, steer: NaN, lean: NaN, mode: '' };
 function shadowCastersMoved() {
   const mode = state.vehicleType + state.view;
-  const lean = motorcycleRoot.rotation.z;
+  const lean = motorcycleRoot.rotation.z + state.bodyRoll * 7 + state.bodyPitch * 13;
   if (
     !shadowMapDirty
     && shadowPose.x === car.position.x && shadowPose.z === car.position.z
