@@ -1756,8 +1756,8 @@ function getVehicleDynamics() {
       accel: 10.2,
       brake: 18.5,
       reverseFactor: 0.3,
-      steeringWheelSpeed: 5.4,
-      steeringReturnSpeed: 4.8,
+      steeringWheelSpeed: 8.0,
+      steeringReturnSpeed: 6.0,
       wheelBase: 1.435,
       rearAxleOffset: 0.715,
       coastDecel: 0.9,
@@ -1766,7 +1766,7 @@ function getVehicleDynamics() {
       reverseRise: 2.1,
       reverseFall: 5.8,
       maxSteer: 0.86,
-      steerSpeedDrop: 0.04,
+      steerSpeedDrop: 0.022,
       maxLateralAccel: 10.2,
       scrubFactor: 2.4,
       leanGain: 0.9,
@@ -1779,8 +1779,8 @@ function getVehicleDynamics() {
     accel: 8.5,
     brake: 16.0,
     reverseFactor: 0.45,
-    steeringWheelSpeed: 3.8,
-    steeringReturnSpeed: 3.2,
+    steeringWheelSpeed: 6.4,
+    steeringReturnSpeed: 4.6,
     wheelBase: 2.7,
     rearAxleOffset: 1.35,
     coastDecel: 1.0,
@@ -1789,7 +1789,7 @@ function getVehicleDynamics() {
     reverseRise: 2.8,
     reverseFall: 4.2,
     maxSteer: MAX_STEER,
-    steerSpeedDrop: 0.07,
+    steerSpeedDrop: 0.03,
     maxLateralAccel: 7.0,
     scrubFactor: 5.0,
     leanGain: 0,
@@ -2084,7 +2084,7 @@ function updateCar(dt) {
   const effectiveSteeringSpeed = steeringWheelSpeed * state.steeringSensitivity * steerSpeedFactor;
   const steeringAngleRatio = Math.min(Math.abs(state.steeringWheelAngle) / STEERING_WHEEL_MAX, 1);
   const effectiveReturnSpeed = steeringReturnSpeed * (
-    0.08 +
+    0.2 +
     speedRatioForSteer * (state.vehicleType === 'motorcycle' ? 1.65 : 1.42) +
     steeringAngleRatio * (0.18 + speedRatioForSteer * 0.42)
   );
@@ -2098,8 +2098,11 @@ function updateCar(dt) {
       dt
     );
   } else {
-    if (left) state.steeringWheelAngle += effectiveSteeringSpeed * dt;
-    if (right) state.steeringWheelAngle -= effectiveSteeringSpeed * dt;
+    // Unwinding lock toward the other side is quicker than adding it, so flicking
+    // from one direction to the other does not have to crawl back through centre.
+    const unwindBoost = 1.8;
+    if (left) state.steeringWheelAngle += effectiveSteeringSpeed * (state.steeringWheelAngle < 0 ? unwindBoost : 1) * dt;
+    if (right) state.steeringWheelAngle -= effectiveSteeringSpeed * (state.steeringWheelAngle > 0 ? unwindBoost : 1) * dt;
     if (state.autoCenterSteering && !left && !right) {
       state.steeringWheelAngle = THREE.MathUtils.damp(state.steeringWheelAngle, 0, effectiveReturnSpeed, dt);
     }
