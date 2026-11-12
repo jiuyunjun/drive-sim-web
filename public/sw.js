@@ -20,9 +20,27 @@ const APP_SHELL_CACHE = [
   '/ja/manifest.webmanifest',
 ];
 
+// Code and config used to be served as immutable for a year under fixed URLs, so
+// browsers may still hold old copies they consider fresh. Every fetch of those from
+// here skips the HTTP cache; otherwise a new app.js could be paired with a stale
+// module it no longer matches. Images keep normal caching: they are large and a
+// changed map ships under a new file name.
+const IMAGE_PATH = /\.(?:webp|jpe?g|png|gif|svg|ico)$/i;
+
+function fetchFresh(request) {
+  const url = new URL(typeof request === 'string' ? request : request.url, self.location.href);
+  return IMAGE_PATH.test(url.pathname) ? fetch(request) : fetch(request, { cache: 'no-cache' });
+}
+
 self.addEventListener('install', (event) => {
   event.waitUntil(
-    caches.open(CACHE_NAME).then((cache) => cache.addAll(APP_SHELL_CACHE)).then(() => self.skipWaiting())
+    caches.open(CACHE_NAME)
+      .then((cache) => Promise.all(APP_SHELL_CACHE.map(async (path) => {
+        const response = await fetchFresh(path);
+        if (!response.ok) throw new Error(`App shell request failed: ${path} (${response.status})`);
+        await cache.put(path, response);
+      })))
+      .then(() => self.skipWaiting())
   );
 });
 
@@ -43,7 +61,7 @@ function isHtmlRequest(request) {
 async function networkFirst(request) {
   const cache = await caches.open(CACHE_NAME);
   try {
-    const response = await fetch(request);
+    const response = await fetchFresh(request);
     cache.put(request, response.clone());
     return response;
   } catch (error) {
@@ -73,7 +91,7 @@ self.addEventListener('fetch', (event) => {
     event.respondWith((async () => {
       const cache = await caches.open(CACHE_NAME);
       const cachedResponse = await cache.match(event.request);
-      const fetchPromise = fetch(event.request)
+      const fetchPromise = fetchFresh(event.request)
         .then((response) => {
           cache.put(event.request, response.clone());
           return response;
@@ -87,7 +105,7 @@ self.addEventListener('fetch', (event) => {
 
       const networkResponse = await fetchPromise;
       if (networkResponse) return networkResponse;
-      return fetch(event.request);
+      return fetchFresh(event.request);
     })());
     return;
   }
